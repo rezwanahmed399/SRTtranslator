@@ -181,20 +181,15 @@
             </div>
           </div>
 
-          <!-- AI Model (Auto-fetched from API) -->
+          <!-- AI Model (Auto-fetched from API only) -->
           <div class="field-item">
             <label for="modelSelect">
               <span>Gemini Model</span>
-              <span class="hint-tag active-tag" id="modelLiveBadge">Live API Connected</span>
+              <span class="hint-tag" id="modelLiveBadge">Awaiting API Key</span>
             </label>
             <div class="select-wrapper">
-              <select id="modelSelect">
-                <!-- Will be dynamically populated live from API -->
-                <option value="gemini-2.5-flash" selected>Gemini 2.5 Flash — Ultra-fast (Auto-detected)</option>
-                <option value="gemini-2.5-pro">Gemini 2.5 Pro — Highest Intelligence</option>
-                <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
-                <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
-                <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+              <select id="modelSelect" disabled>
+                <option value="" disabled selected>🔒 Enter & Save Gemini API key above to load models live...</option>
               </select>
             </div>
           </div>

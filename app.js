@@ -182,13 +182,25 @@ function showApiFeedback(msg, type) {
 
 // ── Automatic Live Model Fetcher ──
 async function fetchLiveGeminiModels(key) {
-  if (!key) return;
+  if (!key) {
+    modelSelect.disabled = true;
+    modelSelect.innerHTML = '<option value="" disabled selected>🔒 Enter & Save Gemini API key above to load models live...</option>';
+    modelLiveBadge.textContent = 'Awaiting API Key';
+    modelLiveBadge.className = 'hint-tag';
+    return;
+  }
+
+  modelSelect.disabled = true;
+  modelSelect.innerHTML = '<option value="" disabled selected>🔄 Fetching available models live from Google...</option>';
   modelLiveBadge.textContent = 'Fetching live models...';
   modelLiveBadge.className = 'hint-tag';
 
   try {
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData?.error?.message || `HTTP ${res.status}`);
+    }
     const data = await res.json();
     
     if (data && Array.isArray(data.models)) {
@@ -203,18 +215,22 @@ async function fetchLiveGeminiModels(key) {
 
       if (textModels.length > 0) {
         populateModelDropdown(textModels);
-        showApiFeedback(`Connected! ${textModels.length} latest Gemini models loaded live ✓`, 'ok');
+        showApiFeedback(`Connected! ${textModels.length} latest Gemini models loaded live from Google ✓`, 'ok');
         modelLiveBadge.textContent = `✓ ${textModels.length} Live Models Connected`;
         modelLiveBadge.className = 'hint-tag active-tag';
+        modelSelect.disabled = false;
+        checkReadyToTranslate();
         return;
       }
     }
-    throw new Error('No compatible models found');
+    throw new Error('No text-generation models found for this API key.');
   } catch (err) {
-    // If list API fails, keep standard fallback list and inform user
     console.warn('Could not auto-fetch models from API:', err);
-    modelLiveBadge.textContent = 'Standard Models Ready';
+    modelSelect.disabled = true;
+    modelSelect.innerHTML = `<option value="" disabled selected>❌ Failed to load models: ${escapeHtml(err.message.slice(0, 50))}</option>`;
+    modelLiveBadge.textContent = 'Connection Error';
     modelLiveBadge.className = 'hint-tag';
+    showApiFeedback(`Failed to fetch models: ${err.message}`, 'err');
   }
 }
 
@@ -232,38 +248,37 @@ function populateModelDropdown(models) {
     };
   });
 
-  // Prioritize sorting: flash models first, pro second
+  // Sort: newest/most powerful models first (Flash models first for fast translation, Pro second)
   cleanModels.sort((a, b) => {
-    // Score based on modern model names
     const getScore = m => {
       let score = 0;
-      if (m.id.includes('2.5-flash')) score += 100;
-      else if (m.id.includes('2.5-pro')) score += 95;
-      else if (m.id.includes('2.0-flash')) score += 90;
-      else if (m.id.includes('2.0-pro')) score += 85;
-      else if (m.id.includes('1.5-flash')) score += 70;
-      else if (m.id.includes('1.5-pro')) score += 65;
-      else if (m.id.includes('flash')) score += 50;
+      const lower = m.id.toLowerCase();
+      if (lower.includes('2.5-flash')) score += 1000;
+      else if (lower.includes('2.5-pro')) score += 950;
+      else if (lower.includes('2.0-flash')) score += 900;
+      else if (lower.includes('2.0-pro')) score += 850;
+      else if (lower.includes('1.5-flash')) score += 700;
+      else if (lower.includes('1.5-pro')) score += 650;
+      else if (lower.includes('flash')) score += 500;
+      else if (lower.includes('pro')) score += 400;
       return score;
     };
     return getScore(b) - getScore(a);
   });
 
-  cleanModels.forEach(m => {
+  cleanModels.forEach((m, idx) => {
     const opt = document.createElement('option');
     opt.value = m.id;
     let label = `${m.displayName} (${m.id})`;
-    if (m.id.includes('2.5-flash')) label += ' — Latest Ultra-Fast (Recommended)';
-    else if (m.id.includes('2.5-pro')) label += ' — Highest Accuracy';
+    if (idx === 0) label += ' — Latest & Recommended';
     opt.textContent = label;
     modelSelect.appendChild(opt);
   });
 
-  // Auto-select the top recommended latest model (like gemini-2.5-flash)
-  const recommended = cleanModels.find(m => m.id.includes('2.5-flash')) || cleanModels[0];
-  if (recommended) {
-    modelSelect.value = recommended.id;
-    state.selectedModel = recommended.id;
+  // Select the top-ranked model automatically
+  if (cleanModels.length > 0) {
+    modelSelect.value = cleanModels[0].id;
+    state.selectedModel = cleanModels[0].id;
   }
 }
 
