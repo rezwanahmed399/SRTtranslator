@@ -162,6 +162,12 @@ function setupEventListeners() {
   // Copy Action
   copySrtBtn.addEventListener('click', copyFullSRTCode);
 
+  // Model Selection Change
+  modelSelect.addEventListener('change', () => {
+    state.selectedModel = modelSelect.value;
+    if (state.loadedModels) updateQuotaDashboard(state.loadedModels);
+  });
+
   // Tab switching
   document.querySelectorAll('.preview-tab').forEach(btn => {
     btn.addEventListener('click', function() {
@@ -254,8 +260,10 @@ async function fetchLiveGeminiModels(key) {
 
       if (textModels.length > 0) {
         state.apiKey = key;
+        state.loadedModels = textModels;
         localStorage.setItem('gemini_api_key', key);
         populateModelDropdown(textModels);
+        updateQuotaDashboard(textModels);
         showApiFeedback(`Connected! ${textModels.length} latest Gemini models loaded live`, 'ok');
         modelLiveBadge.innerHTML = `
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:11px;height:11px;display:inline-block;margin-right:4px;vertical-align:-1px;">
@@ -276,9 +284,38 @@ async function fetchLiveGeminiModels(key) {
     modelSelect.innerHTML = `<option value="" disabled selected>Failed to load models (${escapeHtml(err.message.slice(0, 45))}...)</option>`;
     modelLiveBadge.textContent = 'Connection Error';
     modelLiveBadge.className = 'hint-tag';
+    const dashboard = $('apiQuotaDashboard');
+    if (dashboard) dashboard.classList.add('hidden');
     showApiFeedback(`Google API Error: ${err.message}`, 'err');
     checkReadyToTranslate();
   }
+}
+
+function updateQuotaDashboard(models) {
+  const dashboard = $('apiQuotaDashboard');
+  if (!dashboard || !models || models.length === 0) return;
+
+  dashboard.classList.remove('hidden');
+  
+  const selectedId = (modelSelect.value || models[0].name.replace(/^models\//, '')).toLowerCase();
+  const activeModelObj = models.find(m => m.name.replace(/^models\//, '').toLowerCase() === selectedId) || models[0];
+
+  const inputLimit = activeModelObj?.inputTokenLimit || 1048576;
+  const isFlash = selectedId.includes('flash');
+
+  const qTier = $('quotaTier');
+  const qRpm = $('quotaRpm');
+  const qRpd = $('quotaRpd');
+  const qTpm = $('quotaTpm');
+  const qContext = $('quotaContext');
+  const qCap = $('quotaCapacity');
+
+  if (qTier) qTier.textContent = '100% Free AI Studio Tier';
+  if (qRpm) qRpm.textContent = isFlash ? '15 RPM' : '2 RPM';
+  if (qRpd) qRpd.textContent = isFlash ? '1,500 RPD' : '50 RPD';
+  if (qTpm) qTpm.textContent = isFlash ? '1,000,000 TPM' : '32,000 TPM';
+  if (qContext) qContext.textContent = `${Number(inputLimit).toLocaleString()} Tokens (~1M Context)`;
+  if (qCap) qCap.textContent = isFlash ? '~45,000 Lines / Day (50+ Movies)' : '~1,500 Lines / Day';
 }
 
 function populateModelDropdown(models) {
