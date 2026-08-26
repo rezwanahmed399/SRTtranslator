@@ -168,6 +168,16 @@ function setupEventListeners() {
     if (state.loadedModels) updateQuotaDashboard(state.loadedModels);
   });
 
+  // Reset Usage Counter
+  const resetBtn = $('resetUsageCounter');
+  if (resetBtn) {
+    resetBtn.addEventListener('click', () => {
+      if (confirm("Reset today's recorded usage counter?")) {
+        resetTodayUsage();
+      }
+    });
+  }
+
   // Tab switching
   document.querySelectorAll('.preview-tab').forEach(btn => {
     btn.addEventListener('click', function() {
@@ -291,6 +301,79 @@ async function fetchLiveGeminiModels(key) {
   }
 }
 
+function getTodayDateKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+function getTodayUsage() {
+  const todayKey = getTodayDateKey();
+  const savedDate = localStorage.getItem('gemini_usage_date');
+  
+  if (savedDate !== todayKey) {
+    // New day: auto-reset counter
+    localStorage.setItem('gemini_usage_date', todayKey);
+    localStorage.setItem('gemini_used_requests', '0');
+    localStorage.setItem('gemini_used_lines', '0');
+    return { requests: 0, lines: 0 };
+  }
+
+  const req = parseInt(localStorage.getItem('gemini_used_requests') || '0', 10);
+  const lines = parseInt(localStorage.getItem('gemini_used_lines') || '0', 10);
+  return { requests: isNaN(req) ? 0 : req, lines: isNaN(lines) ? 0 : lines };
+}
+
+function recordUsage(reqDelta = 1, linesDelta = 0) {
+  const current = getTodayUsage();
+  const newReq = current.requests + reqDelta;
+  const newLines = current.lines + linesDelta;
+
+  localStorage.setItem('gemini_usage_date', getTodayDateKey());
+  localStorage.setItem('gemini_used_requests', String(newReq));
+  localStorage.setItem('gemini_used_lines', String(newLines));
+
+  updateUsageTrackerUI();
+}
+
+function resetTodayUsage() {
+  localStorage.setItem('gemini_usage_date', getTodayDateKey());
+  localStorage.setItem('gemini_used_requests', '0');
+  localStorage.setItem('gemini_used_lines', '0');
+  updateUsageTrackerUI();
+}
+
+function updateUsageTrackerUI() {
+  const usage = getTodayUsage();
+  const selectedId = (modelSelect?.value || 'gemini-3.5-flash').toLowerCase();
+  const isFlash = selectedId.includes('flash');
+  const maxReq = isFlash ? 1500 : 50;
+
+  const used = usage.requests;
+  const remaining = Math.max(0, maxReq - used);
+  const pct = Math.min(100, Math.round((used / maxReq) * 100));
+
+  const usedEl = $('usedReqCount');
+  const maxEl = $('maxReqCount');
+  const remEl = $('remainingReqCount');
+  const fillEl = $('usageMeterFill');
+  const linesEl = $('todayLinesCount');
+  const moviesEl = $('estMoviesLeft');
+
+  if (usedEl) usedEl.textContent = Number(used).toLocaleString();
+  if (maxEl) maxEl.textContent = Number(maxReq).toLocaleString();
+  if (remEl) remEl.textContent = Number(remaining).toLocaleString();
+  if (fillEl) {
+    fillEl.style.width = `${pct}%`;
+    if (pct > 85) fillEl.style.background = 'linear-gradient(90deg, #f59e0b, #ef4444)';
+    else fillEl.style.background = 'linear-gradient(90deg, var(--status-success), #38bdf8)';
+  }
+  if (linesEl) linesEl.textContent = `${Number(usage.lines).toLocaleString()} Lines`;
+  if (moviesEl) {
+    const estMovies = Math.max(0, Math.floor(remaining / 25));
+    moviesEl.textContent = `~${estMovies}+ Movies`;
+  }
+}
+
 function updateQuotaDashboard(models) {
   const dashboard = $('apiQuotaDashboard');
   if (!dashboard || !models || models.length === 0) return;
@@ -316,6 +399,8 @@ function updateQuotaDashboard(models) {
   if (qTpm) qTpm.textContent = isFlash ? '1,000,000 TPM' : '32,000 TPM';
   if (qContext) qContext.textContent = `${Number(inputLimit).toLocaleString()} Tokens (~1M Context)`;
   if (qCap) qCap.textContent = isFlash ? '~45,000 Lines / Day (50+ Movies)' : '~1,500 Lines / Day';
+
+  updateUsageTrackerUI();
 }
 
 function populateModelDropdown(models) {
@@ -641,6 +726,7 @@ async function runTranslationPipeline() {
     statBatches.textContent = `${bi + 1} / ${batches.length}`;
 
     if (success) {
+      recordUsage(1, currentBatch.length);
       addTerminalLog('ok', `Batch ${bi + 1}/${batches.length} finished.`);
     }
   }

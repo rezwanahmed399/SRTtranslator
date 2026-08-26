@@ -561,6 +561,142 @@ body {
   margin-top: 3px;
 }
 
+/* Real-Time Session Tracker */
+.session-tracker-box {
+  margin-top: 14px;
+  padding: 14px 16px;
+  background: rgba(10, 15, 29, 0.75);
+  border: 1px solid rgba(16, 185, 129, 0.22);
+  border-radius: var(--radius-sm);
+}
+
+.tracker-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tracker-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+
+.live-pulse-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--status-success);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--status-success);
+  animation: pulseDot 1.8s infinite ease-in-out;
+}
+
+@keyframes pulseDot {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.35); opacity: 0.5; }
+}
+
+.btn-reset-counter {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  padding: 3px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-reset-counter:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #fca5a5;
+}
+
+.tracker-bar-wrap {
+  margin-bottom: 12px;
+}
+
+.tracker-progress-track {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.tracker-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--status-success), #38bdf8);
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+.tracker-stats-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.tracker-stats-line strong {
+  color: var(--text-main);
+}
+
+.remaining-badge {
+  color: var(--status-success);
+  font-weight: 600;
+}
+
+.tracker-chips-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  padding-top: 10px;
+}
+
+@media (max-width: 600px) {
+  .tracker-chips-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.tracker-chip {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.74rem;
+  background: rgba(255, 255, 255, 0.02);
+  padding: 6px 10px;
+  border-radius: 4px;
+}
+
+.chip-label {
+  color: var(--text-dim);
+}
+
+.chip-value {
+  font-weight: 700;
+  color: var(--text-main);
+  font-family: var(--font-mono);
+}
+
+.chip-value.highlight {
+  color: var(--brand-cyan-light);
+}
+
 /* Settings Grid */
 .settings-grid {
   display: grid;

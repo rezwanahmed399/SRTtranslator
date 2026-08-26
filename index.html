@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet" />
   
-  <link rel="stylesheet" href="style.css?v=2.8.0" />
+  <link rel="stylesheet" href="style.css?v=2.9.0" />
 </head>
 <body>
   <!-- Ambient background glow -->
@@ -161,6 +161,48 @@
               <div class="quota-label">Subtitles Translation Capacity</div>
               <div class="quota-value highlight" id="quotaCapacity">~45,000 Lines / Day</div>
               <div class="quota-sub">~40–70 Full Movies daily</div>
+            </div>
+          </div>
+
+          <!-- Real-Time Session Tracker -->
+          <div class="session-tracker-box">
+            <div class="tracker-header">
+              <div class="tracker-title">
+                <span class="live-pulse-dot"></span>
+                <span>Live Usage Tracker (Today)</span>
+              </div>
+              <button id="resetUsageCounter" class="btn-reset-counter" title="Reset today's usage counter" type="button">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;">
+                  <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                  <path d="M3 3v5h5"/>
+                </svg>
+                <span>Reset Count</span>
+              </button>
+            </div>
+
+            <div class="tracker-bar-wrap">
+              <div class="tracker-progress-track">
+                <div id="usageMeterFill" class="tracker-progress-fill" style="width: 0%;"></div>
+              </div>
+              <div class="tracker-stats-line">
+                <span><strong id="usedReqCount">0</strong> / <span id="maxReqCount">1,500</span> Requests Used Today</span>
+                <span class="remaining-badge"><strong id="remainingReqCount">1,500</strong> Requests Left</span>
+              </div>
+            </div>
+
+            <div class="tracker-chips-grid">
+              <div class="tracker-chip">
+                <span class="chip-label">Lines Translated Today:</span>
+                <span class="chip-value" id="todayLinesCount">0 Lines</span>
+              </div>
+              <div class="tracker-chip">
+                <span class="chip-label">Remaining Capacity:</span>
+                <span class="chip-value highlight" id="estMoviesLeft">~50+ Movies</span>
+              </div>
+              <div class="tracker-chip">
+                <span class="chip-label">Auto-Resets:</span>
+                <span class="chip-value" id="resetCountdown">Every Midnight</span>
+              </div>
             </div>
           </div>
         </div>
@@ -531,6 +573,6 @@
     </footer>
   </div>
 
-  <script src="app.js?v=2.8.0"></script>
+  <script src="app.js?v=2.9.0"></script>
 </body>
 </html>
