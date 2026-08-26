@@ -436,8 +436,16 @@ body {
   color: white;
 }
 
-.api-feedback {
+.api-feedback-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-top: 10px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.api-feedback {
   font-size: 0.82rem;
   font-weight: 500;
   min-height: 20px;
@@ -445,6 +453,39 @@ body {
 
 .api-feedback.ok { color: var(--status-success); }
 .api-feedback.err { color: var(--status-error); }
+
+.btn-toggle-quota {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-muted);
+  font-size: 0.76rem;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.btn-toggle-quota:hover {
+  background: rgba(99, 102, 241, 0.12);
+  border-color: rgba(99, 102, 241, 0.3);
+  color: var(--brand-primary-light);
+  transform: translateY(-1px);
+}
+
+.btn-toggle-quota.active {
+  background: rgba(99, 102, 241, 0.18);
+  border-color: var(--brand-primary-light);
+  color: #fff;
+}
+
+.btn-toggle-quota.active svg#toggleQuotaChevron {
+  transform: rotate(180deg);
+}
 
 /* API Quota & Limits Dashboard */
 .quota-dashboard {

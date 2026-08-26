@@ -168,6 +168,25 @@ function setupEventListeners() {
     if (state.loadedModels) updateQuotaDashboard(state.loadedModels);
   });
 
+  // Toggle Live Model Specs Drawer
+  const toggleQuotaBtn = $('toggleQuotaBtn');
+  const quotaDashboard = $('apiQuotaDashboard');
+  const toggleQuotaText = $('toggleQuotaText');
+  if (toggleQuotaBtn && quotaDashboard) {
+    toggleQuotaBtn.addEventListener('click', () => {
+      const isHidden = quotaDashboard.classList.contains('hidden');
+      if (isHidden) {
+        quotaDashboard.classList.remove('hidden');
+        toggleQuotaBtn.classList.add('active');
+        if (toggleQuotaText) toggleQuotaText.textContent = 'Hide Google Model Specs';
+      } else {
+        quotaDashboard.classList.add('hidden');
+        toggleQuotaBtn.classList.remove('active');
+        if (toggleQuotaText) toggleQuotaText.textContent = 'View Google Model Specs & Limits';
+      }
+    });
+  }
+
   // Tab switching
   document.querySelectorAll('.preview-tab').forEach(btn => {
     btn.addEventListener('click', function() {
@@ -292,30 +311,33 @@ async function fetchLiveGeminiModels(key) {
 }
 
 function updateQuotaDashboard(models) {
-  const dashboard = $('apiQuotaDashboard');
-  if (!dashboard || !models || models.length === 0) return;
+  const toggleBtn = $('toggleQuotaBtn');
+  if (toggleBtn) toggleBtn.classList.remove('hidden');
 
-  dashboard.classList.remove('hidden');
+  if (!models || models.length === 0) return;
   
   const selectedId = (modelSelect.value || models[0].name.replace(/^models\//, '')).toLowerCase();
   const activeModelObj = models.find(m => m.name.replace(/^models\//, '').toLowerCase() === selectedId) || models[0];
 
   const inputLimit = activeModelObj?.inputTokenLimit || 1048576;
+  const outputLimit = activeModelObj?.outputTokenLimit || 8192;
   const isFlash = selectedId.includes('flash');
 
-  const qTier = $('quotaTier');
+  const qName = $('quotaModelName');
+  const qVer = $('quotaModelVersion');
+  const qContext = $('quotaContext');
+  const qOut = $('quotaOutputTokens');
   const qRpm = $('quotaRpm');
   const qRpd = $('quotaRpd');
   const qTpm = $('quotaTpm');
-  const qContext = $('quotaContext');
-  const qCap = $('quotaCapacity');
 
-  if (qTier) qTier.textContent = '100% Free AI Studio Tier';
+  if (qName) qName.textContent = activeModelObj?.displayName || selectedId;
+  if (qVer) qVer.textContent = activeModelObj?.version ? `v${activeModelObj.version} • Live Google Verified` : 'v1beta • Live Google Verified';
+  if (qContext) qContext.textContent = `${Number(inputLimit).toLocaleString()} Tokens`;
+  if (qOut) qOut.textContent = `${Number(outputLimit).toLocaleString()} Tokens`;
   if (qRpm) qRpm.textContent = isFlash ? '15 RPM' : '2 RPM';
   if (qRpd) qRpd.textContent = isFlash ? '1,500 RPD' : '50 RPD';
   if (qTpm) qTpm.textContent = isFlash ? '1,000,000 TPM' : '32,000 TPM';
-  if (qContext) qContext.textContent = `${Number(inputLimit).toLocaleString()} Tokens (~1M Context)`;
-  if (qCap) qCap.textContent = isFlash ? '~45,000 Lines / Day (50+ Movies)' : '~1,500 Lines / Day';
 }
 
 function populateModelDropdown(models) {

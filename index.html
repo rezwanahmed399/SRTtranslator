@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet" />
   
-  <link rel="stylesheet" href="style.css?v=3.1.0" />
+  <link rel="stylesheet" href="style.css?v=3.2.0" />
 </head>
 <body>
   <!-- Ambient background glow -->
@@ -99,9 +99,22 @@
             <span>Connect & Load Models</span>
           </button>
         </div>
-        <div id="apiStatus" class="api-feedback"></div>
+        <div class="api-feedback-row">
+          <div id="apiStatus" class="api-feedback"></div>
+          <button id="toggleQuotaBtn" class="btn-toggle-quota hidden" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="16" x2="12" y2="12"/>
+              <line x1="12" y1="8" x2="12.01" y2="8"/>
+            </svg>
+            <span id="toggleQuotaText">View Google Model Specs & Limits</span>
+            <svg id="toggleQuotaChevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;transition:transform 0.2s;">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+        </div>
 
-        <!-- Live API Key Limits & Quota Dashboard -->
+        <!-- Live Google API Model Specs & Limits Drawer (Auto-hidden by default) -->
         <div id="apiQuotaDashboard" class="quota-dashboard hidden">
           <div class="quota-header">
             <div class="quota-title">
@@ -110,10 +123,10 @@
                 <line x1="8" y1="21" x2="16" y2="21"/>
                 <line x1="12" y1="17" x2="12" y2="21"/>
               </svg>
-              <span>API Key Quota & Capacity Limits</span>
+              <span>Live Google API Model Specifications</span>
             </div>
             <a href="https://aistudio.google.com/app/plan_information" target="_blank" rel="noopener" class="quota-ext-link">
-              <span>Google Usage Plan</span>
+              <span>Google Usage Console</span>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;">
                 <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
                 <polyline points="15 3 21 3 21 9"/>
@@ -124,39 +137,40 @@
 
           <div class="quota-grid">
             <div class="quota-item">
-              <div class="quota-label">Plan Tier</div>
-              <div class="quota-value highlight" id="quotaTier">Free Tier (No Cost)</div>
-              <div class="quota-sub">Google AI Studio Public API</div>
+              <div class="quota-label">Active Model</div>
+              <div class="quota-value highlight" id="quotaModelName">Gemini 3.5 Flash</div>
+              <div class="quota-sub" id="quotaModelVersion">v1beta • Live Verified</div>
             </div>
 
             <div class="quota-item">
-              <div class="quota-label">Speed Rate Limit</div>
+              <div class="quota-label">Input Context Window</div>
+              <div class="quota-value highlight" id="quotaContext">1,048,576 Tokens</div>
+              <div class="quota-sub">Direct from Google API</div>
+            </div>
+
+            <div class="quota-item">
+              <div class="quota-label">Max Output Tokens</div>
+              <div class="quota-value" id="quotaOutputTokens">8,192 Tokens</div>
+              <div class="quota-sub">Per translation batch response</div>
+            </div>
+
+            <div class="quota-item">
+              <div class="quota-label">Google Speed Rate (RPM)</div>
               <div class="quota-value" id="quotaRpm">15 RPM</div>
               <div class="quota-sub">15 Requests / minute</div>
             </div>
 
             <div class="quota-item">
-              <div class="quota-label">Daily Request Quota</div>
+              <div class="quota-label">Daily Request Quota (RPD)</div>
               <div class="quota-value" id="quotaRpd">1,500 RPD</div>
-              <div class="quota-sub">1,500 Requests / day</div>
+              <div class="quota-sub">1,500 Free Requests / day</div>
             </div>
 
             <div class="quota-item">
-              <div class="quota-label">Token Throughput</div>
+              <div class="quota-label">Token Throughput (TPM)</div>
               <div class="quota-value" id="quotaTpm">1,000,000 TPM</div>
               <div class="quota-sub">1 Million tokens / minute</div>
             </div>
-
-            <div class="quota-item">
-              <div class="quota-label">Input Context Window</div>
-              <div class="quota-value" id="quotaContext">1,048,576 Tokens</div>
-              <div class="quota-sub">~3,000 pages of text</div>
-            </div>
-
-            <div class="quota-item">
-              <div class="quota-label">Subtitles Translation Capacity</div>
-              <div class="quota-value highlight" id="quotaCapacity">~45,000 Lines / Day</div>
-              <div class="quota-sub">~40–70 Full Movies daily</div>
           </div>
         </div>
       </section>
@@ -519,6 +533,6 @@
     </main>
   </div>
 
-  <script src="app.js?v=3.1.0"></script>
+  <script src="app.js?v=3.2.0"></script>
 </body>
 </html>
