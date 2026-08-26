@@ -228,25 +228,39 @@ async function fetchLiveGeminiModels(key) {
     const data = await res.json();
     
     if (data && Array.isArray(data.models)) {
-      // Filter models that support generateContent
-      const textModels = data.models.filter(m => 
-        Array.isArray(m.supportedGenerationMethods) && 
-        m.supportedGenerationMethods.includes('generateContent') &&
-        !m.name.includes('embedding') &&
-        !m.name.includes('aqa') &&
-        !m.name.includes('imagen')
-      );
+      // Filter strictly for official, general text & translation Gemini models
+      const textModels = data.models.filter(m => {
+        const id = m.name.replace(/^models\//, '').toLowerCase();
+        
+        // Must support text generation
+        const hasGenContent = Array.isArray(m.supportedGenerationMethods) && 
+                              m.supportedGenerationMethods.includes('generateContent');
+        if (!hasGenContent) return false;
+
+        // Must be a Gemini core model (exclude non-Gemini like Gemma, Lyria, etc.)
+        if (!id.startsWith('gemini')) return false;
+
+        // Exclude specialized / non-translation variants (TTS, audio, image, robotics, research, etc.)
+        const blacklist = [
+          'tts', 'image', 'banana', 'robotics', 'transcribe', 
+          'clip', 'deep-research', 'computer-use', 'customtools', 
+          'embedding', 'aqa', 'imagen', 'audio', 'realtime', 'live'
+        ];
+        if (blacklist.some(term => id.includes(term))) return false;
+
+        return true;
+      });
 
       if (textModels.length > 0) {
         state.apiKey = key;
         localStorage.setItem('gemini_api_key', key);
         populateModelDropdown(textModels);
-        showApiFeedback(`Connected! ${textModels.length} latest Gemini models loaded live from Google`, 'ok');
+        showApiFeedback(`Connected! ${textModels.length} latest Gemini translation models loaded live`, 'ok');
         modelLiveBadge.innerHTML = `
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:11px;height:11px;display:inline-block;margin-right:4px;vertical-align:-1px;">
             <polyline points="20 6 9 17 4 12"/>
           </svg>
-          <span>${textModels.length} Live Models Connected</span>
+          <span>${textModels.length} Latest Models Active</span>
         `;
         modelLiveBadge.className = 'hint-tag active-tag';
         modelSelect.disabled = false;
@@ -254,7 +268,7 @@ async function fetchLiveGeminiModels(key) {
         return;
       }
     }
-    throw new Error('No text-generation models found for this API key.');
+    throw new Error('No compatible translation models found for this API key.');
   } catch (err) {
     console.warn('Could not auto-fetch models from API:', err);
     modelSelect.disabled = true;
@@ -269,7 +283,7 @@ async function fetchLiveGeminiModels(key) {
 function populateModelDropdown(models) {
   modelSelect.innerHTML = '';
 
-  // Extract clean model ID (remove "models/" prefix)
+  // Extract clean model ID
   const cleanModels = models.map(m => {
     const id = m.name.replace(/^models\//, '');
     return {
@@ -280,23 +294,27 @@ function populateModelDropdown(models) {
     };
   });
 
-  // Sort: newest/most powerful models first (Flash models first for fast translation, Pro second)
-  cleanModels.sort((a, b) => {
-    const getScore = m => {
-      let score = 0;
-      const lower = m.id.toLowerCase();
-      if (lower.includes('2.5-flash')) score += 1000;
-      else if (lower.includes('2.5-pro')) score += 950;
-      else if (lower.includes('2.0-flash')) score += 900;
-      else if (lower.includes('2.0-pro')) score += 850;
-      else if (lower.includes('1.5-flash')) score += 700;
-      else if (lower.includes('1.5-pro')) score += 650;
-      else if (lower.includes('flash')) score += 500;
-      else if (lower.includes('pro')) score += 400;
-      return score;
-    };
-    return getScore(b) - getScore(a);
-  });
+  // Smart Version Extraction & Scoring to accurately place latest models (3.7 > 3.5 > 2.5 > 2.0 > 1.5) on top
+  const getVersionScore = id => {
+    const lower = id.toLowerCase();
+    let score = 0;
+
+    // Extract numeric version like 3.7, 2.5, 1.5, etc.
+    const verMatch = lower.match(/gemini-(\d+(?:\.\d+)?)/);
+    if (verMatch) {
+      score += parseFloat(verMatch[1]) * 1000;
+    }
+
+    // Flash models prioritized for subtitle speed, Pro second for deep context
+    if (lower.includes('flash')) score += 50;
+    if (lower.includes('pro')) score += 30;
+    if (lower.includes('latest')) score += 200;
+    if (lower.includes('preview')) score -= 5;
+
+    return score;
+  };
+
+  cleanModels.sort((a, b) => getVersionScore(b.id) - getVersionScore(a.id));
 
   cleanModels.forEach((m, idx) => {
     const opt = document.createElement('option');
@@ -307,7 +325,7 @@ function populateModelDropdown(models) {
     modelSelect.appendChild(opt);
   });
 
-  // Select the top-ranked model automatically
+  // Select the highest-ranked latest model
   if (cleanModels.length > 0) {
     modelSelect.value = cleanModels[0].id;
     state.selectedModel = cleanModels[0].id;
