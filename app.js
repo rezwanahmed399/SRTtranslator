@@ -295,22 +295,22 @@ function populateModelDropdown(models) {
     };
   });
 
-  // Ranking: Stable production Flash models first (2.0-flash > 1.5-flash > 3.7-flash > 2.0-pro > 1.5-pro)
+  // Ranking: Prioritize fastest active production models (3.5-flash > 3.6-flash > 3.5-flash-lite > 1.5-flash)
   const getVersionScore = id => {
     const lower = id.toLowerCase();
     let score = 0;
 
-    if (lower === 'gemini-2.0-flash' || lower === 'gemini-flash-latest') score += 10000;
+    if (lower === 'gemini-3.5-flash') score += 12000;
+    else if (lower === 'gemini-3.6-flash') score += 11000;
+    else if (lower.includes('3.5-flash-lite')) score += 10000;
     else if (lower === 'gemini-1.5-flash') score += 9000;
     else if (lower.includes('3.7-flash')) score += 8500;
-    else if (lower.includes('2.0-flash-lite')) score += 8000;
-    else if (lower === 'gemini-2.0-pro' || lower.includes('2.0-pro-exp')) score += 7000;
-    else if (lower === 'gemini-1.5-pro' || lower === 'gemini-pro-latest') score += 6000;
-    else if (lower.includes('flash')) score += 4000;
+    else if (lower.includes('flash')) score += 5000;
     else if (lower.includes('pro')) score += 3000;
     else score += 1000;
 
     if (lower.includes('2.5-flash') && !lower.includes('lite')) score -= 5000; // Deprecated on new Google keys
+    if (lower === 'gemini-2.0-flash') score -= 3000;
 
     return score;
   };
@@ -576,8 +576,8 @@ async function runTranslationPipeline() {
 
         if (isDeprecatedOrUnavailable || (isHighDemand && attempt >= 2)) {
           // Auto-switch to stable, high-availability fast Flash engine
-          const fallbackCandidates = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-flash-latest', 'gemini-2.0-flash-lite'];
-          const nextModel = fallbackCandidates.find(m => m !== currentModelToUse) || 'gemini-2.0-flash';
+          const fallbackCandidates = ['gemini-3.5-flash', 'gemini-3.6-flash', 'gemini-3.5-flash-lite', 'gemini-1.5-flash'];
+          const nextModel = fallbackCandidates.find(m => m !== currentModelToUse) || 'gemini-3.5-flash';
           
           addTerminalLog('warn', `Notice on ${currentModelToUse} (${err.message.slice(0, 60)}...). Auto-switching to active engine: ${nextModel}...`);
           currentModelToUse = nextModel;
