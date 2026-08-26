@@ -378,6 +378,9 @@ function populateModelDropdown(models) {
 
   cleanModels.sort((a, b) => getVersionScore(b.id) - getVersionScore(a.id));
 
+  // Save ordered live model pool for intelligent dynamic failover
+  state.sortedModelList = cleanModels.map(m => m.id);
+
   cleanModels.forEach((m, idx) => {
     const opt = document.createElement('option');
     opt.value = m.id;
@@ -600,7 +603,8 @@ async function runTranslationPipeline() {
   addTerminalLog('info', `Active Model: ${modelSelect.value} • Adaptive Batching: ${bs} lines`);
 
   let processedCount = 0;
-  let currentModelToUse = (modelSelect.value || 'gemini-3.5-flash').replace(/^models\//, '');
+  let currentModelToUse = (modelSelect.value || (state.sortedModelList && state.sortedModelList[0]) || 'gemini-3.5-flash').replace(/^models\//, '');
+  const degradedModelsSet = new Set();
 
   for (let bi = 0; bi < batches.length; bi++) {
     const currentBatch = batches[bi];
@@ -634,18 +638,22 @@ async function runTranslationPipeline() {
                              errMsg.includes('overloaded');
 
         if (isDeprecatedOrUnavailable || (isHighDemand && attempt >= 2)) {
-          // Auto-switch to stable, high-availability fast Flash engine from active list
-          const fallbackCandidates = ['gemini-3.5-flash', 'gemini-3.6-flash', 'gemini-3.5-flash-lite', 'gemini-1.5-flash', 'gemini-1.5-pro'];
-          const nextModel = fallbackCandidates.find(m => m !== currentModelToUse) || 'gemini-3.5-flash';
-          
-          addTerminalLog('warn', `Notice: ${currentModelToUse} experienced high demand / quota limit. Seamlessly switching to active engine: ${nextModel}...`);
-          currentModelToUse = nextModel;
-          
-          // Update dropdown & state in real time
-          if (modelSelect) {
-            modelSelect.value = currentModelToUse;
-            state.selectedModel = currentModelToUse;
-            if (state.loadedModels) updateQuotaDashboard(state.loadedModels);
+          degradedModelsSet.add(currentModelToUse);
+
+          // Dynamically find next available verified model from user's live authorized model pool
+          const livePool = state.sortedModelList || [];
+          const nextModel = livePool.find(m => !degradedModelsSet.has(m));
+
+          if (nextModel && nextModel !== currentModelToUse) {
+            addTerminalLog('warn', `Notice on ${currentModelToUse} (${err.message.slice(0, 45)}...). Routing remaining batches to next live engine from your key: ${nextModel}...`);
+            currentModelToUse = nextModel;
+            
+            // Update dropdown & state in real time
+            if (modelSelect) {
+              modelSelect.value = currentModelToUse;
+              state.selectedModel = currentModelToUse;
+              if (state.loadedModels) updateQuotaDashboard(state.loadedModels);
+            }
           }
         }
 
