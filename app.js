@@ -359,17 +359,19 @@ function populateModelDropdown(models) {
     const lower = id.toLowerCase();
     let score = 0;
 
-    if (lower === 'gemini-3.5-flash') score += 12000;
-    else if (lower === 'gemini-3.6-flash') score += 11000;
-    else if (lower.includes('3.5-flash-lite')) score += 10000;
-    else if (lower === 'gemini-1.5-flash') score += 9000;
-    else if (lower.includes('3.7-flash')) score += 8500;
-    else if (lower.includes('flash')) score += 5000;
-    else if (lower.includes('pro')) score += 3000;
+    if (lower === 'gemini-3.5-flash') score += 20000;
+    else if (lower === 'gemini-3.6-flash') score += 18000;
+    else if (lower.includes('3.5-flash-lite')) score += 16000;
+    else if (lower === 'gemini-1.5-flash') score += 14000;
+    else if (lower.includes('3.7-flash')) score += 12000;
+    else if (lower === 'gemini-1.5-pro' || lower === 'gemini-pro-latest') score += 10000;
+    else if (lower.includes('flash')) score += 8000;
+    else if (lower.includes('pro')) score += 5000;
     else score += 1000;
 
-    if (lower.includes('2.5-flash') && !lower.includes('lite')) score -= 5000; // Deprecated on new Google keys
-    if (lower === 'gemini-2.0-flash') score -= 3000;
+    if (lower.includes('2.5-flash') && !lower.includes('lite')) score -= 15000; // Deprecated for new API keys
+    if (lower.includes('preview')) score -= 8000;
+    if (lower === 'gemini-2.0-flash') score -= 5000;
 
     return score;
   };
@@ -598,6 +600,7 @@ async function runTranslationPipeline() {
   addTerminalLog('info', `Active Model: ${modelSelect.value} • Adaptive Batching: ${bs} lines`);
 
   let processedCount = 0;
+  let currentModelToUse = (modelSelect.value || 'gemini-3.5-flash').replace(/^models\//, '');
 
   for (let bi = 0; bi < batches.length; bi++) {
     const currentBatch = batches[bi];
@@ -605,13 +608,10 @@ async function runTranslationPipeline() {
     const batchPct = Math.round((processedCount / state.parsedBlocks.length) * 94);
 
     updateProgressStats(batchPct, `Translating batch ${bi + 1} of ${batches.length} (#${currentBatch[0].num} – #${currentBatch[currentBatch.length - 1].num})...`);
-    addTerminalLog('info', `Batch ${bi + 1}/${batches.length}: Translating ${currentBatch.length} lines with ${modelSelect.value}...`);
+    addTerminalLog('info', `Batch ${bi + 1}/${batches.length}: Translating ${currentBatch.length} lines with ${currentModelToUse}...`);
 
     let batchResult = null;
     let success = false;
-
-    // Retry loop with automatic model failover (up to 4 attempts)
-    let currentModelToUse = (modelSelect.value || 'gemini-2.0-flash').replace(/^models\//, '');
 
     for (let attempt = 1; attempt <= 4; attempt++) {
       try {
@@ -634,12 +634,19 @@ async function runTranslationPipeline() {
                              errMsg.includes('overloaded');
 
         if (isDeprecatedOrUnavailable || (isHighDemand && attempt >= 2)) {
-          // Auto-switch to stable, high-availability fast Flash engine
-          const fallbackCandidates = ['gemini-3.5-flash', 'gemini-3.6-flash', 'gemini-3.5-flash-lite', 'gemini-1.5-flash'];
+          // Auto-switch to stable, high-availability fast Flash engine from active list
+          const fallbackCandidates = ['gemini-3.5-flash', 'gemini-3.6-flash', 'gemini-3.5-flash-lite', 'gemini-1.5-flash', 'gemini-1.5-pro'];
           const nextModel = fallbackCandidates.find(m => m !== currentModelToUse) || 'gemini-3.5-flash';
           
-          addTerminalLog('warn', `Notice on ${currentModelToUse} (${err.message.slice(0, 60)}...). Auto-switching to active engine: ${nextModel}...`);
+          addTerminalLog('warn', `Notice: ${currentModelToUse} experienced high demand / quota limit. Seamlessly switching to active engine: ${nextModel}...`);
           currentModelToUse = nextModel;
+          
+          // Update dropdown & state in real time
+          if (modelSelect) {
+            modelSelect.value = currentModelToUse;
+            state.selectedModel = currentModelToUse;
+            if (state.loadedModels) updateQuotaDashboard(state.loadedModels);
+          }
         }
 
         if (attempt < 4) {
