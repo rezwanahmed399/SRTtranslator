@@ -717,14 +717,13 @@ async function callGeminiBatchTranslate(batch, key, attemptNumber, overrideModel
   // Pacing & Reading Speed Instructions
   let pacingPrompt = '';
   if (pace === 'concise') {
-    pacingPrompt = `CRITICAL SUBTITLE PACING (Eye-Glance Length):
-- Keep every subtitle line VERY SHORT, CRISP, and PUNCHY (max 4-8 words per line).
-- The viewer MUST be able to read and comprehend the subtitle in under 1.5–2 seconds without distracting from the video.
-- Cut out unnecessary filler words, wordiness, and excessive elaboration while retaining 100% of the emotional punch and meaning.`;
+    pacingPrompt = `SUBTITLE PACING (Fast Reading & Concise):
+- Keep subtitle lines short, crisp, and easy to read in a quick glance.
+- Avoid over-complicated sentences and unnecessary filler words so the viewer can read comfortably without looking away from the video.
+- Preserve 100% of the dialogue's true meaning, emotion, and tone.`;
   } else if (pace === 'balanced') {
-    pacingPrompt = `SUBTITLE PACING (Standard Cinema Balance):
-- Keep translations natural, conversational, and comfortable to read at normal speech rate.
-- Avoid over-simplifying, but ensure the line breaks comfortably within 8–14 words.`;
+    pacingPrompt = `SUBTITLE PACING (Balanced & Natural):
+- Keep translations natural, conversational, and comfortable to read at normal dialogue speed.`;
   } else if (pace === 'detailed') {
     pacingPrompt = `SUBTITLE PACING (Detailed & Complete):
 - Translate every nuance, specific term, and sentence clause accurately and completely without summarizing.`;
