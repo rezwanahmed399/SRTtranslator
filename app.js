@@ -714,12 +714,20 @@ async function callGeminiBatchTranslate(batch, key, attemptNumber, overrideModel
     text: item.lines.join('\n')
   }));
 
-  // Pacing instruction
-  let pacingPrompt = 'KEEP EACH SUBTITLE LINE VERY SHORT AND CONCISE. Subtitles must be readable in under 2 seconds at a glance. Do not generate lengthy sentences.';
-  if (pace === 'balanced') {
-    pacingPrompt = 'Keep translations natural, easy to read, and balanced for video subtitles.';
+  // Pacing & Reading Speed Instructions
+  let pacingPrompt = '';
+  if (pace === 'concise') {
+    pacingPrompt = `CRITICAL SUBTITLE PACING (Eye-Glance Length):
+- Keep every subtitle line VERY SHORT, CRISP, and PUNCHY (max 4-8 words per line).
+- The viewer MUST be able to read and comprehend the subtitle in under 1.5–2 seconds without distracting from the video.
+- Cut out unnecessary filler words, wordiness, and excessive elaboration while retaining 100% of the emotional punch and meaning.`;
+  } else if (pace === 'balanced') {
+    pacingPrompt = `SUBTITLE PACING (Standard Cinema Balance):
+- Keep translations natural, conversational, and comfortable to read at normal speech rate.
+- Avoid over-simplifying, but ensure the line breaks comfortably within 8–14 words.`;
   } else if (pace === 'detailed') {
-    pacingPrompt = 'Translate fully and accurately while keeping subtitle readability in mind.';
+    pacingPrompt = `SUBTITLE PACING (Detailed & Complete):
+- Translate every nuance, specific term, and sentence clause accurately and completely without summarizing.`;
   }
 
   // Bengali specific pronoun rules
