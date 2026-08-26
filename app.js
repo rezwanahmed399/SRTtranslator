@@ -634,10 +634,13 @@ async function runTranslationPipeline() {
 
 // ── Gemini Translation Engine ──
 async function callGeminiBatchTranslate(batch, key, attemptNumber, overrideModel) {
-  const lang = targetLang.value;
+  const lang = targetLang.value || 'Bengali';
   const pace = styleMode.value;
   const hint = contextHint.value.trim();
-  const selectedModel = overrideModel || modelSelect.value || 'gemini-2.5-flash';
+  
+  // Clean model ID to strictly avoid double 'models/' prefix
+  const rawModel = overrideModel || modelSelect.value || 'gemini-2.0-flash';
+  const selectedModel = rawModel.replace(/^models\//, '').trim();
 
   // Construct structured payload (Only subtitle text and ID is passed; timecodes remain 100% untouched)
   const inputData = batch.map((item, index) => ({
@@ -657,43 +660,41 @@ async function callGeminiBatchTranslate(batch, key, attemptNumber, overrideModel
   let pronounRule = '';
   if (lang.toLowerCase().includes('bengali') || lang === 'Bengali') {
     pronounRule = `
-PRONOUN RULES (Bengali):
-- NEVER use disrespectful pronouns like "তুই", "তোর", "তোকে".
-- ALWAYS use friendly, polite, and natural pronouns like "তুমি", "তোমার", "তোমাকে", "তোমরা".
-- Use everyday natural conversational Bengali. Avoid overly heavy Sanskritized words.`;
+PRONOUN & DIALOGUE RULES (Bengali):
+- NEVER use disrespectful or rude pronouns like "তুই", "তোর", "তোকে".
+- ALWAYS use friendly, polite, and natural conversational pronouns like "তুমি", "তোমার", "তোমাকে", "তোমরা".
+- Translate in natural everyday spoken Bengali (চলতি ভাষা) so it feels like a real movie dub/subtitle.
+- Preserve any HTML tags like <i>, </i>, <b>, </b> around the translated words.`;
   }
 
-  const systemInstruction = `You are an elite, professional subtitle translator and localization expert.
-Your goal is to translate movie/video subtitles accurately into ${lang}.
+  const promptText = `You are a professional subtitle localization translator.
+Translate the following video subtitles into ${lang}.
 
 MANDATORY RULES:
-1. Return ONLY a valid JSON array of objects. No markdown formatting, no explanations, no wrappers.
-2. The output array MUST have EXACTLY ${batch.length} elements.
-3. Schema: [{"id": <number>, "text": "<translated subtitle string>"}]
-4. Preserve the exact id (0 to ${batch.length - 1}) for every single item.
-5. ${pacingPrompt}
-6. Never merge two subtitles together or skip any item.
-7. Translate naturally and idiomatically to match emotion and pacing.${pronounRule}
-${hint ? `8. Context/Genre Hint: ${hint}` : ''}`;
+1. Translate the dialogue text accurately into ${lang}.
+2. Preserve subtitle meaning, humor, drama, and emotion.
+3. ${pacingPrompt}
+4. Preserve HTML formatting tags (like <i>, </i>, <b>, </b>) if present in original text.${pronounRule}
+${hint ? `5. Context/Genre: ${hint}` : ''}
+6. Output Format: Return ONLY a valid JSON array of objects. No markdown backticks, no preamble, no explanations.
+Schema: [{"id": 0, "text": "Translated text here"}, {"id": 1, "text": "Translated text here"}]
 
-  const userPrompt = `Translate these ${batch.length} subtitle items into ${lang}. Return strict JSON array only:\n${JSON.stringify(inputData)}`;
+INPUT SUBTITLES TO TRANSLATE (${batch.length} items):
+${JSON.stringify(inputData, null, 2)}
+
+OUTPUT (Strict JSON Array):`;
 
   const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent?key=${key}`;
 
   const requestBody = {
     contents: [
       {
-        role: 'user',
-        parts: [{ text: userPrompt }]
+        parts: [{ text: promptText }]
       }
     ],
-    systemInstruction: {
-      parts: [{ text: systemInstruction }]
-    },
     generationConfig: {
       temperature: 0.15,
-      maxOutputTokens: 8192,
-      responseMimeType: 'application/json'
+      maxOutputTokens: 8192
     }
   };
 
@@ -726,7 +727,7 @@ ${hint ? `8. Context/Genre Hint: ${hint}` : ''}`;
     parsedArray = JSON.parse(sanitized);
   } catch {
     const jsonMatch = rawText.match(/\[[\s\S]*\]/);
-    if (!jsonMatch) throw new Error('Could not parse valid JSON array from AI output.');
+    if (!jsonMatch) throw new Error('Could not extract JSON array from translation result.');
     parsedArray = JSON.parse(jsonMatch[0]);
   }
 
