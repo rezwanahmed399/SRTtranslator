@@ -550,19 +550,36 @@ async function runTranslationPipeline() {
     let batchResult = null;
     let success = false;
 
-    // Retry loop with exponential backoff (up to 3 attempts)
-    for (let attempt = 1; attempt <= 3; attempt++) {
+    // Retry loop with automatic model failover (up to 4 attempts)
+    let currentModelToUse = modelSelect.value || 'gemini-2.5-flash';
+
+    for (let attempt = 1; attempt <= 4; attempt++) {
       try {
-        batchResult = await callGeminiBatchTranslate(currentBatch, activeKey, attempt);
+        batchResult = await callGeminiBatchTranslate(currentBatch, activeKey, attempt, currentModelToUse);
         success = true;
         break;
       } catch (err) {
         state.stats.retries++;
-        if (attempt < 3) {
-          addTerminalLog('warn', `Batch ${bi + 1} retry attempt ${attempt + 1}/3... (${err.message.slice(0, 80)})`);
-          await sleep(1500 * attempt);
+        const isHighDemand = err.message.toLowerCase().includes('demand') || 
+                             err.message.includes('503') || 
+                             err.message.includes('429') ||
+                             err.message.toLowerCase().includes('quota') ||
+                             err.message.toLowerCase().includes('overloaded');
+
+        if (isHighDemand && attempt >= 2) {
+          // Auto-switch to highest-availability fast Flash engine
+          const fallbackCandidates = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-flash-latest'];
+          const nextModel = fallbackCandidates.find(m => m !== currentModelToUse) || 'gemini-2.5-flash';
+          
+          addTerminalLog('warn', `Google server demand spike on ${currentModelToUse}. Seamlessly auto-switching to high-speed ${nextModel}...`);
+          currentModelToUse = nextModel;
+        }
+
+        if (attempt < 4) {
+          addTerminalLog('warn', `Batch ${bi + 1} attempt ${attempt} notice: ${err.message.slice(0, 85)}... Retrying in ${attempt * 2}s.`);
+          await sleep(2000 * attempt);
         } else {
-          addTerminalLog('err', `Batch ${bi + 1} failed after 3 attempts: ${err.message}. Keeping original text safely.`);
+          addTerminalLog('err', `Batch ${bi + 1} could not complete after 4 attempts. Preserving original lines safely.`);
           batchResult = currentBatch.map(b => ({ ...b, translatedLines: b.lines }));
         }
       }
@@ -608,11 +625,11 @@ async function runTranslationPipeline() {
 }
 
 // ── Gemini Translation Engine ──
-async function callGeminiBatchTranslate(batch, key, attemptNumber) {
+async function callGeminiBatchTranslate(batch, key, attemptNumber, overrideModel) {
   const lang = targetLang.value;
   const pace = styleMode.value;
   const hint = contextHint.value.trim();
-  const selectedModel = modelSelect.value || 'gemini-2.5-flash';
+  const selectedModel = overrideModel || modelSelect.value || 'gemini-2.5-flash';
 
   // Construct structured payload (Only subtitle text and ID is passed; timecodes remain 100% untouched)
   const inputData = batch.map((item, index) => ({
