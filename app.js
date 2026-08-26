@@ -736,10 +736,34 @@ OUTPUT (Strict JSON Array in ${lang}):`;
     throw new Error('AI output was not a JSON array.');
   }
 
-  // Map results back to blocks
+  // Map results back to blocks with universal property fallback
   return batch.map((originalBlock, idx) => {
-    const matched = parsedArray.find(item => item.id === idx) || parsedArray[idx];
-    const transText = (matched?.text || '').trim();
+    let matched = null;
+    if (Array.isArray(parsedArray)) {
+      // Check loose equality (e.g. "0" == 0) and 1-based indexing
+      matched = parsedArray.find(item => item && (item.id == idx || item.id == idx + 1));
+      if (!matched && idx < parsedArray.length) {
+        matched = parsedArray[idx];
+      }
+    }
+
+    let transText = '';
+    if (typeof matched === 'string') {
+      transText = matched.trim();
+    } else if (matched && typeof matched === 'object') {
+      transText = (
+        matched.text || 
+        matched.translation || 
+        matched.translated_text || 
+        matched.bengali || 
+        matched.content ||
+        matched.translatedText ||
+        matched.translated ||
+        matched.dialogue ||
+        Object.values(matched).find(v => typeof v === 'string' && v.trim().length > 0 && v !== String(matched.id)) ||
+        ''
+      ).trim();
+    }
 
     if (!transText) {
       state.stats.emptyRecovered++;
@@ -756,7 +780,7 @@ OUTPUT (Strict JSON Array in ${lang}):`;
 
     return {
       ...originalBlock,
-      translatedLines: lines.length > 0 ? lines : originalBlock.lines
+      translatedLines: lines.length > 0 ? lines : [transText]
     };
   });
 }
