@@ -668,21 +668,22 @@ PRONOUN & DIALOGUE RULES (Bengali):
   }
 
   const promptText = `You are a professional subtitle localization translator.
-Translate the following video subtitles into ${lang}.
+Task: Translate every single subtitle dialogue line into ${lang}.
 
 MANDATORY RULES:
-1. Translate the dialogue text accurately into ${lang}.
-2. Preserve subtitle meaning, humor, drama, and emotion.
-3. ${pacingPrompt}
-4. Preserve HTML formatting tags (like <i>, </i>, <b>, </b>) if present in original text.${pronounRule}
-${hint ? `5. Context/Genre: ${hint}` : ''}
-6. Output Format: Return ONLY a valid JSON array of objects. No markdown backticks, no preamble, no explanations.
-Schema: [{"id": 0, "text": "Translated text here"}, {"id": 1, "text": "Translated text here"}]
+1. Every subtitle text MUST be translated into ${lang}. Do NOT leave original English text.
+2. If translating to Bengali, use fluent, natural Bengali script (বাংলা বর্ণমালা).
+3. Preserve subtitle meaning, punchlines, drama, and emotion.
+4. ${pacingPrompt}
+5. Preserve HTML formatting tags (like <i>, </i>, <b>, </b>) if present in original text.${pronounRule}
+${hint ? `6. Context/Genre: ${hint}` : ''}
+7. Output Format: Return ONLY a valid JSON array of objects. No markdown backticks, no preamble, no explanations.
+Schema: [{"id": 0, "text": "বাংলা অনুবাদ এখানে"}, {"id": 1, "text": "বাংলা অনুবাদ এখানে"}]
 
 INPUT SUBTITLES TO TRANSLATE (${batch.length} items):
 ${JSON.stringify(inputData, null, 2)}
 
-OUTPUT (Strict JSON Array):`;
+OUTPUT (Strict JSON Array in ${lang}):`;
 
   const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent?key=${key}`;
 
