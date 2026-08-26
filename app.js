@@ -72,11 +72,11 @@ const retranslateBtn    = $('retranslateBtn');
 
 // ── Initialization ──
 window.addEventListener('DOMContentLoaded', () => {
-  const savedKey = localStorage.getItem('gemini_api_key') || '';
+  const savedKey = (localStorage.getItem('gemini_api_key') || '').trim();
   if (savedKey) {
     apiKeyInput.value = savedKey;
     state.apiKey = savedKey;
-    showApiFeedback('API Key loaded from secure local storage', 'ok');
+    showApiFeedback('API Key loaded from local storage. Verifying...', 'ok');
     fetchLiveGeminiModels(savedKey);
   }
   setupEventListeners();
@@ -96,19 +96,16 @@ function setupEventListeners() {
          <circle cx="12" cy="12" r="3"/>`;
   });
 
-  // Save API Key and load live models
-  saveApiKey.addEventListener('click', () => {
-    const key = apiKeyInput.value.trim();
-    if (!key.startsWith('AIza') || key.length < 25) {
-      showApiFeedback('Please enter a valid Gemini API key (starts with AIzaSy...)', 'err');
-      return;
+  // Allow pressing Enter in API Key input
+  apiKeyInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleSaveApiKey();
     }
-    state.apiKey = key;
-    localStorage.setItem('gemini_api_key', key);
-    showApiFeedback('API Key saved! Fetching available models live from Google...', 'ok');
-    fetchLiveGeminiModels(key);
-    checkReadyToTranslate();
   });
+
+  // Save API Key and load live models
+  saveApiKey.addEventListener('click', handleSaveApiKey);
 
   // Drag & Drop
   dropZone.addEventListener('click', () => fileInput.click());
@@ -175,6 +172,26 @@ function setupEventListeners() {
   });
 }
 
+function handleSaveApiKey() {
+  const raw = apiKeyInput.value.trim();
+  // Clean surrounding quotes, spaces, or formatting artifacts
+  const cleanKey = raw.replace(/^["']|["']$/g, '').trim();
+
+  if (!cleanKey || cleanKey.length < 10) {
+    showApiFeedback('Please enter a valid Gemini API key from Google AI Studio.', 'err');
+    return;
+  }
+
+  saveApiKey.disabled = true;
+  saveApiKey.innerHTML = '<span>Verifying...</span>';
+  showApiFeedback('Connecting to Google Gemini API & loading live models...', 'ok');
+  
+  fetchLiveGeminiModels(cleanKey).finally(() => {
+    saveApiKey.disabled = false;
+    saveApiKey.innerHTML = '<span>Connect & Load Models</span>';
+  });
+}
+
 function showApiFeedback(msg, type) {
   const icon = type === 'ok'
     ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin-right:6px;"><polyline points="20 6 9 17 4 12"/></svg>`
@@ -201,10 +218,13 @@ async function fetchLiveGeminiModels(key) {
 
   try {
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
+    
     if (!res.ok) {
       const errData = await res.json().catch(() => ({}));
-      throw new Error(errData?.error?.message || `HTTP ${res.status}`);
+      const errorMsg = errData?.error?.message || `HTTP ${res.status}: Invalid API Key or request rejected by Google.`;
+      throw new Error(errorMsg);
     }
+    
     const data = await res.json();
     
     if (data && Array.isArray(data.models)) {
@@ -218,6 +238,8 @@ async function fetchLiveGeminiModels(key) {
       );
 
       if (textModels.length > 0) {
+        state.apiKey = key;
+        localStorage.setItem('gemini_api_key', key);
         populateModelDropdown(textModels);
         showApiFeedback(`Connected! ${textModels.length} latest Gemini models loaded live from Google`, 'ok');
         modelLiveBadge.innerHTML = `
@@ -236,10 +258,11 @@ async function fetchLiveGeminiModels(key) {
   } catch (err) {
     console.warn('Could not auto-fetch models from API:', err);
     modelSelect.disabled = true;
-    modelSelect.innerHTML = `<option value="" disabled selected>Failed to load models: ${escapeHtml(err.message.slice(0, 50))}</option>`;
+    modelSelect.innerHTML = `<option value="" disabled selected>Failed to load models (${escapeHtml(err.message.slice(0, 45))}...)</option>`;
     modelLiveBadge.textContent = 'Connection Error';
     modelLiveBadge.className = 'hint-tag';
-    showApiFeedback(`Failed to fetch models: ${err.message}`, 'err');
+    showApiFeedback(`Google API Error: ${err.message}`, 'err');
+    checkReadyToTranslate();
   }
 }
 
