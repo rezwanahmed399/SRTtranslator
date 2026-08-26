@@ -6,16 +6,16 @@
 
 ---
 
-## ✨ Key Features
+## Key Features
 
-- **⏱️ 100% Timing Preservation:** Subtitle timecodes are isolated during translation, guaranteeing that timing never drifts or gets desynchronized.
-- **⚡ Zero Overlap Engine:** Automatically detects and resolves dialogue collisions so subtitles never appear on top of each other.
-- **🧠 Live Gemini Model Integration:** Connects directly to Google Gemini API to fetch available models live (Gemini 2.5 Flash, Gemini 2.5 Pro, Gemini 2.0 Flash, etc.).
-- **📦 Adaptive Smart Chunking:** Automatically calculates optimal 25–35 line request batches based on subtitle length and rate limits.
-- **🗣️ Natural Dialogue & Pronoun Rules:** Translates conversationally rather than word-for-word. Enforces polite/natural pronouns (e.g. "তুমি / তোমার" in Bengali).
-- **📋 Raw SRT Code Box (1-Click Copy):** View the formatted subtitle output and copy the entire file with one click.
-- **📥 Auto-Download:** Automatically generates and downloads clean UTF-8 encoded `.srt` files compatible with VLC, TVs, and all major media players.
-- **🔒 100% Private & Client-Side:** Your API key and subtitle files are processed directly in your browser. No server storage or third-party intermediaries.
+- **Timing Preservation:** Subtitle timecodes are isolated during translation, guaranteeing that timing never drifts or gets desynchronized.
+- **Zero Overlap Engine:** Automatically detects and resolves dialogue collisions so subtitles never appear on top of each other.
+- **Live Gemini Model Integration:** Connects directly to Google Gemini API to fetch available models live (Gemini 2.5 Flash, Gemini 2.5 Pro, Gemini 2.0 Flash, etc.).
+- **Adaptive Smart Chunking:** Automatically calculates optimal 25–35 line request batches based on subtitle length and rate limits.
+- **Natural Dialogue & Pronoun Rules:** Translates conversationally rather than word-for-word. Enforces polite/natural pronouns (e.g. "তুমি / তোমার" in Bengali).
+- **Raw SRT Code Box (1-Click Copy):** View the formatted subtitle output and copy the entire file with one click.
+- **Auto-Download:** Automatically generates and downloads clean UTF-8 encoded `.srt` files compatible with VLC, TVs, and all major media players.
+- **100% Private & Client-Side:** Your API key and subtitle files are processed directly in your browser. No server storage or third-party intermediaries.
 
 ---
 

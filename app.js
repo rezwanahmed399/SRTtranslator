@@ -76,7 +76,7 @@ window.addEventListener('DOMContentLoaded', () => {
   if (savedKey) {
     apiKeyInput.value = savedKey;
     state.apiKey = savedKey;
-    showApiFeedback('API Key loaded from secure local storage ✓', 'ok');
+    showApiFeedback('API Key loaded from secure local storage', 'ok');
     fetchLiveGeminiModels(savedKey);
   }
   setupEventListeners();
@@ -176,7 +176,11 @@ function setupEventListeners() {
 }
 
 function showApiFeedback(msg, type) {
-  apiStatus.textContent = msg;
+  const icon = type === 'ok'
+    ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin-right:6px;"><polyline points="20 6 9 17 4 12"/></svg>`
+    : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin-right:6px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
+
+  apiStatus.innerHTML = `${icon}<span>${escapeHtml(msg)}</span>`;
   apiStatus.className = 'api-feedback ' + type;
 }
 
@@ -184,15 +188,15 @@ function showApiFeedback(msg, type) {
 async function fetchLiveGeminiModels(key) {
   if (!key) {
     modelSelect.disabled = true;
-    modelSelect.innerHTML = '<option value="" disabled selected>🔒 Enter & Save Gemini API key above to load models live...</option>';
+    modelSelect.innerHTML = '<option value="" disabled selected>Enter & Save Gemini API key above to load models live...</option>';
     modelLiveBadge.textContent = 'Awaiting API Key';
     modelLiveBadge.className = 'hint-tag';
     return;
   }
 
   modelSelect.disabled = true;
-  modelSelect.innerHTML = '<option value="" disabled selected>🔄 Fetching available models live from Google...</option>';
-  modelLiveBadge.textContent = 'Fetching live models...';
+  modelSelect.innerHTML = '<option value="" disabled selected>Fetching available models live from Google...</option>';
+  modelLiveBadge.textContent = 'Fetching models...';
   modelLiveBadge.className = 'hint-tag';
 
   try {
@@ -215,8 +219,13 @@ async function fetchLiveGeminiModels(key) {
 
       if (textModels.length > 0) {
         populateModelDropdown(textModels);
-        showApiFeedback(`Connected! ${textModels.length} latest Gemini models loaded live from Google ✓`, 'ok');
-        modelLiveBadge.textContent = `✓ ${textModels.length} Live Models Connected`;
+        showApiFeedback(`Connected! ${textModels.length} latest Gemini models loaded live from Google`, 'ok');
+        modelLiveBadge.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:11px;height:11px;display:inline-block;margin-right:4px;vertical-align:-1px;">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          <span>${textModels.length} Live Models Connected</span>
+        `;
         modelLiveBadge.className = 'hint-tag active-tag';
         modelSelect.disabled = false;
         checkReadyToTranslate();
@@ -227,7 +236,7 @@ async function fetchLiveGeminiModels(key) {
   } catch (err) {
     console.warn('Could not auto-fetch models from API:', err);
     modelSelect.disabled = true;
-    modelSelect.innerHTML = `<option value="" disabled selected>❌ Failed to load models: ${escapeHtml(err.message.slice(0, 50))}</option>`;
+    modelSelect.innerHTML = `<option value="" disabled selected>Failed to load models: ${escapeHtml(err.message.slice(0, 50))}</option>`;
     modelLiveBadge.textContent = 'Connection Error';
     modelLiveBadge.className = 'hint-tag';
     showApiFeedback(`Failed to fetch models: ${err.message}`, 'err');
@@ -895,10 +904,10 @@ async function copyFullSRTCode() {
 
   try {
     await navigator.clipboard.writeText(content);
-    showCopyFeedback(copySrtBtn, 'Copied Full SRT Code! ✓');
+    showCopyFeedback(copySrtBtn, 'Copied Full SRT Code');
 
     const inlineBtn = $('inlineCodeCopyBtn');
-    if (inlineBtn) showCopyFeedback(inlineBtn, 'Copied! ✓');
+    if (inlineBtn) showCopyFeedback(inlineBtn, 'Copied to Clipboard');
   } catch {
     const textarea = document.createElement('textarea');
     textarea.value = content;
@@ -906,7 +915,7 @@ async function copyFullSRTCode() {
     textarea.select();
     document.execCommand('copy');
     document.body.removeChild(textarea);
-    showCopyFeedback(copySrtBtn, 'Copied! ✓');
+    showCopyFeedback(copySrtBtn, 'Copied Full SRT Code');
   }
 }
 
@@ -934,8 +943,19 @@ function updateProgressStats(percent, title) {
 function addTerminalLog(type, msg) {
   const entry = document.createElement('div');
   entry.className = `log-entry ${type}`;
-  const prefix = type === 'ok' ? '✓' : type === 'err' ? '✗' : type === 'warn' ? '!' : '>';
-  entry.textContent = `${prefix} ${msg}`;
+  
+  let iconSvg = '';
+  if (type === 'ok') {
+    iconSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:12px;height:12px;flex-shrink:0;margin-top:4px;"><polyline points="20 6 9 17 4 12"/></svg>`;
+  } else if (type === 'err') {
+    iconSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:12px;height:12px;flex-shrink:0;margin-top:4px;"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`;
+  } else if (type === 'warn') {
+    iconSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:12px;height:12px;flex-shrink:0;margin-top:4px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`;
+  } else {
+    iconSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;flex-shrink:0;margin-top:4px;"><polyline points="9 18 15 12 9 6"/></svg>`;
+  }
+
+  entry.innerHTML = `${iconSvg}<span>${escapeHtml(msg)}</span>`;
   progressLog.appendChild(entry);
   progressLog.scrollTop = progressLog.scrollHeight;
 }
