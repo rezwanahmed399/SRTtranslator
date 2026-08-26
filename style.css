@@ -1526,6 +1526,335 @@ select:focus, input[type="text"]:focus {
   }
 }
 
+/* ── Mobile Optimization & Responsive Design ── */
+@media (max-width: 768px) {
+  .app-shell {
+    padding: 16px 12px 60px;
+  }
+
+  .top-nav {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+  }
+
+  .brand-group {
+    width: 100%;
+    gap: 12px;
+  }
+
+  .brand-title {
+    font-size: 1.25rem;
+  }
+
+  .brand-subtitle {
+    font-size: 0.74rem;
+  }
+
+  .nav-badges {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .glass-card {
+    padding: 18px 14px;
+    border-radius: var(--radius-md);
+    margin-bottom: 18px;
+  }
+
+  .card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .title-with-icon {
+    gap: 10px;
+  }
+
+  .title-with-icon h3 {
+    font-size: 0.98rem;
+  }
+
+  .title-with-icon .desc {
+    font-size: 0.76rem;
+  }
+
+  .get-key-link {
+    align-self: flex-start;
+    font-size: 0.76rem;
+    padding: 5px 10px;
+  }
+
+  /* API Form Row on Mobile */
+  .api-form-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .input-glow-wrapper {
+    width: 100%;
+  }
+
+  .input-glow-wrapper input {
+    font-size: 0.86rem;
+    padding: 12px 42px 12px 14px;
+  }
+
+  .btn-save {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 0.88rem;
+  }
+
+  /* Quota Dashboard on Mobile */
+  .quota-dashboard {
+    padding: 12px 14px;
+    margin-top: 14px;
+  }
+
+  .quota-header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .quota-title {
+    font-size: 0.82rem;
+  }
+
+  .quota-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .quota-item {
+    padding: 10px 10px;
+  }
+
+  .quota-label {
+    font-size: 0.64rem;
+  }
+
+  .quota-value {
+    font-size: 0.88rem;
+  }
+
+  .quota-sub {
+    font-size: 0.64rem;
+  }
+
+  /* Settings Grid */
+  .settings-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .field-item label {
+    font-size: 0.74rem;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .select-wrapper select {
+    font-size: 0.84rem;
+    padding: 11px 36px 11px 12px;
+  }
+
+  .batch-card-auto {
+    padding: 12px;
+  }
+
+  .batch-card-title {
+    font-size: 0.84rem;
+  }
+
+  .batch-card-sub {
+    font-size: 0.72rem;
+  }
+
+  /* Dropzone on Mobile */
+  .drop-zone {
+    padding: 28px 14px;
+  }
+
+  .drop-icon-circle {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 10px;
+  }
+
+  .drop-icon-circle svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  .drop-text h4 {
+    font-size: 0.95rem;
+  }
+
+  .drop-text p {
+    font-size: 0.76rem;
+  }
+
+  .choose-btn {
+    width: 100%;
+    max-width: 240px;
+    padding: 11px 16px;
+    font-size: 0.86rem;
+  }
+
+  /* Loaded File Info */
+  .file-loaded-info {
+    padding: 12px;
+  }
+
+  .file-loaded-top {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .file-stats-pills {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .f-pill {
+    font-size: 0.7rem;
+    padding: 3px 8px;
+  }
+
+  /* CTA Section */
+  .cta-section {
+    padding: 16px 0;
+  }
+
+  .btn-translate {
+    width: 100%;
+    padding: 14px 20px;
+    font-size: 0.94rem;
+  }
+
+  .cta-hint {
+    font-size: 0.74rem;
+  }
+
+  /* Progress & Terminal */
+  .progress-card {
+    padding: 16px 14px;
+  }
+
+  .progress-stats-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .progress-log {
+    max-height: 180px;
+    font-size: 0.74rem;
+    padding: 10px;
+  }
+
+  /* Results Card */
+  .result-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .result-actions {
+    width: 100%;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .btn-download,
+  .btn-copy-full {
+    width: 100%;
+    justify-content: center;
+    padding: 11px 16px;
+    font-size: 0.86rem;
+  }
+
+  .fix-summary {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .quality-pill {
+    font-size: 0.7rem;
+    padding: 4px 8px;
+  }
+
+  .preview-tabs-nav {
+    overflow-x: auto;
+    padding: 4px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    gap: 4px;
+  }
+
+  .preview-tabs-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .preview-tab {
+    padding: 7px 12px;
+    font-size: 0.78rem;
+    flex-shrink: 0;
+  }
+
+  .codebox-content {
+    font-size: 0.78rem;
+    padding: 12px;
+    max-height: 300px;
+  }
+
+  .comparison-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .comparison-column {
+    padding: 10px;
+  }
+
+  .cards-scroll-view {
+    max-height: 300px;
+  }
+
+  .result-bottom-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .btn-secondary {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 420px) {
+  .quota-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .brand-title {
+    font-size: 1.15rem;
+  }
+}
+
 /* Scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
@@ -1544,3 +1873,4 @@ select:focus, input[type="text"]:focus {
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.22);
 }
+
