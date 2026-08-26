@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SubSync AI — Precision Subtitle Translator & Timing Engine</title>
+  <meta name="description" content="Translate SRT subtitles with 100% accurate timing preservation, zero overlaps, smart pronoun handling, fast-reading length optimization, and instant SRT export." />
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Ambient background glow -->
+  <div class="glow-bg">
+    <div class="glow-orb orb-primary"></div>
+    <div class="glow-orb orb-cyan"></div>
+    <div class="glow-orb orb-violet"></div>
+    <div class="grid-overlay"></div>
+  </div>
+
+  <div class="app-shell">
+    <!-- Top Navigation / Header -->
+    <header class="top-nav">
+      <div class="brand-group">
+        <div class="logo-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 6h16M4 12h10M4 18h14"/>
+            <circle cx="19" cy="12" r="3" fill="currentColor" stroke="none" opacity="0.3"/>
+            <path d="M19 9v6M16 12h6"/>
+          </svg>
+        </div>
+        <div>
+          <div class="brand-title">
+            <span>SubSync</span> <span class="brand-badge">AI Studio</span>
+          </div>
+          <p class="brand-subtitle">Zero Timing Drift • No Overlaps • Glancable Subtitles</p>
+        </div>
+      </div>
+      
+      <div class="nav-badges">
+        <span class="status-pill live-pill">
+          <span class="pulse-dot"></span> 100% Client-Side
+        </span>
+        <a href="#settingsSection" class="nav-link" id="quickSettingsBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+          Configure
+        </a>
+      </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="main-content">
+      
+      <!-- API Key Card -->
+      <section class="glass-card api-section" id="apiSection">
+        <div class="card-header">
+          <div class="title-with-icon">
+            <div class="icon-wrap key-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 2l-2 2m-1.5 1.5L14 9l-3-3 2.5-2.5a2.121 2.121 0 0 1 3 0l4.5 4.5z"/>
+                <path d="M9 15l-4.5 4.5A2.121 2.121 0 0 1 1.5 18V15h3v-3h3v-3l4.5-4.5"/>
+              </svg>
+            </div>
+            <div>
+              <h3>Gemini API Key</h3>
+              <p class="desc">Stored securely in your local browser only. Never sent to any 3rd-party server.</p>
+            </div>
+          </div>
+          <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener" class="get-key-link">
+            Get free key &nearr;
+          </a>
+        </div>
+
+        <div class="api-form-row">
+          <div class="input-glow-wrapper">
+            <input
+              type="password"
+              id="apiKeyInput"
+              placeholder="Paste your Gemini API key (AIzaSy...)"
+              autocomplete="off"
+              spellcheck="false"
+            />
+            <button id="toggleApiKey" class="input-action-btn" title="Show or hide key" type="button">
+              <svg id="eyeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
+          <button id="saveApiKey" class="btn btn-save" type="button">
+            <span>Connect & Load Models</span>
+          </button>
+        </div>
+        <div id="apiStatus" class="api-feedback"></div>
+      </section>
+
+      <!-- Settings Grid -->
+      <section class="glass-card settings-section" id="settingsSection">
+        <div class="card-header">
+          <div class="title-with-icon">
+            <div class="icon-wrap config-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="4" y1="21" x2="4" y2="14"/>
+                <line x1="4" y1="10" x2="4" y2="3"/>
+                <line x1="12" y1="21" x2="12" y2="12"/>
+                <line x1="12" y1="8" x2="12" y2="3"/>
+                <line x1="20" y1="21" x2="20" y2="16"/>
+                <line x1="20" y1="12" x2="20" y2="3"/>
+                <line x1="1" y1="14" x2="7" y2="14"/>
+                <line x1="9" y1="8" x2="15" y2="8"/>
+                <line x1="17" y1="16" x2="23" y2="16"/>
+              </svg>
+            </div>
+            <div>
+              <h3>Translation Engine Settings</h3>
+              <p class="desc">Target language, Gemini models (auto-loaded live), and pacing presets.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-grid">
+          <!-- Target Language -->
+          <div class="field-item">
+            <label for="targetLang">
+              <span>Target Language</span>
+              <span class="hint-tag">40+ Languages</span>
+            </label>
+            <div class="select-wrapper">
+              <select id="targetLang">
+                <optgroup label="Popular Languages">
+                  <option value="Bengali" selected>Bengali (বাংলা)</option>
+                  <option value="English">English</option>
+                  <option value="Spanish">Spanish (Español)</option>
+                  <option value="Hindi">Hindi (हिन्दी)</option>
+                  <option value="Urdu">Urdu (اردو)</option>
+                  <option value="Arabic">Arabic (العربية)</option>
+                  <option value="French">French (Français)</option>
+                  <option value="German">German (Deutsch)</option>
+                  <option value="Japanese">Japanese (日本語)</option>
+                  <option value="Korean">Korean (한국어)</option>
+                  <option value="Chinese (Simplified)">Chinese Simplified (简体中文)</option>
+                  <option value="Portuguese">Portuguese (Português)</option>
+                  <option value="Russian">Russian (Русский)</option>
+                  <option value="Turkish">Turkish (Türkçe)</option>
+                  <option value="Italian">Italian (Italiano)</option>
+                  <option value="Indonesian">Indonesian (Bahasa Indonesia)</option>
+                  <option value="Vietnamese">Vietnamese (Tiếng Việt)</option>
+                  <option value="Thai">Thai (ไทย)</option>
+                </optgroup>
+                <optgroup label="Regional & World Languages">
+                  <option value="Tamil">Tamil (தமிழ்)</option>
+                  <option value="Telugu">Telugu (తెలుగు)</option>
+                  <option value="Marathi">Marathi (मराठी)</option>
+                  <option value="Gujarati">Gujarati (ગુજરાતી)</option>
+                  <option value="Malayalam">Malayalam (മലയാളം)</option>
+                  <option value="Punjabi">Punjabi (ਪੰਜਾਬੀ)</option>
+                  <option value="Persian">Persian / Farsi (فارسی)</option>
+                  <option value="Dutch">Dutch (Nederlands)</option>
+                  <option value="Polish">Polish (Polski)</option>
+                  <option value="Swedish">Swedish (Svenska)</option>
+                  <option value="Norwegian">Norwegian (Norsk)</option>
+                  <option value="Danish">Danish (Dansk)</option>
+                  <option value="Finnish">Finnish (Suomi)</option>
+                  <option value="Greek">Greek (Ελληνικά)</option>
+                  <option value="Hebrew">Hebrew (עברית)</option>
+                  <option value="Czech">Czech (Čeština)</option>
+                  <option value="Romanian">Romanian (Română)</option>
+                  <option value="Hungarian">Hungarian (Magyar)</option>
+                  <option value="Ukrainian">Ukrainian (Українська)</option>
+                  <option value="Malay">Malay (Bahasa Melayu)</option>
+                  <option value="Filipino / Tagalog">Filipino / Tagalog</option>
+                </optgroup>
+              </select>
+            </div>
+          </div>
+
+          <!-- AI Model (Auto-fetched from API) -->
+          <div class="field-item">
+            <label for="modelSelect">
+              <span>Gemini Model</span>
+              <span class="hint-tag active-tag" id="modelLiveBadge">Live API Connected</span>
+            </label>
+            <div class="select-wrapper">
+              <select id="modelSelect">
+                <!-- Will be dynamically populated live from API -->
+                <option value="gemini-2.5-flash" selected>Gemini 2.5 Flash — Ultra-fast (Auto-detected)</option>
+                <option value="gemini-2.5-pro">Gemini 2.5 Pro — Highest Intelligence</option>
+                <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
+                <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+                <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Subtitle Pacing / Style Mode -->
+          <div class="field-item">
+            <label for="styleMode">
+              <span>Subtitle Pacing</span>
+              <span class="hint-tag">Glance-Optimized</span>
+            </label>
+            <div class="select-wrapper">
+              <select id="styleMode">
+                <option value="concise" selected>Fast Reading & Concise (1-2 sec glance, recommended)</option>
+                <option value="balanced">Balanced & Natural (Standard dialogue)</option>
+                <option value="detailed">Detailed & Complete (Literal match)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Smart Batching Info Banner (Replaces confusing manual dropdown) -->
+          <div class="field-item">
+            <label>
+              <span>Batch Processing</span>
+              <span class="hint-tag" style="background:rgba(16,185,129,0.12); color:#10b981;">Auto-Optimized</span>
+            </label>
+            <div class="auto-batch-card">
+              <div class="auto-batch-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                </svg>
+              </div>
+              <div>
+                <div class="auto-batch-title">Adaptive Smart Chunking</div>
+                <div class="auto-batch-sub">Auto-calculates the safest 25-35 line batches based on dialogue length & rate limits.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Context / Genre Description -->
+          <div class="field-item full-width">
+            <label for="contextHint">
+              <span>Context & Genre Hint (Optional)</span>
+              <span class="hint-muted">Helps AI capture slang, drama, tone, and character dynamics</span>
+            </label>
+            <input
+              type="text"
+              id="contextHint"
+              placeholder="e.g., Action sci-fi movie with military jargon, medical drama, anime comedy, technical tutorial..."
+            />
+          </div>
+        </div>
+      </section>
+
+      <!-- Upload Zone -->
+      <section class="glass-card upload-section" id="uploadCard">
+        <div class="drop-zone" id="dropZone">
+          <div class="drop-icon-anim">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+          </div>
+          <div class="drop-text-group">
+            <h4 class="drop-headline">Drop your SRT subtitle file here</h4>
+            <p class="drop-subline">or click to browse from your computer (.srt format supported)</p>
+          </div>
+          <input type="file" id="fileInput" accept=".srt" hidden />
+          <button class="btn btn-primary" id="browseBtn" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 5v14M5 12h14"/>
+            </svg>
+            Choose SRT File
+          </button>
+        </div>
+
+        <!-- File Meta & Preview (when loaded) -->
+        <div class="file-loaded-view hidden" id="fileInfo">
+          <div class="file-meta-bar">
+            <div class="file-icon-badge">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+                <polyline points="10 9 9 9 8 9"/>
+              </svg>
+            </div>
+            <div class="file-info-text">
+              <div class="file-title" id="fileName">sample.srt</div>
+              <div class="file-stats-pills" id="fileStats">
+                <span class="pill-metric" id="fileCountBadge">0 Subtitles</span>
+                <span class="pill-metric" id="fileSizeBadge">0 KB</span>
+                <span class="pill-metric" id="fileDurationBadge">00:00:00</span>
+                <span class="pill-metric" id="fileBatchBadge">Auto Chunks Ready</span>
+              </div>
+            </div>
+            <button class="btn-icon btn-remove" id="removeFile" title="Remove file" type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          </div>
+
+          <div class="preview-box">
+            <div class="preview-header">
+              <span>Original Subtitle Snippets (First 5 blocks)</span>
+              <span class="timing-badge">Timecodes Verified</span>
+            </div>
+            <div class="preview-list" id="subtitlePreview"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Action Button Row -->
+      <div class="action-cta-wrap">
+        <button class="btn btn-hero" id="translateBtn" disabled type="button">
+          <span class="btn-content">
+            <svg class="hero-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M5 8l6 6M4 14l6-6 2-3M2 5h12M7 2h1M22 22l-5-10-5 10M14 18h6"/>
+            </svg>
+            <span class="btn-label">Translate Subtitles Now</span>
+          </span>
+          <span class="btn-spinner-state hidden">
+            <span class="modern-spinner"></span>
+            <span class="loading-label">Translating Subtitles...</span>
+          </span>
+        </button>
+        <p class="cta-hint" id="ctaHint">Upload an SRT file and enter your API key above to start.</p>
+      </div>
+
+      <!-- Live Progress Dashboard -->
+      <section class="glass-card progress-section hidden" id="progressCard">
+        <div class="progress-header-row">
+          <div class="progress-status-info">
+            <span class="live-activity-dot"></span>
+            <span class="progress-title" id="progressTitle">Initializing translation batches...</span>
+          </div>
+          <span class="progress-percentage" id="progressPct">0%</span>
+        </div>
+
+        <div class="progress-track">
+          <div class="progress-fill" id="progressBar"></div>
+        </div>
+
+        <div class="progress-stats-strip">
+          <div class="stat-cell">
+            <span class="stat-name">Processed</span>
+            <span class="stat-val" id="statProcessed">0 / 0</span>
+          </div>
+          <div class="stat-cell">
+            <span class="stat-name">Batches</span>
+            <span class="stat-val" id="statBatches">0 / 0</span>
+          </div>
+          <div class="stat-cell">
+            <span class="stat-name">Overlaps Auto-Fixed</span>
+            <span class="stat-val stat-good" id="statOverlaps">0</span>
+          </div>
+          <div class="stat-cell">
+            <span class="stat-name">Timing Integrity</span>
+            <span class="stat-val stat-good" id="statIntegrity">100%</span>
+          </div>
+        </div>
+
+        <!-- Terminal-style live log -->
+        <div class="terminal-log-wrapper">
+          <div class="terminal-bar">
+            <div class="terminal-dots">
+              <span></span><span></span><span></span>
+            </div>
+            <span class="terminal-label">Real-time Translation & Timing Log</span>
+          </div>
+          <div class="terminal-feed" id="progressLog"></div>
+        </div>
+      </section>
+
+      <!-- Results & Code Box Section -->
+      <section class="glass-card result-section hidden" id="resultCard">
+        <div class="result-top-banner">
+          <div class="result-success-title">
+            <div class="success-icon-badge">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            </div>
+            <div>
+              <h3>Translation Completed Perfectly!</h3>
+              <p class="result-sub-info" id="resultStats">SRT generated with 100% synchronized timecodes</p>
+            </div>
+          </div>
+
+          <div class="quick-action-buttons">
+            <button class="btn btn-download-primary" id="downloadBtn" type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              <span>Download .SRT File</span>
+            </button>
+            <button class="btn btn-copy-hero" id="copySrtBtn" type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+              </svg>
+              <span>Copy Full SRT Code</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Quality Metrics Summary -->
+        <div class="quality-badges-row" id="fixSummary"></div>
+
+        <!-- Tabs Navigation -->
+        <div class="preview-tabs-nav">
+          <button class="preview-tab active" id="tabCode" data-tab="code" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="16 18 22 12 16 6"/>
+              <polyline points="8 6 2 12 8 18"/>
+            </svg>
+            Raw SRT Code Box (1-Click Copy)
+          </button>
+          <button class="preview-tab" id="tabTranslated" data-tab="translated" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 6h16M4 12h16M4 18h10"/>
+            </svg>
+            Subtitles Card View
+          </button>
+          <button class="preview-tab" id="tabSide" data-tab="side" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <line x1="12" y1="3" x2="12" y2="21"/>
+            </svg>
+            Side-by-Side Comparison
+          </button>
+          <button class="preview-tab" id="tabOriginal" data-tab="original" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+            Original
+          </button>
+        </div>
+
+        <!-- Tab Content Container -->
+        <div class="tab-view-container" id="tabViewContainer"></div>
+
+        <!-- Bottom Action Bar -->
+        <div class="result-bottom-bar">
+          <div class="bottom-auto-status">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+            <span>Auto-downloaded automatically to your Downloads folder</span>
+          </div>
+          <button class="btn btn-secondary" id="retranslateBtn" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="1 4 1 10 7 10"/>
+              <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+            </svg>
+            Translate Again / Change Settings
+          </button>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <div class="footer-content">
+        <p>Built with Google Gemini Generative AI • 100% Private Client-Side Processing • Timing Guaranteed</p>
+      </div>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
