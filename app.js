@@ -228,7 +228,7 @@ async function fetchLiveGeminiModels(key) {
     const data = await res.json();
     
     if (data && Array.isArray(data.models)) {
-      // Filter strictly for official, general text & translation Gemini models
+      // Filter strictly for official, active, general text & translation Gemini models
       const textModels = data.models.filter(m => {
         const id = m.name.replace(/^models\//, '').toLowerCase();
         
@@ -240,11 +240,12 @@ async function fetchLiveGeminiModels(key) {
         // Must be a Gemini core model (exclude non-Gemini like Gemma, Lyria, etc.)
         if (!id.startsWith('gemini')) return false;
 
-        // Exclude specialized / non-translation variants (TTS, audio, image, robotics, research, etc.)
+        // Exclude specialized / non-translation variants and deprecated experimental naming
         const blacklist = [
           'tts', 'image', 'banana', 'robotics', 'transcribe', 
           'clip', 'deep-research', 'computer-use', 'customtools', 
-          'embedding', 'aqa', 'imagen', 'audio', 'realtime', 'live'
+          'embedding', 'aqa', 'imagen', 'audio', 'realtime', 'live',
+          '2.5-flash-image', '2.5-flash-preview', '2.5-pro-preview'
         ];
         if (blacklist.some(term => id.includes(term))) return false;
 
@@ -255,12 +256,12 @@ async function fetchLiveGeminiModels(key) {
         state.apiKey = key;
         localStorage.setItem('gemini_api_key', key);
         populateModelDropdown(textModels);
-        showApiFeedback(`Connected! ${textModels.length} latest Gemini translation models loaded live`, 'ok');
+        showApiFeedback(`Connected! ${textModels.length} latest Gemini models loaded live`, 'ok');
         modelLiveBadge.innerHTML = `
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:11px;height:11px;display:inline-block;margin-right:4px;vertical-align:-1px;">
             <polyline points="20 6 9 17 4 12"/>
           </svg>
-          <span>${textModels.length} Latest Models Active</span>
+          <span>${textModels.length} Live Models Connected</span>
         `;
         modelLiveBadge.className = 'hint-tag active-tag';
         modelSelect.disabled = false;
@@ -294,22 +295,22 @@ function populateModelDropdown(models) {
     };
   });
 
-  // Smart Version Extraction & Scoring to accurately place latest models (3.7 > 3.5 > 2.5 > 2.0 > 1.5) on top
+  // Ranking: Stable production Flash models first (2.0-flash > 1.5-flash > 3.7-flash > 2.0-pro > 1.5-pro)
   const getVersionScore = id => {
     const lower = id.toLowerCase();
     let score = 0;
 
-    // Extract numeric version like 3.7, 2.5, 1.5, etc.
-    const verMatch = lower.match(/gemini-(\d+(?:\.\d+)?)/);
-    if (verMatch) {
-      score += parseFloat(verMatch[1]) * 1000;
-    }
+    if (lower === 'gemini-2.0-flash' || lower === 'gemini-flash-latest') score += 10000;
+    else if (lower === 'gemini-1.5-flash') score += 9000;
+    else if (lower.includes('3.7-flash')) score += 8500;
+    else if (lower.includes('2.0-flash-lite')) score += 8000;
+    else if (lower === 'gemini-2.0-pro' || lower.includes('2.0-pro-exp')) score += 7000;
+    else if (lower === 'gemini-1.5-pro' || lower === 'gemini-pro-latest') score += 6000;
+    else if (lower.includes('flash')) score += 4000;
+    else if (lower.includes('pro')) score += 3000;
+    else score += 1000;
 
-    // Flash models prioritized for subtitle speed, Pro second for deep context
-    if (lower.includes('flash')) score += 50;
-    if (lower.includes('pro')) score += 30;
-    if (lower.includes('latest')) score += 200;
-    if (lower.includes('preview')) score -= 5;
+    if (lower.includes('2.5-flash') && !lower.includes('lite')) score -= 5000; // Deprecated on new Google keys
 
     return score;
   };
@@ -320,12 +321,12 @@ function populateModelDropdown(models) {
     const opt = document.createElement('option');
     opt.value = m.id;
     let label = `${m.displayName} (${m.id})`;
-    if (idx === 0) label += ' — Latest & Recommended';
+    if (idx === 0) label += ' — Highly Recommended (Fast & Active)';
     opt.textContent = label;
     modelSelect.appendChild(opt);
   });
 
-  // Select the highest-ranked latest model
+  // Select the highest-ranked active stable model
   if (cleanModels.length > 0) {
     modelSelect.value = cleanModels[0].id;
     state.selectedModel = cleanModels[0].id;
@@ -551,7 +552,7 @@ async function runTranslationPipeline() {
     let success = false;
 
     // Retry loop with automatic model failover (up to 4 attempts)
-    let currentModelToUse = modelSelect.value || 'gemini-2.5-flash';
+    let currentModelToUse = (modelSelect.value || 'gemini-2.0-flash').replace(/^models\//, '');
 
     for (let attempt = 1; attempt <= 4; attempt++) {
       try {
@@ -560,24 +561,31 @@ async function runTranslationPipeline() {
         break;
       } catch (err) {
         state.stats.retries++;
-        const isHighDemand = err.message.toLowerCase().includes('demand') || 
-                             err.message.includes('503') || 
-                             err.message.includes('429') ||
-                             err.message.toLowerCase().includes('quota') ||
-                             err.message.toLowerCase().includes('overloaded');
+        const errMsg = (err.message || '').toLowerCase();
+        
+        const isDeprecatedOrUnavailable = errMsg.includes('no longer available') || 
+                                         errMsg.includes('deprecated') || 
+                                         errMsg.includes('not found') ||
+                                         errMsg.includes('404');
 
-        if (isHighDemand && attempt >= 2) {
-          // Auto-switch to highest-availability fast Flash engine
-          const fallbackCandidates = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-flash-latest'];
-          const nextModel = fallbackCandidates.find(m => m !== currentModelToUse) || 'gemini-2.5-flash';
+        const isHighDemand = errMsg.includes('demand') || 
+                             errMsg.includes('503') || 
+                             errMsg.includes('429') ||
+                             errMsg.includes('quota') ||
+                             errMsg.includes('overloaded');
+
+        if (isDeprecatedOrUnavailable || (isHighDemand && attempt >= 2)) {
+          // Auto-switch to stable, high-availability fast Flash engine
+          const fallbackCandidates = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-flash-latest', 'gemini-2.0-flash-lite'];
+          const nextModel = fallbackCandidates.find(m => m !== currentModelToUse) || 'gemini-2.0-flash';
           
-          addTerminalLog('warn', `Google server demand spike on ${currentModelToUse}. Seamlessly auto-switching to high-speed ${nextModel}...`);
+          addTerminalLog('warn', `Notice on ${currentModelToUse} (${err.message.slice(0, 60)}...). Auto-switching to active engine: ${nextModel}...`);
           currentModelToUse = nextModel;
         }
 
         if (attempt < 4) {
-          addTerminalLog('warn', `Batch ${bi + 1} attempt ${attempt} notice: ${err.message.slice(0, 85)}... Retrying in ${attempt * 2}s.`);
-          await sleep(2000 * attempt);
+          addTerminalLog('warn', `Batch ${bi + 1} retry ${attempt}/3 with ${currentModelToUse}... (Waiting ${attempt * 1.5}s)`);
+          await sleep(1500 * attempt);
         } else {
           addTerminalLog('err', `Batch ${bi + 1} could not complete after 4 attempts. Preserving original lines safely.`);
           batchResult = currentBatch.map(b => ({ ...b, translatedLines: b.lines }));
