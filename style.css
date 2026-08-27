@@ -937,14 +937,14 @@ body {
   color: var(--brand-cyan-light);
 }
 
-/* Settings Grid */
+/* Settings Grid & Modern Field Cards */
 .settings-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 18px;
+  gap: 16px;
 }
 
-@media (max-width: 720px) {
+@media (max-width: 768px) {
   .settings-grid {
     grid-template-columns: 1fr;
   }
@@ -953,7 +953,21 @@ body {
 .field-item {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
+}
+
+.field-card {
+  background: rgba(15, 23, 42, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: var(--radius-md);
+  padding: 14px 16px 12px;
+  transition: all 0.25s ease;
+}
+
+.field-card:hover {
+  background: rgba(15, 23, 42, 0.65);
+  border-color: rgba(99, 102, 241, 0.3);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
 }
 
 .field-item.full-width {
@@ -961,14 +975,62 @@ body {
 }
 
 .field-item label {
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 700;
-  color: var(--text-muted);
+  color: var(--text-main);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 6px;
+}
+
+.field-label-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #f1f5f9;
+}
+
+.field-icon {
+  width: 15px;
+  height: 15px;
+  color: var(--brand-primary-light);
+  flex-shrink: 0;
+}
+
+.field-icon.icon-ai {
+  color: var(--brand-cyan-light);
+}
+
+.field-icon.icon-pacing {
+  color: #fbbf24;
+}
+
+.field-icon.icon-batch {
+  color: var(--status-success);
+}
+
+.field-icon.icon-hint {
+  color: #c084fc;
+}
+
+.field-footer-info {
+  margin-top: 4px;
+}
+
+.field-micro-hint {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  line-height: 1.35;
+}
+
+.speed-tag {
+  background: rgba(245, 158, 11, 0.15) !important;
+  color: #fbbf24 !important;
+  border: 1px solid rgba(245, 158, 11, 0.3) !important;
+  font-weight: 700;
 }
 
 .hint-tag {
@@ -1001,13 +1063,13 @@ body {
   gap: 12px;
   background: var(--surface-inner);
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   padding: 10px 14px;
 }
 
 .auto-batch-icon {
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   border-radius: var(--radius-sm);
   background: rgba(16, 185, 129, 0.12);
   color: var(--status-success);
@@ -1017,8 +1079,8 @@ body {
 }
 
 .auto-batch-icon svg {
-  width: 17px;
-  height: 17px;
+  width: 16px;
+  height: 16px;
 }
 
 .auto-batch-title {
@@ -1036,29 +1098,36 @@ body {
 
 .select-wrapper {
   position: relative;
+  width: 100%;
 }
 
 select, input[type="text"] {
   width: 100%;
   background: var(--surface-inner);
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   color: var(--text-main);
   font-family: var(--font-main);
   font-size: 0.88rem;
-  padding: 12px 16px;
+  font-weight: 500;
+  padding: 10px 14px;
   outline: none;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
 }
 
 select {
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23818cf8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 14px center;
-  background-size: 16px;
-  padding-right: 42px;
+  background-size: 15px;
+  padding-right: 40px;
   cursor: pointer;
+}
+
+select:hover, input[type="text"]:hover {
+  border-color: rgba(99, 102, 241, 0.35);
+  background-color: var(--surface-glass-active);
 }
 
 select optgroup {
@@ -1075,9 +1144,15 @@ select option {
 }
 
 select:focus, input[type="text"]:focus {
-  border-color: var(--brand-primary);
-  box-shadow: 0 0 0 3px var(--accent-glow);
-  background: var(--surface-inner);
+  border-color: var(--brand-primary-light);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+  background-color: #0b0f19;
+}
+
+select:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  background-image: none;
 }
 
 /* Upload Zone */

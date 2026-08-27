@@ -361,12 +361,20 @@ function toggleTheme() {
 }
 
 // ── Pause / Resume & Cancel Handlers ──
-function togglePauseTranslation() {
+async function togglePauseTranslation() {
   if (!state.isTranslating) return;
 
-  state.isPaused = !state.isPaused;
+  if (!state.isPaused) {
+    const confirmed = await showCustomConfirm({
+      title: 'Pause Translation?',
+      message: 'Are you sure you want to pause ongoing translation? You can resume it anytime right from the next batch without losing any progress.',
+      confirmText: 'Yes, Pause',
+      cancelText: 'Keep Translating',
+      type: 'warning'
+    });
+    if (!confirmed) return;
 
-  if (state.isPaused) {
+    state.isPaused = true;
     if (ctrlIconPause) ctrlIconPause.classList.add('hidden');
     if (ctrlIconResume) ctrlIconResume.classList.remove('hidden');
     if (pauseResumeLabel) pauseResumeLabel.textContent = 'Resume';
@@ -375,6 +383,7 @@ function togglePauseTranslation() {
     updateProgressStats(parseInt(progressPct.textContent, 10) || 0, 'Translation Paused (Click Resume to continue)...');
     addTerminalLog('warn', 'Translation paused by user.');
   } else {
+    state.isPaused = false;
     if (ctrlIconPause) ctrlIconPause.classList.remove('hidden');
     if (ctrlIconResume) ctrlIconResume.classList.add('hidden');
     if (pauseResumeLabel) pauseResumeLabel.textContent = 'Pause';
@@ -587,6 +596,32 @@ function setupEventListeners() {
   // Copy Action
   if (copySrtBtn) {
     copySrtBtn.addEventListener('click', copyFullSRTCode);
+  }
+
+  // Subtitle Pacing Preset Change
+  const pacingBadge = $('pacingBadge');
+  const pacingDesc = $('pacingDesc');
+  if (styleMode) {
+    const updatePacingUI = () => {
+      const val = styleMode.value;
+      if (pacingBadge && pacingDesc) {
+        if (val === 'micro') {
+          pacingBadge.textContent = '⚡ Glance Speed';
+          pacingDesc.innerHTML = '<span class="field-micro-hint">⚡ Ultra-Short: 1–4 words per line, readable in ~0.5–1s (Zero video distraction)</span>';
+        } else if (val === 'concise') {
+          pacingBadge.textContent = '⚡ Fast Reading';
+          pacingDesc.innerHTML = '<span class="field-micro-hint">⚡ Concise: Crisp, easy-to-read dialogue without visual distraction (Recommended)</span>';
+        } else if (val === 'balanced') {
+          pacingBadge.textContent = '⚖ Balanced';
+          pacingDesc.innerHTML = '<span class="field-micro-hint">⚖ Balanced: Natural, comfortable conversational pacing for standard viewing</span>';
+        } else {
+          pacingBadge.textContent = '📖 Detailed';
+          pacingDesc.innerHTML = '<span class="field-micro-hint">📖 Detailed: Full literal translation including all nuances and formal grammar</span>';
+        }
+      }
+    };
+    styleMode.addEventListener('change', updatePacingUI);
+    updatePacingUI();
   }
 
   // Model Selection Change
