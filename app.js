@@ -373,15 +373,21 @@ function setupEventListeners() {
   // Remove File
   if (removeFile) {
     removeFile.addEventListener('click', () => {
+      const confirmed = confirm('Are you sure you want to remove this file? Any existing translations and saved session data will be removed.');
+      if (!confirmed) return;
+
       state.parsedBlocks = [];
       state.translatedBlocks = [];
       state.uncompressedBlocks = [];
+      state.isCondensed = false;
       state.fileName = '';
       if (fileInput) fileInput.value = '';
       if (fileInfo) fileInfo.classList.add('hidden');
       if (dropZone) dropZone.classList.remove('hidden');
+      if (progressCard) progressCard.classList.add('hidden');
       if (resultCard) resultCard.classList.add('hidden');
       if (fileRestoredBadge) fileRestoredBadge.classList.add('hidden');
+      if (incompleteWarningBanner) incompleteWarningBanner.classList.add('hidden');
       clearSavedSession();
       checkReadyToTranslate();
     });
