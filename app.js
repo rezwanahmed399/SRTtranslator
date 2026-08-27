@@ -309,14 +309,13 @@ async function fetchLiveGeminiModels(key) {
         // Must be a Gemini core model (exclude non-Gemini like Gemma, Lyria, etc.)
         if (!id.startsWith('gemini')) return false;
 
-        // Exclude specialized / non-translation variants and deprecated experimental naming
-        const blacklist = [
-          'tts', 'image', 'banana', 'robotics', 'transcribe', 
+        // Exclude non-text/specialized multimodal variants that cannot do text translation
+        const nonTextTerms = [
+          'tts', 'banana', 'robotics', 'transcribe', 
           'clip', 'deep-research', 'computer-use', 'customtools', 
-          'embedding', 'aqa', 'imagen', 'audio', 'realtime', 'live',
-          '2.5-flash-image', '2.5-flash-preview', '2.5-pro-preview'
+          'embedding', 'aqa', 'imagen', 'audio', 'realtime', 'live'
         ];
-        if (blacklist.some(term => id.includes(term))) return false;
+        if (nonTextTerms.some(term => id.includes(term))) return false;
 
         return true;
       });
@@ -406,7 +405,7 @@ function populateModelDropdown(models) {
     }
   });
 
-  // Ranking & categorization: Fast Flash Models > Pro Models > Preview/Experimental
+  // Ranking & categorization: Flash Models > Pro Models > Preview/Experimental
   const flashGroup = [];
   const proGroup = [];
   const expGroup = [];
@@ -422,16 +421,25 @@ function populateModelDropdown(models) {
     }
   });
 
-  // Sort Flash group: newest/fastest first
-  const flashRank = id => {
-    const lower = id.toLowerCase();
-    if (lower === 'gemini-2.5-flash') return 100;
-    if (lower === 'gemini-2.0-flash') return 90;
-    if (lower === 'gemini-1.5-flash') return 80;
-    if (lower.includes('8b')) return 70;
-    return 50;
+  // Dynamic mathematical version extractor (e.g., "gemini-3.5-flash" -> 3.5, "gemini-2.0-flash" -> 2.0)
+  const extractVersionNumber = id => {
+    const match = id.match(/(\d+(?:\.\d+)?)/);
+    return match ? parseFloat(match[1]) : 1.0;
   };
-  flashGroup.sort((a, b) => flashRank(b.id) - flashRank(a.id));
+
+  // Sort any group dynamically by highest version number first
+  const sortByVersionDesc = (a, b) => {
+    const verDiff = extractVersionNumber(b.id) - extractVersionNumber(a.id);
+    if (verDiff !== 0) return verDiff;
+    // Prefer non-8b over 8b for equal version numbers
+    const isA8b = a.id.includes('8b') ? 1 : 0;
+    const isB8b = b.id.includes('8b') ? 1 : 0;
+    return isA8b - isB8b;
+  };
+
+  flashGroup.sort(sortByVersionDesc);
+  proGroup.sort(sortByVersionDesc);
+  expGroup.sort(sortByVersionDesc);
 
   // Save all active model IDs in priority order for failover
   state.sortedModelList = [...flashGroup, ...proGroup, ...expGroup].map(m => m.id);
