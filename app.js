@@ -604,11 +604,10 @@ function setupEventListeners() {
 
   // Subtitle Pacing Preset Change
   const pacingBadge = $('pacingBadge');
-  const pacingDesc = $('pacingDesc');
   if (styleMode) {
     const updatePacingUI = () => {
       const val = styleMode.value;
-      if (pacingBadge && pacingDesc) {
+      if (pacingBadge) {
         if (val === 'micro') {
           pacingBadge.innerHTML = `
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;display:inline-block;vertical-align:-1px;margin-right:3px;">
@@ -616,28 +615,12 @@ function setupEventListeners() {
             </svg>
             <span>Glance Speed</span>
           `;
-          pacingDesc.innerHTML = `
-            <span class="field-micro-hint">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;display:inline-block;vertical-align:-1px;margin-right:4px;color:#fbbf24;">
-                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-              </svg>
-              <span>Ultra-Short: 1–4 words per line, readable in ~0.5–1s (Zero video distraction)</span>
-            </span>
-          `;
         } else if (val === 'concise') {
           pacingBadge.innerHTML = `
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;display:inline-block;vertical-align:-1px;margin-right:3px;">
               <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
             </svg>
             <span>Fast Reading</span>
-          `;
-          pacingDesc.innerHTML = `
-            <span class="field-micro-hint">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;display:inline-block;vertical-align:-1px;margin-right:4px;color:var(--brand-primary-light);">
-                <polyline points="20 6 9 17 4 12"/>
-              </svg>
-              <span>Concise: Crisp, easy-to-read dialogue without visual distraction (Recommended)</span>
-            </span>
           `;
         } else if (val === 'balanced') {
           pacingBadge.innerHTML = `
@@ -647,15 +630,6 @@ function setupEventListeners() {
             </svg>
             <span>Balanced</span>
           `;
-          pacingDesc.innerHTML = `
-            <span class="field-micro-hint">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;display:inline-block;vertical-align:-1px;margin-right:4px;color:var(--brand-cyan-light);">
-                <circle cx="12" cy="12" r="10"/>
-                <polyline points="12 6 12 12 16 14"/>
-              </svg>
-              <span>Balanced: Natural, comfortable conversational pacing for standard viewing</span>
-            </span>
-          `;
         } else {
           pacingBadge.innerHTML = `
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;display:inline-block;vertical-align:-1px;margin-right:3px;">
@@ -663,15 +637,6 @@ function setupEventListeners() {
               <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
             </svg>
             <span>Detailed</span>
-          `;
-          pacingDesc.innerHTML = `
-            <span class="field-micro-hint">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;display:inline-block;vertical-align:-1px;margin-right:4px;color:#c084fc;">
-                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-              </svg>
-              <span>Detailed: Full literal translation including all nuances and formal grammar</span>
-            </span>
           `;
         }
       }
