@@ -283,12 +283,28 @@ function togglePauseTranslation() {
 function cancelTranslationProcess() {
   if (!state.isTranslating) return;
 
-  const confirmed = confirm('Are you sure you want to stop translating? Any lines translated so far will be safely preserved.');
+  const confirmed = confirm('Are you sure you want to cancel the translation? Ongoing translation will be stopped and all translated data will be discarded.');
   if (!confirmed) return;
 
   state.isCancelled = true;
   state.isPaused = false;
-  addTerminalLog('warn', 'Translation cancelled by user. Finalizing translated portions...');
+  state.isTranslating = false;
+
+  // Discard all translated state and delete stored session
+  state.translatedBlocks = [];
+  state.uncompressedBlocks = [];
+  state.isCondensed = false;
+  clearSavedSession();
+
+  // Reset UI elements cleanly
+  if (progressCard) progressCard.classList.add('hidden');
+  if (resultCard) resultCard.classList.add('hidden');
+  if (incompleteWarningBanner) incompleteWarningBanner.classList.add('hidden');
+  if (fileRestoredBadge) fileRestoredBadge.classList.add('hidden');
+
+  resetTranslateButton();
+  checkReadyToTranslate();
+  addTerminalLog('warn', 'Translation cancelled by user. All ongoing progress was discarded.');
 }
 
 // ── Event Setup ──
@@ -1114,15 +1130,13 @@ async function runTranslationPipeline() {
       }
     }
 
-    // Fill any missing or unreached blocks if cancelled
-    for (let i = 0; i < state.parsedBlocks.length; i++) {
-      if (!translated[i]) {
-        translated[i] = {
-          ...state.parsedBlocks[i],
-          translatedLines: state.parsedBlocks[i].lines,
-          isTranslated: false
-        };
-      }
+    if (state.isCancelled) {
+      state.translatedBlocks = [];
+      state.uncompressedBlocks = [];
+      clearSavedSession();
+      if (progressCard) progressCard.classList.add('hidden');
+      if (resultCard) resultCard.classList.add('hidden');
+      return;
     }
 
     // Post-processing: Precision Timing Verification & Overlap Correction
@@ -1139,9 +1153,6 @@ async function runTranslationPipeline() {
     if (untranslatedTotal === 0) {
       updateProgressStats(100, 'Translation & timing synchronization complete!');
       addTerminalLog('ok', `Completed 100%! Fixed ${state.stats.overlapsFixed} overlaps with zero timecode drift.`);
-    } else if (state.isCancelled) {
-      updateProgressStats(100, `Translation stopped (${state.parsedBlocks.length - untranslatedTotal} lines translated, ${untranslatedTotal} remaining).`);
-      addTerminalLog('warn', `Translation stopped. You can review current progress or click "Retry Incomplete Batches" later.`);
     } else {
       updateProgressStats(100, `Translation completed with ${untranslatedTotal} lines in English (Retry available).`);
       addTerminalLog('warn', `Translation finished with ${untranslatedTotal} untranslated lines. You can click "Retry Incomplete Batches" to finish them.`);
@@ -1153,8 +1164,8 @@ async function runTranslationPipeline() {
     showTranslationResults(finalizedBlocks);
     saveCurrentSession();
 
-    // Automatic SRT download only if 100% complete and not cancelled
-    if (untranslatedTotal === 0 && !state.isCancelled) {
+    // Automatic SRT download only if 100% complete
+    if (untranslatedTotal === 0) {
       await sleep(300);
       downloadSRTFile(finalizedBlocks);
       addTerminalLog('ok', 'Automatic SRT download triggered in browser.');
@@ -1537,6 +1548,15 @@ async function retryIncompleteBatchesPipeline() {
       if (bi < batches.length - 1 && !state.isCancelled) {
         await sleep(1500);
       }
+    }
+
+    if (state.isCancelled) {
+      state.translatedBlocks = [];
+      state.uncompressedBlocks = [];
+      clearSavedSession();
+      if (progressCard) progressCard.classList.add('hidden');
+      if (resultCard) resultCard.classList.add('hidden');
+      return;
     }
 
     updateProgressStats(100, 'Selective retry complete! Updating final subtitles...');
