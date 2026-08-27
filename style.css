@@ -1,5 +1,6 @@
 /* =========================================================
    SubSync AI — Modern Next-Gen Subtitle Studio Theme
+   Light & Dark Mode Tokens
    ========================================================= */
 
 *, *::before, *::after {
@@ -11,7 +12,7 @@
 :root {
   --bg-dark: #07090e;
   --surface-base: #0e121b;
-  --surface-glass: rgba(16, 21, 32, 0.72);
+  --surface-glass: rgba(16, 21, 32, 0.75);
   --surface-glass-active: rgba(22, 29, 44, 0.85);
   --surface-card: #131826;
   --surface-inner: #0a0d15;
@@ -55,9 +56,133 @@
   --shadow-glow: 0 0 35px var(--accent-glow);
 }
 
+/* Light Theme Variables */
+[data-theme="light"] {
+  --bg-dark: #f8fafc;
+  --surface-base: #ffffff;
+  --surface-glass: rgba(255, 255, 255, 0.92);
+  --surface-glass-active: rgba(241, 245, 249, 0.98);
+  --surface-card: #ffffff;
+  --surface-inner: #f1f5f9;
+
+  --border-subtle: rgba(15, 23, 42, 0.08);
+  --border-medium: rgba(15, 23, 42, 0.14);
+  --border-bright: rgba(99, 102, 241, 0.4);
+
+  --brand-primary: #4f46e5;
+  --brand-primary-light: #6366f1;
+  --brand-cyan: #0284c7;
+  --brand-cyan-light: #0ea5e9;
+  --brand-violet: #9333ea;
+
+  --accent-gradient: linear-gradient(135deg, #4f46e5 0%, #0284c7 100%);
+  --accent-gradient-hover: linear-gradient(135deg, #4338ca 0%, #0369a1 100%);
+  --accent-glow: rgba(79, 70, 229, 0.15);
+  --cyan-glow: rgba(2, 132, 199, 0.15);
+
+  --text-main: #0f172a;
+  --text-muted: #475569;
+  --text-dim: #64748b;
+
+  --status-success: #059669;
+  --status-success-bg: rgba(5, 150, 105, 0.1);
+  --status-warning: #d97706;
+  --status-warning-bg: rgba(217, 119, 6, 0.1);
+  --status-error: #dc2626;
+  --status-error-bg: rgba(220, 38, 38, 0.1);
+
+  --shadow-card: 0 12px 32px -6px rgba(15, 23, 42, 0.08), 0 4px 12px -2px rgba(15, 23, 42, 0.04);
+  --shadow-glow: 0 0 25px rgba(79, 70, 229, 0.1);
+}
+
+[data-theme="light"] select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+}
+
+[data-theme="light"] .glow-orb.orb-primary {
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.12), transparent 70%);
+}
+
+[data-theme="light"] .glow-orb.orb-cyan {
+  background: radial-gradient(circle, rgba(14, 165, 233, 0.1), transparent 70%);
+}
+
+[data-theme="light"] .glow-orb.orb-violet {
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.1), transparent 70%);
+}
+
+[data-theme="light"] .grid-overlay {
+  background-image: linear-gradient(rgba(15, 23, 42, 0.03) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(15, 23, 42, 0.03) 1px, transparent 1px);
+}
+
+[data-theme="light"] .codebox-wrapper,
+[data-theme="light"] .terminal-log-wrapper {
+  background: #0f172a;
+  border-color: rgba(15, 23, 42, 0.15);
+}
+
+[data-theme="light"] .codebox-wrapper pre,
+[data-theme="light"] .terminal-feed {
+  color: #e2e8f0;
+}
+
+[data-theme="light"] .quota-item,
+[data-theme="light"] .session-tracker-box {
+  background: #f8fafc;
+  border-color: rgba(15, 23, 42, 0.09);
+}
+
+[data-theme="light"] .tracker-title {
+  color: var(--text-main);
+}
+
+/* Theme Toggle Button */
+.theme-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--surface-inner);
+  border: 1px solid var(--border-medium);
+  color: var(--text-main);
+  padding: 6px 13px;
+  border-radius: var(--radius-pill);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.theme-toggle-btn:hover {
+  border-color: var(--brand-primary-light);
+  transform: translateY(-1px);
+}
+
+.theme-toggle-btn svg {
+  width: 15px;
+  height: 15px;
+}
+
+.theme-toggle-btn .sun-icon {
+  display: none;
+  color: #f59e0b;
+}
+
+.theme-toggle-btn .moon-icon {
+  display: block;
+  color: var(--brand-primary-light);
+}
+
+[data-theme="light"] .theme-toggle-btn .sun-icon {
+  display: block;
+}
+
+[data-theme="light"] .theme-toggle-btn .moon-icon {
+  display: none;
+}
+
 html {
   scroll-behavior: smooth;
-  color-scheme: dark;
 }
 
 body {
@@ -68,6 +193,7 @@ body {
   line-height: 1.6;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Background Lighting */
@@ -863,13 +989,13 @@ select {
 }
 
 select optgroup {
-  background: #111522;
-  color: var(--brand-cyan-light);
+  background: var(--surface-card);
+  color: var(--brand-primary-light);
   font-weight: 700;
 }
 
 select option {
-  background: #151a29;
+  background: var(--surface-card);
   color: var(--text-main);
   font-weight: 400;
   padding: 8px;
@@ -878,7 +1004,7 @@ select option {
 select:focus, input[type="text"]:focus {
   border-color: var(--brand-primary);
   box-shadow: 0 0 0 3px var(--accent-glow);
-  background: #0d111a;
+  background: var(--surface-inner);
 }
 
 /* Upload Zone */
@@ -889,7 +1015,7 @@ select:focus, input[type="text"]:focus {
   text-align: center;
   transition: all 0.25s ease;
   cursor: pointer;
-  background: rgba(10, 13, 21, 0.4);
+  background: var(--surface-inner);
 }
 
 .drop-zone:hover, .drop-zone.drag-over {

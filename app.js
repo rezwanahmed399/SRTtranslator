@@ -73,9 +73,12 @@ const restoreOriginalBtn= $('restoreOriginalBtn');
 const downloadBtn       = $('downloadBtn');
 const copySrtBtn        = $('copySrtBtn');
 const retranslateBtn    = $('retranslateBtn');
+const themeToggleBtn    = $('themeToggleBtn');
+const themeLabelText    = $('themeLabelText');
 
 // ── Initialization ──
 window.addEventListener('DOMContentLoaded', () => {
+  initTheme();
   const savedKey = (localStorage.getItem('gemini_api_key') || '').trim();
   if (savedKey) {
     apiKeyInput.value = savedKey;
@@ -87,8 +90,33 @@ window.addEventListener('DOMContentLoaded', () => {
   checkReadyToTranslate();
 });
 
+// ── Theme Switcher ──
+function initTheme() {
+  const currentTheme = localStorage.getItem('srt_theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', currentTheme);
+  updateThemeButtonUI(currentTheme);
+}
+
+function updateThemeButtonUI(theme) {
+  if (themeLabelText) {
+    themeLabelText.textContent = theme === 'light' ? 'Dark Mode' : 'Light Mode';
+  }
+}
+
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme') || 'dark';
+  const next = current === 'light' ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('srt_theme', next);
+  updateThemeButtonUI(next);
+}
+
 // ── Event Setup ──
 function setupEventListeners() {
+  // Theme Toggle
+  if (themeToggleBtn) {
+    themeToggleBtn.addEventListener('click', toggleTheme);
+  }
   // API Key Toggle Visibility
   toggleApiKey.addEventListener('click', () => {
     const isPass = apiKeyInput.type === 'password';
