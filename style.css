@@ -340,6 +340,28 @@
   border-color: rgba(99, 102, 241, 0.3);
 }
 
+[data-theme="light"] .seo-toggle-bar-card {
+  background: #ffffff;
+  border-color: rgba(15, 23, 42, 0.12);
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+}
+
+[data-theme="light"] .seo-toggle-bar-card:hover {
+  border-color: #6366f1;
+  box-shadow: 0 6px 24px rgba(99, 102, 241, 0.1);
+}
+
+[data-theme="light"] .seo-collapsible-wrapper.is-open .seo-toggle-bar-card {
+  background: #ffffff;
+  border-color: #4f46e5;
+  box-shadow: 0 6px 25px rgba(79, 70, 229, 0.12);
+}
+
+[data-theme="light"] .seo-guide-chevron-circle {
+  background: #f1f5f9;
+  border-color: rgba(15, 23, 42, 0.1);
+}
+
 /* Theme Toggle Button */
 .theme-toggle-btn {
   display: inline-flex;
@@ -2830,6 +2852,171 @@ input[type="text"]:focus {
 
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.22);
+}
+
+/* ── Collapsible SEO & Guide Master Drawer ── */
+.seo-collapsible-wrapper {
+  margin-top: 32px;
+}
+
+.seo-toggle-bar-card {
+  background: var(--surface-card);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+}
+
+.seo-toggle-bar-card:hover {
+  border-color: var(--brand-primary-light);
+  box-shadow: 0 8px 30px rgba(99, 102, 241, 0.12);
+}
+
+.seo-collapsible-wrapper.is-open .seo-toggle-bar-card {
+  border-color: var(--border-bright);
+  background: var(--surface-glass-active);
+  box-shadow: 0 0 25px rgba(99, 102, 241, 0.15);
+}
+
+.btn-seo-guide-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 22px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  outline: none;
+  text-align: left;
+}
+
+.seo-guide-title-group {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.seo-guide-icon-badge {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  background: rgba(99, 102, 241, 0.12);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  color: var(--brand-primary-light);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  transition: all 0.25s ease;
+}
+
+.seo-guide-icon-badge svg {
+  width: 20px;
+  height: 20px;
+}
+
+.seo-collapsible-wrapper.is-open .seo-guide-icon-badge {
+  background: var(--accent-gradient);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 0 15px rgba(99, 102, 241, 0.4);
+}
+
+.seo-guide-main-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-main);
+  letter-spacing: -0.01em;
+}
+
+.seo-guide-pill-badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 2px 8px;
+  border-radius: 20px;
+  background: rgba(99, 102, 241, 0.12);
+  color: var(--brand-primary-light);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+}
+
+.seo-guide-subtext {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.seo-guide-action {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.seo-guide-action-text {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--brand-primary-light);
+}
+
+.seo-guide-chevron-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--surface-inner);
+  border: 1px solid var(--border-medium);
+  display: grid;
+  place-items: center;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.seo-guide-chevron-circle svg {
+  width: 15px;
+  height: 15px;
+  color: var(--brand-primary-light);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.seo-collapsible-wrapper.is-open .seo-guide-chevron-circle {
+  background: rgba(99, 102, 241, 0.15);
+  border-color: var(--brand-primary-light);
+}
+
+.seo-collapsible-wrapper.is-open .seo-guide-chevron-circle svg {
+  transform: rotate(180deg);
+}
+
+/* Collapsible Body with Smooth Grid Transition */
+.seo-guide-collapse-container {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.seo-collapsible-wrapper.is-open .seo-guide-collapse-container {
+  grid-template-rows: 1fr;
+}
+
+.seo-guide-collapse-inner {
+  overflow: hidden;
+}
+
+@media (max-width: 640px) {
+  .btn-seo-guide-toggle {
+    padding: 14px 16px;
+  }
+  .seo-guide-subtext {
+    display: none;
+  }
+  .seo-guide-action-text {
+    display: none;
+  }
 }
 
 /* ── SEO & Content Sections ── */

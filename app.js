@@ -330,6 +330,7 @@ window.addEventListener('DOMContentLoaded', () => {
   initTheme();
   initCustomSelects();
   initFaqAccordion();
+  initSeoGuideToggle();
   const savedKey = (localStorage.getItem('gemini_api_key') || '').trim();
   if (savedKey) {
     apiKeyInput.value = savedKey;
@@ -2833,5 +2834,26 @@ function initFaqAccordion() {
         btn.setAttribute('aria-expanded', 'true');
       }
     });
+  });
+}
+
+// ── Collapsible SEO Guide & Documentation Master Engine ──
+function initSeoGuideToggle() {
+  const wrapper = $('seoGuideWrapper');
+  const toggleBtn = $('toggleSeoGuideBtn');
+  const actionLabel = $('seoGuideActionLabel');
+  if (!wrapper || !toggleBtn) return;
+
+  toggleBtn.addEventListener('click', () => {
+    const isOpen = wrapper.classList.contains('is-open');
+    if (isOpen) {
+      wrapper.classList.remove('is-open');
+      toggleBtn.setAttribute('aria-expanded', 'false');
+      if (actionLabel) actionLabel.textContent = 'Show Full Guide';
+    } else {
+      wrapper.classList.add('is-open');
+      toggleBtn.setAttribute('aria-expanded', 'true');
+      if (actionLabel) actionLabel.textContent = 'Hide Guide';
+    }
   });
 }
