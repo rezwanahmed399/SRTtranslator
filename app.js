@@ -297,6 +297,7 @@ async function restoreSessionIfAvailable() {
 
   if (session.targetLang && targetLang) {
     targetLang.value = session.targetLang;
+    refreshCustomSelect('targetLang');
   }
 
   // Display restored file info bar
@@ -327,6 +328,7 @@ window.addEventListener('beforeunload', e => {
 // ── Initialization ──
 window.addEventListener('DOMContentLoaded', () => {
   initTheme();
+  initCustomSelects();
   const savedKey = (localStorage.getItem('gemini_api_key') || '').trim();
   if (savedKey) {
     apiKeyInput.value = savedKey;
@@ -608,17 +610,69 @@ function setupEventListeners() {
       const val = styleMode.value;
       if (pacingBadge && pacingDesc) {
         if (val === 'micro') {
-          pacingBadge.textContent = '⚡ Glance Speed';
-          pacingDesc.innerHTML = '<span class="field-micro-hint">⚡ Ultra-Short: 1–4 words per line, readable in ~0.5–1s (Zero video distraction)</span>';
+          pacingBadge.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;display:inline-block;vertical-align:-1px;margin-right:3px;">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+            </svg>
+            <span>Glance Speed</span>
+          `;
+          pacingDesc.innerHTML = `
+            <span class="field-micro-hint">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;display:inline-block;vertical-align:-1px;margin-right:4px;color:#fbbf24;">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+              </svg>
+              <span>Ultra-Short: 1–4 words per line, readable in ~0.5–1s (Zero video distraction)</span>
+            </span>
+          `;
         } else if (val === 'concise') {
-          pacingBadge.textContent = '⚡ Fast Reading';
-          pacingDesc.innerHTML = '<span class="field-micro-hint">⚡ Concise: Crisp, easy-to-read dialogue without visual distraction (Recommended)</span>';
+          pacingBadge.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;display:inline-block;vertical-align:-1px;margin-right:3px;">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+            </svg>
+            <span>Fast Reading</span>
+          `;
+          pacingDesc.innerHTML = `
+            <span class="field-micro-hint">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;display:inline-block;vertical-align:-1px;margin-right:4px;color:var(--brand-primary-light);">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              <span>Concise: Crisp, easy-to-read dialogue without visual distraction (Recommended)</span>
+            </span>
+          `;
         } else if (val === 'balanced') {
-          pacingBadge.textContent = '⚖ Balanced';
-          pacingDesc.innerHTML = '<span class="field-micro-hint">⚖ Balanced: Natural, comfortable conversational pacing for standard viewing</span>';
+          pacingBadge.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;display:inline-block;vertical-align:-1px;margin-right:3px;">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+            <span>Balanced</span>
+          `;
+          pacingDesc.innerHTML = `
+            <span class="field-micro-hint">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;display:inline-block;vertical-align:-1px;margin-right:4px;color:var(--brand-cyan-light);">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
+              <span>Balanced: Natural, comfortable conversational pacing for standard viewing</span>
+            </span>
+          `;
         } else {
-          pacingBadge.textContent = '📖 Detailed';
-          pacingDesc.innerHTML = '<span class="field-micro-hint">📖 Detailed: Full literal translation including all nuances and formal grammar</span>';
+          pacingBadge.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;display:inline-block;vertical-align:-1px;margin-right:3px;">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+            </svg>
+            <span>Detailed</span>
+          `;
+          pacingDesc.innerHTML = `
+            <span class="field-micro-hint">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;display:inline-block;vertical-align:-1px;margin-right:4px;color:#c084fc;">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+              </svg>
+              <span>Detailed: Full literal translation including all nuances and formal grammar</span>
+            </span>
+          `;
         }
       }
     };
@@ -723,6 +777,9 @@ function resetQuotaDashboardToDisconnected(errMsg = '') {
     isNoKey ? 'disconnected' : 'exhausted',
     isNoKey ? 'Awaiting Valid API Key' : `API Error: ${errMsg.slice(0, 32)}`
   );
+
+  syncCustomSelectDisabled('modelSelect');
+  refreshCustomSelect('modelSelect');
 }
 
 async function fetchLiveGeminiModels(key) {
@@ -739,6 +796,8 @@ async function fetchLiveGeminiModels(key) {
   modelSelect.innerHTML = '<option value="" disabled selected>Fetching available models live from Google...</option>';
   modelLiveBadge.textContent = 'Connecting to Google...';
   modelLiveBadge.className = 'hint-tag active-tag';
+  syncCustomSelectDisabled('modelSelect');
+  refreshCustomSelect('modelSelect');
 
   const probeStart = performance.now();
 
@@ -794,6 +853,8 @@ async function fetchLiveGeminiModels(key) {
         `;
         modelLiveBadge.className = 'hint-tag active-tag';
         modelSelect.disabled = false;
+        syncCustomSelectDisabled('modelSelect');
+        refreshCustomSelect('modelSelect');
         checkReadyToTranslate();
         return;
       }
@@ -991,6 +1052,8 @@ function populateModelDropdown(models) {
     modelSelect.value = state.sortedModelList[0];
     state.selectedModel = state.sortedModelList[0];
   }
+
+  refreshCustomSelect('modelSelect');
 }
 
 // ── File Selection & Adaptive Batching ──
@@ -2560,4 +2623,227 @@ function resetTranslateButton() {
   translateBtn.querySelector('.btn-content').classList.remove('hidden');
   translateBtn.querySelector('.btn-spinner-state').classList.add('hidden');
   translateBtn.disabled = false;
+}
+
+// ── Custom Glassmorphism Select Component Engine ──
+const customSelectRegistry = new Map();
+
+function buildCustomSelect(selectEl) {
+  if (!selectEl) return;
+  const selectId = selectEl.id;
+  const wrapper = selectEl.closest('.select-wrapper');
+  if (!wrapper) return;
+
+  // Clean previous custom select if existing
+  const prevCustom = wrapper.querySelector('.custom-select-container');
+  if (prevCustom) prevCustom.remove();
+
+  // Mark native select as hidden
+  selectEl.classList.add('custom-hidden-select');
+
+  const container = document.createElement('div');
+  container.className = 'custom-select-container';
+  container.dataset.selectId = selectId;
+  if (selectEl.disabled) container.classList.add('is-disabled');
+
+  const currentOption = selectEl.options[selectEl.selectedIndex] || selectEl.options[0];
+  const initialText = currentOption ? currentOption.text : 'Select an option...';
+
+  // Trigger Button
+  const trigger = document.createElement('button');
+  trigger.type = 'button';
+  trigger.className = 'custom-select-trigger';
+  trigger.setAttribute('aria-haspopup', 'listbox');
+  trigger.setAttribute('aria-expanded', 'false');
+  trigger.innerHTML = `
+    <span class="custom-select-value">${escapeHtml(initialText)}</span>
+    <svg class="custom-select-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <polyline points="6 9 12 15 18 9"></polyline>
+    </svg>
+  `;
+
+  // Floating Dropdown Menu
+  const menu = document.createElement('div');
+  menu.className = 'custom-select-menu';
+  menu.setAttribute('role', 'listbox');
+
+  const totalOptionsCount = selectEl.options.length;
+  let searchInput = null;
+
+  if (totalOptionsCount > 6) {
+    const searchWrap = document.createElement('div');
+    searchWrap.className = 'custom-select-search-wrap';
+    searchWrap.innerHTML = `
+      <svg class="custom-select-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input type="text" class="custom-select-search-input" placeholder="Search..." autocomplete="off" />
+    `;
+    menu.appendChild(searchWrap);
+    searchInput = searchWrap.querySelector('input');
+  }
+
+  const list = document.createElement('div');
+  list.className = 'custom-select-options-list';
+
+  const renderOptions = (filter = '') => {
+    list.innerHTML = '';
+    const normFilter = filter.toLowerCase().trim();
+    let matchCount = 0;
+
+    const optgroups = Array.from(selectEl.querySelectorAll('optgroup'));
+
+    if (optgroups.length > 0) {
+      optgroups.forEach(group => {
+        const groupOptions = Array.from(group.querySelectorAll('option'));
+        const matched = groupOptions.filter(opt => opt.text.toLowerCase().includes(normFilter));
+        if (matched.length > 0) {
+          const groupHeader = document.createElement('div');
+          groupHeader.className = 'custom-select-group-header';
+          groupHeader.textContent = group.label;
+          list.appendChild(groupHeader);
+
+          matched.forEach(opt => {
+            matchCount++;
+            const isSelected = opt.value === selectEl.value;
+            const optEl = document.createElement('div');
+            optEl.className = 'custom-select-option' + (isSelected ? ' is-selected' : '');
+            optEl.dataset.value = opt.value;
+            optEl.innerHTML = `
+              <span>${escapeHtml(opt.text)}</span>
+              <svg class="option-check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            `;
+            optEl.addEventListener('click', (e) => {
+              e.stopPropagation();
+              selectEl.value = opt.value;
+              trigger.querySelector('.custom-select-value').textContent = opt.text;
+              selectEl.dispatchEvent(new Event('change', { bubbles: true }));
+              closeAllCustomSelects();
+              renderOptions(searchInput ? searchInput.value : '');
+            });
+            list.appendChild(optEl);
+          });
+        }
+      });
+    } else {
+      const allOpts = Array.from(selectEl.options);
+      allOpts.forEach(opt => {
+        if (!normFilter || opt.text.toLowerCase().includes(normFilter)) {
+          matchCount++;
+          const isSelected = opt.value === selectEl.value;
+          const optEl = document.createElement('div');
+          optEl.className = 'custom-select-option' + (isSelected ? ' is-selected' : '');
+          optEl.dataset.value = opt.value;
+          optEl.innerHTML = `
+            <span>${escapeHtml(opt.text)}</span>
+            <svg class="option-check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          `;
+          optEl.addEventListener('click', (e) => {
+            e.stopPropagation();
+            selectEl.value = opt.value;
+            trigger.querySelector('.custom-select-value').textContent = opt.text;
+            selectEl.dispatchEvent(new Event('change', { bubbles: true }));
+            closeAllCustomSelects();
+            renderOptions(searchInput ? searchInput.value : '');
+          });
+          list.appendChild(optEl);
+        }
+      });
+    }
+
+    if (matchCount === 0) {
+      const empty = document.createElement('div');
+      empty.className = 'custom-select-empty';
+      empty.textContent = 'No matching options found';
+      list.appendChild(empty);
+    }
+  };
+
+  renderOptions();
+  menu.appendChild(list);
+
+  if (searchInput) {
+    searchInput.addEventListener('input', () => {
+      renderOptions(searchInput.value);
+    });
+    searchInput.addEventListener('click', e => e.stopPropagation());
+  }
+
+  // Toggle dropdown on trigger click
+  trigger.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (selectEl.disabled) return;
+    const isOpen = container.classList.contains('is-open');
+    closeAllCustomSelects();
+    if (!isOpen) {
+      container.classList.add('is-open');
+      trigger.setAttribute('aria-expanded', 'true');
+      if (searchInput) {
+        setTimeout(() => searchInput.focus(), 50);
+      }
+    }
+  });
+
+  // Listen for programmatic native select change to keep trigger synced
+  selectEl.addEventListener('change', () => {
+    const activeOpt = selectEl.options[selectEl.selectedIndex];
+    if (activeOpt) {
+      trigger.querySelector('.custom-select-value').textContent = activeOpt.text;
+      renderOptions(searchInput ? searchInput.value : '');
+    }
+  });
+
+  container.appendChild(trigger);
+  container.appendChild(menu);
+  wrapper.appendChild(container);
+
+  customSelectRegistry.set(selectId, {
+    container,
+    trigger,
+    menu,
+    selectEl,
+    refresh: () => buildCustomSelect(selectEl)
+  });
+}
+
+function closeAllCustomSelects() {
+  document.querySelectorAll('.custom-select-container.is-open').forEach(c => {
+    c.classList.remove('is-open');
+    const tr = c.querySelector('.custom-select-trigger');
+    if (tr) tr.setAttribute('aria-expanded', 'false');
+  });
+}
+
+function refreshCustomSelect(selectId) {
+  const el = $(selectId);
+  if (el) buildCustomSelect(el);
+}
+
+function syncCustomSelectDisabled(selectId) {
+  const el = $(selectId);
+  const data = customSelectRegistry.get(selectId);
+  if (el && data && data.container) {
+    if (el.disabled) {
+      data.container.classList.add('is-disabled');
+    } else {
+      data.container.classList.remove('is-disabled');
+    }
+  }
+}
+
+function initCustomSelects() {
+  ['targetLang', 'modelSelect', 'styleMode'].forEach(id => {
+    const el = $(id);
+    if (el) buildCustomSelect(el);
+  });
+
+  document.addEventListener('click', () => closeAllCustomSelects());
+  window.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeAllCustomSelects();
+  });
 }
