@@ -439,7 +439,7 @@ function populateModelDropdown(models) {
   // Group 1: Flash Production Models
   if (flashGroup.length > 0) {
     const grp = document.createElement('optgroup');
-    grp.label = `⚡ Fast & Production Models (${flashGroup.length} live)`;
+    grp.label = `Fast & Production Models (Flash — ${flashGroup.length} live)`;
     flashGroup.forEach((m, idx) => {
       const opt = document.createElement('option');
       opt.value = m.id;
@@ -452,7 +452,7 @@ function populateModelDropdown(models) {
   // Group 2: Pro High-Precision Models
   if (proGroup.length > 0) {
     const grp = document.createElement('optgroup');
-    grp.label = `🧠 High-Precision Pro Models (${proGroup.length} live)`;
+    grp.label = `High-Precision Models (Pro — ${proGroup.length} live)`;
     proGroup.forEach(m => {
       const opt = document.createElement('option');
       opt.value = m.id;
@@ -465,7 +465,7 @@ function populateModelDropdown(models) {
   // Group 3: Preview & Experimental
   if (expGroup.length > 0) {
     const grp = document.createElement('optgroup');
-    grp.label = `🧪 Preview & Experimental Models (${expGroup.length} live)`;
+    grp.label = `Preview & Experimental Models (${expGroup.length} live)`;
     expGroup.forEach(m => {
       const opt = document.createElement('option');
       opt.value = m.id;
