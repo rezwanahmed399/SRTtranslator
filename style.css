@@ -2161,3 +2161,231 @@ select:focus, input[type="text"]:focus {
   background: rgba(255, 255, 255, 0.22);
 }
 
+/* ── SEO & Content Sections ── */
+.seo-features-section,
+.seo-steps-section,
+.seo-faq-section {
+  margin-top: 24px;
+  padding: 32px 28px;
+}
+
+.seo-section-header {
+  text-align: center;
+  max-width: 680px;
+  margin: 0 auto 28px auto;
+}
+
+.seo-badge {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--brand-primary-light);
+  background: rgba(99, 102, 241, 0.12);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  padding: 3px 10px;
+  border-radius: 20px;
+  margin-bottom: 10px;
+}
+
+.seo-h2 {
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 8px;
+  line-height: 1.35;
+}
+
+.seo-sub {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* Features Grid */
+.seo-features-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.seo-feature-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  transition: transform var(--transition-fast), border-color var(--transition-fast);
+}
+
+.seo-feature-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(99, 102, 241, 0.35);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.feature-icon-box {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  background: rgba(99, 102, 241, 0.12);
+  color: var(--brand-primary-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.feature-icon-box svg {
+  width: 18px;
+  height: 18px;
+}
+
+.seo-feature-card h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 6px;
+}
+
+.seo-feature-card p {
+  font-size: 0.83rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+/* How It Works Grid */
+.seo-steps-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.seo-step-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 22px 18px;
+  position: relative;
+  transition: transform var(--transition-fast);
+}
+
+.seo-step-card:hover {
+  transform: translateY(-2px);
+}
+
+.step-num {
+  font-family: var(--font-mono);
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--brand-primary-light);
+  opacity: 0.4;
+  margin-bottom: 10px;
+}
+
+.seo-step-card h3 {
+  font-size: 0.96rem;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 6px;
+}
+
+.seo-step-card p {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+/* FAQ List */
+.seo-faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.seo-faq-item {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  transition: border-color var(--transition-fast);
+}
+
+.seo-faq-item:hover {
+  border-color: rgba(99, 102, 241, 0.3);
+}
+
+.faq-q {
+  font-size: 0.94rem;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 6px;
+}
+
+.faq-a {
+  font-size: 0.84rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* Footer */
+.site-footer {
+  margin-top: 36px;
+  padding: 24px 0 36px 0;
+  border-top: 1px solid var(--border-subtle);
+  text-align: center;
+}
+
+.footer-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+.footer-brand {
+  font-size: 0.84rem;
+  color: var(--text-muted);
+}
+
+.footer-brand span {
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.footer-links {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.footer-links a {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+.footer-links a:hover {
+  color: var(--brand-primary-light);
+}
+
+.footer-copy {
+  font-size: 0.74rem;
+  color: var(--text-dim);
+}
+
+@media (max-width: 768px) {
+  .seo-features-grid,
+  .seo-steps-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .footer-inner {
+    flex-direction: column;
+    justify-content: center;
+  }
+}
+
