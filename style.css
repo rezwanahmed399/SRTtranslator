@@ -2513,5 +2513,165 @@ select:focus, input[type="text"]:focus {
     flex-direction: column;
     justify-content: center;
   }
+
+  .incomplete-warning-banner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .btn-warning-retry {
+    width: 100%;
+    justify-content: center;
+  }
 }
+
+/* Incomplete Batch Warning Banner */
+.incomplete-warning-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: var(--status-warning-bg);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  animation: slideInDown 0.3s ease-out;
+}
+
+.warning-icon-wrap {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(245, 158, 11, 0.2);
+  color: var(--status-warning);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.warning-icon-wrap svg {
+  width: 22px;
+  height: 22px;
+}
+
+.warning-text-content {
+  flex: 1;
+}
+
+.warning-text-content strong {
+  display: block;
+  font-size: 0.95rem;
+  color: var(--text-main);
+  margin-bottom: 4px;
+}
+
+.warning-text-content p {
+  font-size: 0.84rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.btn-warning-retry {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #f59e0b;
+  color: #000;
+  font-weight: 700;
+  font-size: 0.88rem;
+  padding: 10px 18px;
+  border-radius: var(--radius-sm);
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.3);
+}
+
+.btn-warning-retry:hover {
+  background: #d97706;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+}
+
+/* Progress Action Controls (Pause / Resume / Cancel) */
+.progress-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-progress-ctrl {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--surface-inner);
+  border: 1px solid var(--border-medium);
+  color: var(--text-main);
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 5px 11px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-progress-ctrl:hover {
+  background: var(--surface-glass-active);
+  border-color: var(--brand-primary-light);
+  color: var(--brand-primary-light);
+}
+
+.btn-progress-ctrl svg {
+  width: 12px;
+  height: 12px;
+}
+
+.btn-progress-ctrl.is-paused {
+  background: rgba(245, 158, 11, 0.15);
+  border-color: var(--status-warning);
+  color: var(--status-warning);
+}
+
+.btn-progress-cancel {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--surface-inner);
+  border: 1px solid var(--border-medium);
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 5px 11px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-progress-cancel:hover {
+  background: var(--status-error-bg);
+  border-color: var(--status-error);
+  color: var(--status-error);
+}
+
+.btn-progress-cancel svg {
+  width: 12px;
+  height: 12px;
+}
+
+.restored-tag {
+  background: rgba(99, 102, 241, 0.15) !important;
+  color: var(--brand-primary-light) !important;
+  border: 1px solid rgba(99, 102, 241, 0.3) !important;
+  animation: pulseGlow 2s infinite ease-in-out;
+}
+
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.2); }
+  50% { box-shadow: 0 0 8px 2px rgba(99, 102, 241, 0.35); }
+}
+
+
 

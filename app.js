@@ -15,12 +15,16 @@ const state = {
   fileSize: 0,
   durationStr: '00:00:00',
   optimalBatchSize: 30,
+  isTranslating: false,
+  isPaused: false,
+  isCancelled: false,
   stats: {
     total: 0,
     processed: 0,
     overlapsFixed: 0,
     emptyRecovered: 0,
-    retries: 0
+    retries: 0,
+    untranslated: 0
   }
 };
 
@@ -49,6 +53,7 @@ const fileCountBadge    = $('fileCountBadge');
 const fileSizeBadge     = $('fileSizeBadge');
 const fileDurationBadge = $('fileDurationBadge');
 const fileBatchBadge    = $('fileBatchBadge');
+const fileRestoredBadge = $('fileRestoredBadge');
 const subtitlePreview   = $('subtitlePreview');
 
 const translateBtn      = $('translateBtn');
@@ -63,6 +68,13 @@ const statBatches       = $('statBatches');
 const statOverlaps      = $('statOverlaps');
 const statIntegrity     = $('statIntegrity');
 const progressLog       = $('progressLog');
+const liveActivityDot   = $('liveActivityDot');
+
+const pauseResumeBtn    = $('pauseResumeBtn');
+const ctrlIconPause     = $('ctrlIconPause');
+const ctrlIconResume    = $('ctrlIconResume');
+const pauseResumeLabel  = $('pauseResumeLabel');
+const cancelTranslateBtn= $('cancelTranslateBtn');
 
 const resultCard        = $('resultCard');
 const resultStats       = $('resultStats');
@@ -76,6 +88,138 @@ const retranslateBtn    = $('retranslateBtn');
 const themeToggleBtn    = $('themeToggleBtn');
 const themeLabelText    = $('themeLabelText');
 
+const retryIncompleteBtn      = $('retryIncompleteBtn');
+const incompleteWarningBanner = $('incompleteWarningBanner');
+const incompleteWarningTitle  = $('incompleteWarningTitle');
+const incompleteWarningDesc   = $('incompleteWarningDesc');
+
+// ── IndexedDB Session Storage Engine ──
+const DB_NAME = 'SubSyncAI_DB';
+const DB_VERSION = 1;
+const STORE_NAME = 'sessions';
+
+function openSessionDB() {
+  return new Promise(resolve => {
+    if (!window.indexedDB) {
+      resolve(null);
+      return;
+    }
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
+    request.onupgradeneeded = e => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        db.createObjectStore(STORE_NAME);
+      }
+    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => resolve(null);
+  });
+}
+
+async function saveCurrentSession() {
+  try {
+    if (!state.parsedBlocks || state.parsedBlocks.length === 0) return;
+    const sessionData = {
+      parsedBlocks: state.parsedBlocks,
+      translatedBlocks: state.translatedBlocks,
+      uncompressedBlocks: state.uncompressedBlocks,
+      isCondensed: state.isCondensed,
+      fileName: state.fileName,
+      fileSize: state.fileSize,
+      durationStr: state.durationStr,
+      optimalBatchSize: state.optimalBatchSize,
+      targetLang: targetLang ? targetLang.value : 'Bengali',
+      selectedModel: state.selectedModel,
+      stats: state.stats,
+      timestamp: Date.now()
+    };
+
+    const db = await openSessionDB();
+    if (!db) {
+      localStorage.setItem('subsync_session_backup', JSON.stringify(sessionData));
+      return;
+    }
+    const tx = db.transaction(STORE_NAME, 'readwrite');
+    tx.objectStore(STORE_NAME).put(sessionData, 'active_session');
+  } catch (err) {
+    console.warn('Could not save session to IndexedDB:', err);
+  }
+}
+
+async function loadSavedSession() {
+  try {
+    const db = await openSessionDB();
+    if (!db) {
+      const backup = localStorage.getItem('subsync_session_backup');
+      return backup ? JSON.parse(backup) : null;
+    }
+    return new Promise(resolve => {
+      const tx = db.transaction(STORE_NAME, 'readonly');
+      const req = tx.objectStore(STORE_NAME).get('active_session');
+      req.onsuccess = () => resolve(req.result || null);
+      req.onerror = () => resolve(null);
+    });
+  } catch (err) {
+    console.warn('Could not load session from IndexedDB:', err);
+    return null;
+  }
+}
+
+async function clearSavedSession() {
+  try {
+    localStorage.removeItem('subsync_session_backup');
+    const db = await openSessionDB();
+    if (!db) return;
+    const tx = db.transaction(STORE_NAME, 'readwrite');
+    tx.objectStore(STORE_NAME).delete('active_session');
+  } catch (err) {
+    console.warn('Could not clear session from IndexedDB:', err);
+  }
+}
+
+async function restoreSessionIfAvailable() {
+  const session = await loadSavedSession();
+  if (!session || !session.parsedBlocks || session.parsedBlocks.length === 0) return;
+
+  state.parsedBlocks = session.parsedBlocks;
+  state.translatedBlocks = session.translatedBlocks || [];
+  state.uncompressedBlocks = session.uncompressedBlocks || [];
+  state.isCondensed = !!session.isCondensed;
+  state.fileName = session.fileName || 'subtitles.srt';
+  state.fileSize = session.fileSize || 0;
+  state.durationStr = session.durationStr || '00:00:00';
+  state.optimalBatchSize = session.optimalBatchSize || 30;
+  state.stats = session.stats || state.stats;
+
+  if (session.targetLang && targetLang) {
+    targetLang.value = session.targetLang;
+  }
+
+  // Display restored file info bar
+  displayLoadedFileInfo({ name: state.fileName, size: state.fileSize }, state.parsedBlocks);
+
+  if (fileRestoredBadge) {
+    fileRestoredBadge.classList.remove('hidden');
+  }
+
+  // If translation was already done, display results view!
+  if (state.translatedBlocks && state.translatedBlocks.length > 0) {
+    showTranslationResults(state.translatedBlocks);
+    addTerminalLog('ok', `Restored previous translation session for "${state.fileName}".`);
+  }
+
+  checkReadyToTranslate();
+}
+
+// ── Refresh / Leave Prevention ──
+window.addEventListener('beforeunload', e => {
+  if (state.isTranslating && !state.isCancelled) {
+    e.preventDefault();
+    e.returnValue = 'Translation is currently in progress. If you refresh or leave, ongoing translation will stop. Are you sure?';
+    return e.returnValue;
+  }
+});
+
 // ── Initialization ──
 window.addEventListener('DOMContentLoaded', () => {
   initTheme();
@@ -88,6 +232,7 @@ window.addEventListener('DOMContentLoaded', () => {
   }
   setupEventListeners();
   checkReadyToTranslate();
+  restoreSessionIfAvailable();
 });
 
 // ── Theme Switcher ──
@@ -111,6 +256,41 @@ function toggleTheme() {
   updateThemeButtonUI(next);
 }
 
+// ── Pause / Resume & Cancel Handlers ──
+function togglePauseTranslation() {
+  if (!state.isTranslating) return;
+
+  state.isPaused = !state.isPaused;
+
+  if (state.isPaused) {
+    if (ctrlIconPause) ctrlIconPause.classList.add('hidden');
+    if (ctrlIconResume) ctrlIconResume.classList.remove('hidden');
+    if (pauseResumeLabel) pauseResumeLabel.textContent = 'Resume';
+    if (pauseResumeBtn) pauseResumeBtn.classList.add('is-paused');
+    if (liveActivityDot) liveActivityDot.style.animationPlayState = 'paused';
+    updateProgressStats(parseInt(progressPct.textContent, 10) || 0, 'Translation Paused (Click Resume to continue)...');
+    addTerminalLog('warn', 'Translation paused by user.');
+  } else {
+    if (ctrlIconPause) ctrlIconPause.classList.remove('hidden');
+    if (ctrlIconResume) ctrlIconResume.classList.add('hidden');
+    if (pauseResumeLabel) pauseResumeLabel.textContent = 'Pause';
+    if (pauseResumeBtn) pauseResumeBtn.classList.remove('is-paused');
+    if (liveActivityDot) liveActivityDot.style.animationPlayState = 'running';
+    addTerminalLog('info', 'Translation resumed.');
+  }
+}
+
+function cancelTranslationProcess() {
+  if (!state.isTranslating) return;
+
+  const confirmed = confirm('Are you sure you want to stop translating? Any lines translated so far will be safely preserved.');
+  if (!confirmed) return;
+
+  state.isCancelled = true;
+  state.isPaused = false;
+  addTerminalLog('warn', 'Translation cancelled by user. Finalizing translated portions...');
+}
+
 // ── Event Setup ──
 function setupEventListeners() {
   // Theme Toggle
@@ -118,75 +298,109 @@ function setupEventListeners() {
     themeToggleBtn.addEventListener('click', toggleTheme);
   }
   // API Key Toggle Visibility
-  toggleApiKey.addEventListener('click', () => {
-    const isPass = apiKeyInput.type === 'password';
-    apiKeyInput.type = isPass ? 'text' : 'password';
-    eyeIcon.innerHTML = isPass
-      ? `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
-         <line x1="1" y1="1" x2="23" y2="23"/>`
-      : `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-         <circle cx="12" cy="12" r="3"/>`;
-  });
+  if (toggleApiKey && apiKeyInput && eyeIcon) {
+    toggleApiKey.addEventListener('click', () => {
+      const isPass = apiKeyInput.type === 'password';
+      apiKeyInput.type = isPass ? 'text' : 'password';
+      eyeIcon.innerHTML = isPass
+        ? `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+           <line x1="1" y1="1" x2="23" y2="23"/>`
+        : `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+           <circle cx="12" cy="12" r="3"/>`;
+    });
+  }
 
   // Allow pressing Enter in API Key input
-  apiKeyInput.addEventListener('keydown', e => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      handleSaveApiKey();
-    }
-  });
+  if (apiKeyInput) {
+    apiKeyInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handleSaveApiKey();
+      }
+    });
+  }
 
   // Save API Key and load live models
-  saveApiKey.addEventListener('click', handleSaveApiKey);
+  if (saveApiKey) {
+    saveApiKey.addEventListener('click', handleSaveApiKey);
+  }
 
   // Drag & Drop
-  dropZone.addEventListener('click', () => fileInput.click());
-  browseBtn.addEventListener('click', e => { e.stopPropagation(); fileInput.click(); });
+  if (dropZone && fileInput) {
+    dropZone.addEventListener('click', () => fileInput.click());
+    if (browseBtn) browseBtn.addEventListener('click', e => { e.stopPropagation(); fileInput.click(); });
 
-  ['dragenter', 'dragover'].forEach(name => {
-    dropZone.addEventListener(name, e => {
-      e.preventDefault();
-      dropZone.classList.add('drag-over');
+    ['dragenter', 'dragover'].forEach(name => {
+      dropZone.addEventListener(name, e => {
+        e.preventDefault();
+        dropZone.classList.add('drag-over');
+      });
     });
-  });
 
-  ['dragleave', 'drop'].forEach(name => {
-    dropZone.addEventListener(name, e => {
-      e.preventDefault();
-      dropZone.classList.remove('drag-over');
+    ['dragleave', 'drop'].forEach(name => {
+      dropZone.addEventListener(name, e => {
+        e.preventDefault();
+        dropZone.classList.remove('drag-over');
+      });
     });
-  });
 
-  dropZone.addEventListener('drop', e => {
-    const files = e.dataTransfer.files;
-    if (files.length > 0) handleFileSelection(files[0]);
-  });
+    dropZone.addEventListener('drop', e => {
+      const files = e.dataTransfer.files;
+      if (files.length > 0) handleFileSelection(files[0]);
+    });
 
-  fileInput.addEventListener('change', e => {
-    if (e.target.files.length > 0) handleFileSelection(e.target.files[0]);
-  });
+    fileInput.addEventListener('change', e => {
+      if (e.target.files.length > 0) handleFileSelection(e.target.files[0]);
+    });
+  }
 
   // Remove File
-  removeFile.addEventListener('click', () => {
-    state.parsedBlocks = [];
-    state.fileName = '';
-    fileInput.value = '';
-    fileInfo.classList.add('hidden');
-    dropZone.classList.remove('hidden');
-    checkReadyToTranslate();
-  });
+  if (removeFile) {
+    removeFile.addEventListener('click', () => {
+      state.parsedBlocks = [];
+      state.translatedBlocks = [];
+      state.uncompressedBlocks = [];
+      state.fileName = '';
+      if (fileInput) fileInput.value = '';
+      if (fileInfo) fileInfo.classList.add('hidden');
+      if (dropZone) dropZone.classList.remove('hidden');
+      if (resultCard) resultCard.classList.add('hidden');
+      if (fileRestoredBadge) fileRestoredBadge.classList.add('hidden');
+      clearSavedSession();
+      checkReadyToTranslate();
+    });
+  }
 
   // Start Translation
-  translateBtn.addEventListener('click', runTranslationPipeline);
+  if (translateBtn) {
+    translateBtn.addEventListener('click', runTranslationPipeline);
+  }
+
+  // Pause / Resume & Cancel Translation Controls
+  if (pauseResumeBtn) {
+    pauseResumeBtn.addEventListener('click', togglePauseTranslation);
+  }
+
+  if (cancelTranslateBtn) {
+    cancelTranslateBtn.addEventListener('click', cancelTranslationProcess);
+  }
 
   // Retranslate
-  retranslateBtn.addEventListener('click', () => {
-    resultCard.classList.add('hidden');
-    state.translatedBlocks = [];
-    state.uncompressedBlocks = [];
-    state.isCondensed = false;
-    runTranslationPipeline();
-  });
+  if (retranslateBtn) {
+    retranslateBtn.addEventListener('click', () => {
+      if (resultCard) resultCard.classList.add('hidden');
+      state.translatedBlocks = [];
+      state.uncompressedBlocks = [];
+      state.isCondensed = false;
+      clearSavedSession();
+      runTranslationPipeline();
+    });
+  }
+
+  // Retry Incomplete Batches
+  if (retryIncompleteBtn) {
+    retryIncompleteBtn.addEventListener('click', retryIncompleteBatchesPipeline);
+  }
 
   // AI Condenser (2nd-Pass Refinement)
   if (condenseSrtBtn) {
@@ -199,18 +413,24 @@ function setupEventListeners() {
   }
 
   // Download Action
-  downloadBtn.addEventListener('click', () => {
-    if (state.translatedBlocks.length > 0) downloadSRTFile(state.translatedBlocks);
-  });
+  if (downloadBtn) {
+    downloadBtn.addEventListener('click', () => {
+      if (state.translatedBlocks.length > 0) downloadSRTFile(state.translatedBlocks);
+    });
+  }
 
   // Copy Action
-  copySrtBtn.addEventListener('click', copyFullSRTCode);
+  if (copySrtBtn) {
+    copySrtBtn.addEventListener('click', copyFullSRTCode);
+  }
 
   // Model Selection Change
-  modelSelect.addEventListener('change', () => {
-    state.selectedModel = modelSelect.value;
-    if (state.loadedModels) updateQuotaDashboard(state.loadedModels);
-  });
+  if (modelSelect) {
+    modelSelect.addEventListener('change', () => {
+      state.selectedModel = modelSelect.value;
+      if (state.loadedModels) updateQuotaDashboard(state.loadedModels);
+    });
+  }
 
   // Toggle Live Model Specs Drawer
   const toggleQuotaBtn = $('toggleQuotaBtn');
@@ -497,6 +717,14 @@ function handleFileSelection(file) {
     return;
   }
 
+  // Cleanly reset any previous translation results and stored session
+  state.translatedBlocks = [];
+  state.uncompressedBlocks = [];
+  state.isCondensed = false;
+  if (resultCard) resultCard.classList.add('hidden');
+  if (fileRestoredBadge) fileRestoredBadge.classList.add('hidden');
+  clearSavedSession();
+
   state.fileName = file.name;
   state.fileSize = file.size;
 
@@ -662,6 +890,127 @@ function checkReadyToTranslate() {
   }
 }
 
+// ── Safety & Engine Configuration ──
+const GEMINI_SAFETY_SETTINGS = [
+  { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_NONE' },
+  { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_NONE' },
+  { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
+  { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' }
+];
+
+// ── Ultra-Resilient JSON Parser & Auto-Repair ──
+function parseAndRepairJson(rawText) {
+  if (!rawText || typeof rawText !== 'string') {
+    throw new Error('Empty text received from model.');
+  }
+
+  // 1. Strip markdown fences and trailing noise
+  let clean = rawText
+    .replace(/^```json\s*/im, '')
+    .replace(/^```\s*/im, '')
+    .replace(/```\s*$/m, '')
+    .trim();
+
+  // 2. Direct Parse Attempt
+  try {
+    const direct = JSON.parse(clean);
+    if (Array.isArray(direct)) return direct;
+    if (direct && typeof direct === 'object') {
+      const arr = direct.subtitles || direct.items || direct.translations || direct.results || direct.data;
+      if (Array.isArray(arr)) return arr;
+    }
+  } catch (e) {
+    // Continue to repair strategies
+  }
+
+  // 3. Extract bracketed array if surrounded by preamble/postamble
+  const arrayMatch = clean.match(/\[[\s\S]*\]/);
+  if (arrayMatch) {
+    clean = arrayMatch[0];
+    try {
+      const arr = JSON.parse(clean);
+      if (Array.isArray(arr)) return arr;
+    } catch (e) {
+      // Continue to deeper repair
+    }
+  }
+
+  // 4. Sanitize literal control characters inside string literals (e.g. unescaped newlines/tabs)
+  try {
+    let inString = false;
+    let escaped = false;
+    const sanitizedChars = [];
+
+    for (let i = 0; i < clean.length; i++) {
+      const ch = clean[i];
+
+      if (ch === '\\' && !escaped) {
+        escaped = true;
+        sanitizedChars.push(ch);
+        continue;
+      }
+
+      if (ch === '"' && !escaped) {
+        inString = !inString;
+        sanitizedChars.push(ch);
+        continue;
+      }
+
+      if (inString) {
+        if (ch === '\n') {
+          sanitizedChars.push('\\n');
+        } else if (ch === '\r') {
+          sanitizedChars.push('\\r');
+        } else if (ch === '\t') {
+          sanitizedChars.push('\\t');
+        } else {
+          sanitizedChars.push(ch);
+        }
+      } else {
+        sanitizedChars.push(ch);
+      }
+
+      escaped = false;
+    }
+
+    let sanitizedStr = sanitizedChars.join('');
+    // Remove trailing commas before closing brackets
+    sanitizedStr = sanitizedStr.replace(/,\s*([\]}])/g, '$1');
+
+    const parsed = JSON.parse(sanitizedStr);
+    if (Array.isArray(parsed)) return parsed;
+    if (parsed && typeof parsed === 'object') {
+      const arr = parsed.subtitles || parsed.items || parsed.translations;
+      if (Array.isArray(arr)) return arr;
+    }
+  } catch (e) {
+    // Continue to heuristic regex extractor
+  }
+
+  // 5. Heuristic Regex Item Extractor (Extracts individual complete objects)
+  const items = [];
+  const itemRegex = /\{[^{}]*?"id"\s*:\s*"?(\d+)"?[^{}]*?"(?:text|translation|bengali|content|translated_text)"\s*:\s*"((?:[^"\\]|\\.)*)"[^{}]*?\}/g;
+  let match;
+  while ((match = itemRegex.exec(rawText)) !== null) {
+    try {
+      const id = parseInt(match[1], 10);
+      const text = JSON.parse(`"${match[2]}"`);
+      items.push({ id, text });
+    } catch {
+      items.push({
+        id: parseInt(match[1], 10),
+        text: match[2].replace(/\\n/g, '\n').replace(/\\"/g, '"')
+      });
+    }
+  }
+
+  if (items.length > 0) {
+    return items;
+  }
+
+  throw new Error('Could not parse or repair valid JSON from model response.');
+}
+
 // ── Translation Pipeline ──
 async function runTranslationPipeline() {
   const activeKey = state.apiKey || apiKeyInput.value.trim();
@@ -669,6 +1018,16 @@ async function runTranslationPipeline() {
     alert('Please enter your Gemini API Key before proceeding.');
     return;
   }
+
+  state.isTranslating = true;
+  state.isPaused = false;
+  state.isCancelled = false;
+
+  // Reset Pause UI
+  if (ctrlIconPause) ctrlIconPause.classList.remove('hidden');
+  if (ctrlIconResume) ctrlIconResume.classList.add('hidden');
+  if (pauseResumeLabel) pauseResumeLabel.textContent = 'Pause';
+  if (pauseResumeBtn) pauseResumeBtn.classList.remove('is-paused');
 
   // Update UI to running state
   translateBtn.querySelector('.btn-content').classList.add('hidden');
@@ -684,7 +1043,8 @@ async function runTranslationPipeline() {
     processed: 0,
     overlapsFixed: 0,
     emptyRecovered: 0,
-    retries: 0
+    retries: 0,
+    untranslated: 0
   };
 
   const bs = state.optimalBatchSize || 30;
@@ -693,110 +1053,195 @@ async function runTranslationPipeline() {
 
   updateProgressStats(0, `Auto-configured ${batches.length} optimal batches (${bs} subtitles/batch)...`);
   addTerminalLog('info', `File: ${state.fileName} (${state.parsedBlocks.length} subtitles, duration: ${state.durationStr})`);
-  addTerminalLog('info', `Active Model: ${modelSelect.value} • Adaptive Batching: ${bs} lines`);
+  
+  const currentModelToUse = (modelSelect.value || (state.sortedModelList && state.sortedModelList[0]) || 'gemini-2.5-flash').replace(/^models\//, '');
+  addTerminalLog('info', `Active Model: ${currentModelToUse} • Adaptive Batching: ${bs} lines`);
 
   let processedCount = 0;
-  let currentModelToUse = (modelSelect.value || (state.sortedModelList && state.sortedModelList[0]) || 'gemini-3.5-flash').replace(/^models\//, '');
-  const degradedModelsSet = new Set();
 
-  for (let bi = 0; bi < batches.length; bi++) {
-    const currentBatch = batches[bi];
-    const startIndex = bi * bs;
-    const batchPct = Math.round((processedCount / state.parsedBlocks.length) * 94);
-
-    updateProgressStats(batchPct, `Translating batch ${bi + 1} of ${batches.length} (#${currentBatch[0].num} – #${currentBatch[currentBatch.length - 1].num})...`);
-    addTerminalLog('info', `Batch ${bi + 1}/${batches.length}: Translating ${currentBatch.length} lines with ${currentModelToUse}...`);
-
-    let batchResult = null;
-    let success = false;
-
-    for (let attempt = 1; attempt <= 4; attempt++) {
-      try {
-        batchResult = await callGeminiBatchTranslate(currentBatch, activeKey, attempt, currentModelToUse);
-        success = true;
+  try {
+    for (let bi = 0; bi < batches.length; bi++) {
+      // Check for pause
+      while (state.isPaused && !state.isCancelled) {
+        await sleep(300);
+      }
+      if (state.isCancelled) {
+        addTerminalLog('warn', `Translation stopped at batch ${bi + 1}/${batches.length}.`);
         break;
+      }
+
+      const currentBatch = batches[bi];
+      const startIndex = bi * bs;
+      const batchPct = Math.round((processedCount / state.parsedBlocks.length) * 94);
+
+      updateProgressStats(batchPct, `Translating batch ${bi + 1} of ${batches.length} (#${currentBatch[0].num} – #${currentBatch[currentBatch.length - 1].num})...`);
+      addTerminalLog('info', `Batch ${bi + 1}/${batches.length}: Translating ${currentBatch.length} lines with ${currentModelToUse}...`);
+
+      let batchResult = [];
+      try {
+        batchResult = await translateBatchWithAdaptiveSplitting(currentBatch, activeKey, currentModelToUse);
       } catch (err) {
-        state.stats.retries++;
-        const errMsg = (err.message || '').toLowerCase();
-        
-        const isDeprecatedOrUnavailable = errMsg.includes('no longer available') || 
-                                         errMsg.includes('deprecated') || 
-                                         errMsg.includes('not found') ||
-                                         errMsg.includes('404');
+        if (state.isCancelled) break;
+        addTerminalLog('err', `Batch ${bi + 1} could not be fully completed: ${err.message}. Original lines safely preserved.`);
+        batchResult = currentBatch.map(b => ({
+          ...b,
+          translatedLines: b.lines,
+          isTranslated: false
+        }));
+      }
 
-        const isHighDemand = errMsg.includes('demand') || 
-                             errMsg.includes('503') || 
-                             errMsg.includes('429') ||
-                             errMsg.includes('quota') ||
-                             errMsg.includes('overloaded');
+      // Merge translated blocks into main result array
+      for (let j = 0; j < batchResult.length; j++) {
+        translated[startIndex + j] = batchResult[j];
+      }
 
-        if (isDeprecatedOrUnavailable || (isHighDemand && attempt >= 2)) {
-          degradedModelsSet.add(currentModelToUse);
+      const batchSuccessCount = batchResult.filter(b => b.isTranslated).length;
+      processedCount += currentBatch.length;
+      state.stats.processed = processedCount;
+      statProcessed.textContent = `${processedCount} / ${state.parsedBlocks.length}`;
+      statBatches.textContent = `${bi + 1} / ${batches.length}`;
 
-          // Dynamically find next available verified model from user's live authorized model pool
-          const livePool = state.sortedModelList || [];
-          const nextModel = livePool.find(m => !degradedModelsSet.has(m));
+      if (batchSuccessCount === currentBatch.length) {
+        addTerminalLog('ok', `Batch ${bi + 1}/${batches.length} finished (100% translated).`);
+      } else {
+        addTerminalLog('warn', `Batch ${bi + 1}/${batches.length} completed with ${currentBatch.length - batchSuccessCount} lines in English.`);
+      }
 
-          if (nextModel && nextModel !== currentModelToUse) {
-            addTerminalLog('warn', `Notice on ${currentModelToUse} (${err.message.slice(0, 45)}...). Routing remaining batches to next live engine from your key: ${nextModel}...`);
-            currentModelToUse = nextModel;
-            
-            // Update dropdown & state in real time
-            if (modelSelect) {
-              modelSelect.value = currentModelToUse;
-              state.selectedModel = currentModelToUse;
-              if (state.loadedModels) updateQuotaDashboard(state.loadedModels);
-            }
-          }
-        }
-
-        if (attempt < 4) {
-          addTerminalLog('warn', `Batch ${bi + 1} retry ${attempt}/3 with ${currentModelToUse}... (Waiting ${attempt * 1.5}s)`);
-          await sleep(1500 * attempt);
-        } else {
-          addTerminalLog('err', `Batch ${bi + 1} could not complete after 4 attempts. Preserving original lines safely.`);
-          batchResult = currentBatch.map(b => ({ ...b, translatedLines: b.lines }));
-        }
+      // Smooth inter-batch pacing delay to respect Google API 15 RPM rate limits
+      if (bi < batches.length - 1 && !state.isCancelled) {
+        await sleep(1400);
       }
     }
 
-    // Merge translated blocks into main result array
-    for (let j = 0; j < batchResult.length; j++) {
-      translated[startIndex + j] = batchResult[j];
+    // Fill any missing or unreached blocks if cancelled
+    for (let i = 0; i < state.parsedBlocks.length; i++) {
+      if (!translated[i]) {
+        translated[i] = {
+          ...state.parsedBlocks[i],
+          translatedLines: state.parsedBlocks[i].lines,
+          isTranslated: false
+        };
+      }
     }
 
-    processedCount += currentBatch.length;
-    state.stats.processed = processedCount;
-    statProcessed.textContent = `${processedCount} / ${state.parsedBlocks.length}`;
-    statBatches.textContent = `${bi + 1} / ${batches.length}`;
+    // Post-processing: Precision Timing Verification & Overlap Correction
+    updateProgressStats(96, 'Verifying timecodes and auto-correcting any overlaps...');
+    addTerminalLog('info', 'Running precision timing validation & overlap check...');
+    await sleep(100);
 
-    if (success) {
-      addTerminalLog('ok', `Batch ${bi + 1}/${batches.length} finished.`);
+    const finalizedBlocks = postProcessSubtitles(translated);
+    state.translatedBlocks = finalizedBlocks;
+
+    const untranslatedTotal = finalizedBlocks.filter(b => b.isTranslated === false).length;
+    state.stats.untranslated = untranslatedTotal;
+
+    if (untranslatedTotal === 0) {
+      updateProgressStats(100, 'Translation & timing synchronization complete!');
+      addTerminalLog('ok', `Completed 100%! Fixed ${state.stats.overlapsFixed} overlaps with zero timecode drift.`);
+    } else if (state.isCancelled) {
+      updateProgressStats(100, `Translation stopped (${state.parsedBlocks.length - untranslatedTotal} lines translated, ${untranslatedTotal} remaining).`);
+      addTerminalLog('warn', `Translation stopped. You can review current progress or click "Retry Incomplete Batches" later.`);
+    } else {
+      updateProgressStats(100, `Translation completed with ${untranslatedTotal} lines in English (Retry available).`);
+      addTerminalLog('warn', `Translation finished with ${untranslatedTotal} untranslated lines. You can click "Retry Incomplete Batches" to finish them.`);
     }
+
+    await sleep(350);
+
+    // Present Results & Persist in IndexedDB
+    showTranslationResults(finalizedBlocks);
+    saveCurrentSession();
+
+    // Automatic SRT download only if 100% complete and not cancelled
+    if (untranslatedTotal === 0 && !state.isCancelled) {
+      await sleep(300);
+      downloadSRTFile(finalizedBlocks);
+      addTerminalLog('ok', 'Automatic SRT download triggered in browser.');
+    }
+  } finally {
+    state.isTranslating = false;
+    state.isPaused = false;
+    resetTranslateButton();
+  }
+}
+
+// ── Adaptive Sub-Batch Splitting Engine (Divide & Conquer) ──
+async function translateBatchWithAdaptiveSplitting(batch, activeKey, modelToUse, attempt = 1) {
+  if (!batch || batch.length === 0) return [];
+
+  // Wait if paused
+  while (state.isPaused && !state.isCancelled) {
+    await sleep(300);
+  }
+  if (state.isCancelled) {
+    throw new Error('Translation cancelled by user');
   }
 
-  // Post-processing: Precision Timing Verification & Overlap Correction
-  updateProgressStats(96, 'Verifying timecodes and auto-correcting any overlaps...');
-  addTerminalLog('info', 'Running precision timing validation & overlap check...');
-  await sleep(100);
+  try {
+    const result = await callGeminiBatchTranslate(batch, activeKey, attempt, modelToUse);
+    const translatedCount = result.filter(b => b && b.isTranslated).length;
 
-  const finalizedBlocks = postProcessSubtitles(translated);
+    // If all items translated successfully, return
+    if (translatedCount === batch.length) {
+      return result;
+    }
 
-  state.translatedBlocks = finalizedBlocks;
-  updateProgressStats(100, 'Translation & timing synchronization complete!');
-  addTerminalLog('ok', `Completed! Fixed ${state.stats.overlapsFixed} overlaps, recovered ${state.stats.emptyRecovered} missing lines.`);
+    // If some lines were not matched and batch size > 2, split and retry untranslated portions
+    if (batch.length > 2 && translatedCount < batch.length) {
+      if (state.isCancelled) return result;
+      addTerminalLog('warn', `Batch of ${batch.length} lines had ${batch.length - translatedCount} missing translations. Dividing into smaller sub-batches to ensure 100% completion...`);
+      const mid = Math.ceil(batch.length / 2);
+      await sleep(1000);
+      const resA = await translateBatchWithAdaptiveSplitting(batch.slice(0, mid), activeKey, modelToUse, 1);
+      await sleep(1200);
+      const resB = await translateBatchWithAdaptiveSplitting(batch.slice(mid), activeKey, modelToUse, 1);
+      return [...resA, ...resB];
+    }
 
-  await sleep(350);
+    return result;
+  } catch (err) {
+    if (state.isCancelled) throw err;
+    state.stats.retries++;
+    const errMsg = (err.message || '').toLowerCase();
+    const is429 = errMsg.includes('429') || errMsg.includes('quota') || errMsg.includes('resource has been exhausted');
+    const is503 = errMsg.includes('503') || errMsg.includes('overloaded') || errMsg.includes('high demand');
 
-  // Present Results
-  showTranslationResults(finalizedBlocks);
+    if (is429) {
+      const waitTime = Math.min(5000 * attempt, 16000);
+      addTerminalLog('warn', `Google API rate limit (15 RPM) reached. Pausing for ${waitTime / 1000}s to cool down before retry ${attempt}/3...`);
+      await sleep(waitTime);
+      if (attempt <= 3 && !state.isCancelled) {
+        return await translateBatchWithAdaptiveSplitting(batch, activeKey, modelToUse, attempt + 1);
+      }
+    } else if (is503) {
+      addTerminalLog('warn', `Google server busy (503). Retrying in 4s...`);
+      await sleep(4000);
+      if (attempt <= 3 && !state.isCancelled) {
+        return await translateBatchWithAdaptiveSplitting(batch, activeKey, modelToUse, attempt + 1);
+      }
+    }
 
-  // Automatic SRT download
-  await sleep(300);
-  downloadSRTFile(finalizedBlocks);
-  addTerminalLog('ok', 'Automatic SRT download triggered in browser.');
+    // If batch has multiple items and failed, SPLIT into 2 sub-batches (Divide and Conquer)
+    if (batch.length > 1 && !state.isCancelled) {
+      const mid = Math.ceil(batch.length / 2);
+      const subA = batch.slice(0, mid);
+      const subB = batch.slice(mid);
+      addTerminalLog('warn', `Sub-dividing batch of ${batch.length} lines into smaller chunks (${subA.length} + ${subB.length}) to isolate error...`);
+      await sleep(1200);
+      const resA = await translateBatchWithAdaptiveSplitting(subA, activeKey, modelToUse, 1);
+      await sleep(1200);
+      const resB = await translateBatchWithAdaptiveSplitting(subB, activeKey, modelToUse, 1);
+      return [...resA, ...resB];
+    }
 
-  resetTranslateButton();
+    // Single block failed all attempts
+    addTerminalLog('err', `Subtitle #${batch[0].num} could not be translated: ${err.message}. Marking as incomplete.`);
+    return batch.map(b => ({
+      ...b,
+      translatedLines: b.lines,
+      isTranslated: false
+    }));
+  }
 }
 
 // ── Gemini Translation Engine ──
@@ -806,7 +1251,7 @@ async function callGeminiBatchTranslate(batch, key, attemptNumber, overrideModel
   const hint = contextHint.value.trim();
   
   // Clean model ID to strictly avoid double 'models/' prefix
-  const rawModel = overrideModel || modelSelect.value || 'gemini-2.0-flash';
+  const rawModel = overrideModel || modelSelect.value || 'gemini-2.5-flash';
   const selectedModel = rawModel.replace(/^models\//, '').trim();
 
   // Construct structured payload (Only subtitle text and ID is passed; timecodes remain 100% untouched)
@@ -842,14 +1287,25 @@ async function callGeminiBatchTranslate(batch, key, attemptNumber, overrideModel
 
   if (langLower.includes('bengali') || lang === 'Bengali') {
     languageRules = `
-DIALOGUE & PRONOUN RULES (Bengali):
-- NEVER use disrespectful or rude pronouns like "তুই", "তোর", "তোকে".
-- ALWAYS use friendly, polite, and natural conversational pronouns like "তুমি", "তোমার", "তোমাকে", "তোমরা" (or "আপনি/আপনার" when addressing elders or formal roles).
-- Translate in natural everyday spoken Bengali (চলতি কথ্য ভাষা) so it feels like a real movie/drama dub.`;
+DIALOGUE & REGIONAL VOCABULARY RULES (Bengali / বাংলা):
+- Strictly use modern standard Bangladeshi Bengali phrasing and natural vocabulary commonly used across Bangladesh.
+- Standard Vocabulary Mapping:
+  * Use "পানি" (NEVER use "জল" for water).
+  * Use "রংধনু" (NEVER use "রামধনু").
+  * Use "জাতিসংঘ" (NEVER use "রাষ্ট্রপুঞ্জ").
+  * Use "গোসল" (NEVER use "স্নান").
+  * Use "দাওয়াত" / "আমন্ত্রণ" (NEVER use "নিমন্ত্রণ").
+  * Use "খোদা" / "ঈশ্বর" / "আল্লাহ" (NEVER use "ভগবান" as default generic deity).
+  * For greetings, use "সালাম" / "হাই" / "হ্যালো" / "কেমন আছেন" (avoid "নমস্কার" unless character-specific religious setting).
+- Avoid West Bengal / Indian regional vocabulary (e.g. জল, রামধনু, ভগবান, স্নান, রাষ্ট্রপুঞ্জ, নিমন্ত্রণ, দিদিমণি, মশাই, ইত্যাদি).
+- PRONOUNS:
+  * NEVER use disrespectful pronouns like "তুই", "তোর", "তোকে" unless explicitly required by intense hostility/abuse.
+  * ALWAYS use polite, friendly, and natural conversational pronouns like "তুমি", "তোমার", "তোমাকে", "তোমরা" (or "আপনি/আপনার" for elders/formal roles).
+- Translate in lively, natural everyday spoken Bangladeshi Bengali (চলতি কথ্য ভাষা) so it feels like a top-tier cinematic dub.`;
   } else if (langLower.includes('hindi') || langLower.includes('urdu')) {
     languageRules = `
 DIALOGUE & PRONOUN RULES (${lang}):
-- AVOID disrespectful or rude pronouns like "तू" / "तेरा" / "तुझे".
+- AVOID disrespectful or rude pronouns like "तू" / "तेরা" / "तुझे".
 - Use friendly, polite, and natural conversational pronouns like "तुम", "तुम्हारा", "तुम्हें" (or "आप", "आपका" for respect/elders).
 - Translate in natural, modern conversational cinema/drama dialogue.`;
   } else if (langLower.includes('spanish')) {
@@ -878,18 +1334,20 @@ Task: Translate every single subtitle dialogue line accurately into ${lang}.
 
 MANDATORY RULES:
 1. Every subtitle text MUST be translated into ${lang}. Do NOT leave original untranslated text.
-2. Output strictly in natural, fluent ${lang} script and vocabulary matching real spoken movie dialogue.
+2. Return ONLY a valid JSON array of objects conforming to Schema.
+   Schema: [{"id": 0, "text": "translated dialogue in ${lang}"}, {"id": 1, "text": "translated dialogue in ${lang}"}]
 3. Preserve 100% of subtitle meaning, punchlines, drama, context, and emotion.
 4. ${pacingPrompt}
-5. Preserve HTML formatting tags (like <i>, </i>, <b>, </b>) if present in original text.${languageRules}
+5. Formatting & Tags:
+   - Preserve HTML formatting tags (like <i>, </i>, <b>, </b>) if present in original text.
+   - Preserve speaker tags or sound effects (e.g. [Music], (Laughter), [Door slams], JOHN:) appropriately without mangling brackets.
+   - If original subtitle text has multiple dialogue lines (e.g. starting with "- "), keep clean line breaks in translated text.${languageRules}
 ${hint ? `6. Context/Genre: ${hint}` : ''}
-7. Output Format: Return ONLY a valid JSON array of objects. No markdown backticks, no preamble, no explanations.
-Schema: [{"id": 0, "text": "translated dialogue in ${lang}"}, {"id": 1, "text": "translated dialogue in ${lang}"}]
 
 INPUT SUBTITLES TO TRANSLATE (${batch.length} items):
 ${JSON.stringify(inputData, null, 2)}
 
-OUTPUT (Strict JSON Array in ${lang}):`;
+OUTPUT (JSON Array):`;
 
   const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent?key=${key}`;
 
@@ -900,9 +1358,11 @@ OUTPUT (Strict JSON Array in ${lang}):`;
       }
     ],
     generationConfig: {
+      responseMimeType: 'application/json',
       temperature: 0.15,
       maxOutputTokens: 8192
-    }
+    },
+    safetySettings: GEMINI_SAFETY_SETTINGS
   };
 
   const response = await fetch(endpoint, {
@@ -924,19 +1384,7 @@ OUTPUT (Strict JSON Array in ${lang}):`;
     throw new Error('Received empty response from Gemini API.');
   }
 
-  let parsedArray;
-  try {
-    const sanitized = rawText
-      .replace(/^```json\s*/i, '')
-      .replace(/^```\s*/, '')
-      .replace(/```\s*$/, '')
-      .trim();
-    parsedArray = JSON.parse(sanitized);
-  } catch {
-    const jsonMatch = rawText.match(/\[[\s\S]*\]/);
-    if (!jsonMatch) throw new Error('Could not extract JSON array from translation result.');
-    parsedArray = JSON.parse(jsonMatch[0]);
-  }
+  const parsedArray = parseAndRepairJson(rawText);
 
   if (!Array.isArray(parsedArray)) {
     throw new Error('AI output was not a JSON array.');
@@ -946,8 +1394,14 @@ OUTPUT (Strict JSON Array in ${lang}):`;
   return batch.map((originalBlock, idx) => {
     let matched = null;
     if (Array.isArray(parsedArray)) {
-      // Check loose equality (e.g. "0" == 0) and 1-based indexing
-      matched = parsedArray.find(item => item && (item.id == idx || item.id == idx + 1));
+      matched = parsedArray.find(item => item && (
+        item.id === idx || 
+        item.id === String(idx) || 
+        item.id === idx + 1 || 
+        item.id === String(idx + 1) ||
+        item.id === originalBlock.num
+      ));
+
       if (!matched && idx < parsedArray.length) {
         matched = parsedArray[idx];
       }
@@ -972,10 +1426,10 @@ OUTPUT (Strict JSON Array in ${lang}):`;
     }
 
     if (!transText) {
-      state.stats.emptyRecovered++;
       return {
         ...originalBlock,
-        translatedLines: originalBlock.lines
+        translatedLines: originalBlock.lines,
+        isTranslated: false
       };
     }
 
@@ -986,9 +1440,135 @@ OUTPUT (Strict JSON Array in ${lang}):`;
 
     return {
       ...originalBlock,
-      translatedLines: lines.length > 0 ? lines : [transText]
+      translatedLines: lines.length > 0 ? lines : [transText],
+      isTranslated: true
     };
   });
+}
+
+// ── Selective Retry Pipeline for Incomplete Batches ──
+async function retryIncompleteBatchesPipeline() {
+  const activeKey = state.apiKey || apiKeyInput.value.trim();
+  if (!activeKey) {
+    alert('Please enter your Gemini API Key before proceeding.');
+    return;
+  }
+
+  const incompleteIndices = [];
+  state.translatedBlocks.forEach((b, idx) => {
+    if (b.isTranslated === false) {
+      incompleteIndices.push(idx);
+    }
+  });
+
+  if (incompleteIndices.length === 0) {
+    alert('All subtitles are already 100% translated!');
+    return;
+  }
+
+  state.isTranslating = true;
+  state.isPaused = false;
+  state.isCancelled = false;
+
+  if (ctrlIconPause) ctrlIconPause.classList.remove('hidden');
+  if (ctrlIconResume) ctrlIconResume.classList.add('hidden');
+  if (pauseResumeLabel) pauseResumeLabel.textContent = 'Pause';
+  if (pauseResumeBtn) pauseResumeBtn.classList.remove('is-paused');
+
+  if (retryIncompleteBtn) {
+    retryIncompleteBtn.disabled = true;
+    retryIncompleteBtn.innerHTML = `
+      <span class="modern-spinner" style="width:14px;height:14px;border-width:2px;"></span>
+      <span>Retrying ${incompleteIndices.length} lines...</span>
+    `;
+  }
+
+  progressCard.classList.remove('hidden');
+  resultCard.classList.add('hidden');
+  progressLog.innerHTML = '';
+
+  updateProgressStats(0, `Retrying ${incompleteIndices.length} incomplete subtitle lines...`);
+  addTerminalLog('info', `[Selective Retry Engine] Found ${incompleteIndices.length} untranslated subtitle lines.`);
+
+  const blocksToRetry = incompleteIndices.map(idx => ({
+    ...state.parsedBlocks[idx],
+    originalIndex: idx
+  }));
+
+  const bs = Math.min(state.optimalBatchSize || 20, 15);
+  const batches = chunkArray(blocksToRetry, bs);
+  let processed = 0;
+  const currentModelToUse = (modelSelect.value || (state.sortedModelList && state.sortedModelList[0]) || 'gemini-2.5-flash').replace(/^models\//, '');
+
+  try {
+    for (let bi = 0; bi < batches.length; bi++) {
+      while (state.isPaused && !state.isCancelled) {
+        await sleep(300);
+      }
+      if (state.isCancelled) {
+        addTerminalLog('warn', `Selective retry stopped by user.`);
+        break;
+      }
+
+      const currentBatch = batches[bi];
+      const pct = Math.round((processed / blocksToRetry.length) * 100);
+      updateProgressStats(pct, `Retrying batch ${bi + 1} of ${batches.length} (${currentBatch.length} lines)...`);
+      addTerminalLog('info', `Retrying lines ${currentBatch.map(b => '#' + b.num).join(', ')}...`);
+
+      try {
+        const res = await translateBatchWithAdaptiveSplitting(currentBatch, activeKey, currentModelToUse);
+        res.forEach((translatedBlock, i) => {
+          const origIdx = currentBatch[i].originalIndex;
+          if (translatedBlock.isTranslated) {
+            state.translatedBlocks[origIdx] = {
+              ...translatedBlock,
+              originalIndex: undefined
+            };
+          }
+        });
+        addTerminalLog('ok', `Retry batch ${bi + 1} completed.`);
+      } catch (err) {
+        if (state.isCancelled) break;
+        addTerminalLog('err', `Retry batch ${bi + 1} failed: ${err.message}`);
+      }
+
+      processed += currentBatch.length;
+      if (bi < batches.length - 1 && !state.isCancelled) {
+        await sleep(1500);
+      }
+    }
+
+    updateProgressStats(100, 'Selective retry complete! Updating final subtitles...');
+    const finalized = postProcessSubtitles(state.translatedBlocks);
+    state.translatedBlocks = finalized;
+
+    const stillIncomplete = finalized.filter(b => b.isTranslated === false).length;
+    state.stats.untranslated = stillIncomplete;
+
+    await sleep(350);
+    showTranslationResults(finalized);
+    saveCurrentSession();
+
+    if (stillIncomplete === 0 && !state.isCancelled) {
+      addTerminalLog('ok', 'All subtitles are now 100% translated and synchronized!');
+      downloadSRTFile(finalized);
+    } else {
+      addTerminalLog('warn', `${stillIncomplete} lines still remain untranslated. You can click retry again.`);
+    }
+  } finally {
+    state.isTranslating = false;
+    state.isPaused = false;
+    if (retryIncompleteBtn) {
+      retryIncompleteBtn.disabled = false;
+      retryIncompleteBtn.innerHTML = `
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M1 4v6h6"/>
+          <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+        </svg>
+        <span>Retry Incomplete Batches</span>
+      `;
+    }
+  }
 }
 
 // ── Timing Correction & Overlap Fixer ──
@@ -999,6 +1579,7 @@ function postProcessSubtitles(blocks) {
   for (let i = 0; i < result.length; i++) {
     if (!result[i].translatedLines || result[i].translatedLines.length === 0) {
       result[i].translatedLines = result[i].lines;
+      result[i].isTranslated = false;
       state.stats.emptyRecovered++;
     }
   }
@@ -1039,39 +1620,36 @@ function getReadingSpeedPill(lines) {
   const flashIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;display:inline-block;vertical-align:-1px;"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>`;
   const clockIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;display:inline-block;vertical-align:-1px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`;
 
-  if (words <= 4) {
-    return `<span class="speed-pill ultra-fast" title="Glance speed: ~${sec}s read">${flashIcon} ${words}w • ${sec}s</span>`;
+  if (words <= 3) {
+    return `<span class="speed-pill speed-micro" title="${words} words: Read in a blink">${flashIcon} ${sec}s (${words}w)</span>`;
   } else if (words <= 7) {
-    return `<span class="speed-pill fast" title="Fast reading speed: ~${sec}s read">${flashIcon} ${words}w • ${sec}s</span>`;
+    return `<span class="speed-pill speed-fast" title="${words} words: Fast glance reading">${flashIcon} ${sec}s (${words}w)</span>`;
+  } else if (words <= 12) {
+    return `<span class="speed-pill speed-normal" title="${words} words: Standard comfort speed">${clockIcon} ${sec}s (${words}w)</span>`;
   } else {
-    return `<span class="speed-pill moderate" title="Standard reading speed: ~${sec}s read">${clockIcon} ${words}w • ${sec}s</span>`;
+    return `<span class="speed-pill speed-dense" title="${words} words: Dense line - click Shorten to condense">${clockIcon} ${sec}s (${words}w)</span>`;
   }
 }
 
-// ── 2nd-Pass AI Subtitle Condenser Engine ──
+// ── AI 2nd-Pass Condenser Pipeline ──
 async function runAiCondensePipeline() {
-  if (!state.translatedBlocks || state.translatedBlocks.length === 0) {
-    alert('Please translate subtitles first before running AI Condenser.');
-    return;
-  }
-
+  if (state.translatedBlocks.length === 0) return;
   const activeKey = state.apiKey || apiKeyInput.value.trim();
   if (!activeKey) {
     alert('Please enter your Gemini API Key before proceeding.');
     return;
   }
 
-  // Backup uncompressed 1st-pass translation
-  if (!state.uncompressedBlocks || state.uncompressedBlocks.length === 0 || !state.isCondensed) {
+  // Backup original translations if not already done
+  if (!state.uncompressedBlocks || state.uncompressedBlocks.length === 0) {
     state.uncompressedBlocks = JSON.parse(JSON.stringify(state.translatedBlocks));
   }
 
-  // Update button state
-  condenseSrtBtn.disabled = true;
   const origBtnHtml = condenseSrtBtn.innerHTML;
+  condenseSrtBtn.disabled = true;
   condenseSrtBtn.innerHTML = `
-    <span class="modern-spinner" style="width:16px;height:16px;border-width:2px;"></span>
-    <span>Condensing to Glance-Speed...</span>
+    <span class="modern-spinner" style="width:14px;height:14px;border-width:2px;"></span>
+    <span>Condensing Subtitles...</span>
   `;
 
   progressCard.classList.remove('hidden');
@@ -1079,30 +1657,26 @@ async function runAiCondensePipeline() {
   progressLog.innerHTML = '';
 
   const totalWordsStart = countTotalWords(state.translatedBlocks);
-  const bs = Math.min(state.optimalBatchSize || 30, 25);
+  updateProgressStats(0, 'Starting 2nd-Pass AI Condensation for ultra-fast reading...');
+  addTerminalLog('info', `[2nd-Pass Condenser] Analyzing ${state.translatedBlocks.length} subtitles (${totalWordsStart} total words)...`);
+
+  const bs = 25;
   const batches = chunkArray(state.translatedBlocks, bs);
   const condensedResult = new Array(state.translatedBlocks.length);
-
-  updateProgressStats(0, `Starting 2nd-Pass AI Subtitle Condenser (${batches.length} batches)...`);
-  addTerminalLog('info', `[AI Condenser] Compressing ${state.translatedBlocks.length} subtitles for split-second glance reading...`);
-  addTerminalLog('info', `Using full 1st-pass translation context to eliminate unnecessary filler words.`);
-
   let processedCount = 0;
-  let currentModelToUse = (modelSelect.value || (state.sortedModelList && state.sortedModelList[0]) || 'gemini-2.5-flash').replace(/^models\//, '');
-  const degradedModelsSet = new Set();
+  const currentModelToUse = (modelSelect.value || (state.sortedModelList && state.sortedModelList[0]) || 'gemini-2.5-flash').replace(/^models\//, '');
 
   for (let bi = 0; bi < batches.length; bi++) {
     const currentBatch = batches[bi];
     const startIndex = bi * bs;
-    const batchPct = Math.round((processedCount / state.translatedBlocks.length) * 94);
+    const batchPct = Math.round((processedCount / state.translatedBlocks.length) * 95);
 
-    updateProgressStats(batchPct, `AI Condensing batch ${bi + 1} of ${batches.length} (#${currentBatch[0].num} – #${currentBatch[currentBatch.length - 1].num})...`);
-    addTerminalLog('info', `Pass 2 Batch ${bi + 1}/${batches.length}: Trimming words with ${currentModelToUse}...`);
+    updateProgressStats(batchPct, `Condensing batch ${bi + 1} of ${batches.length}...`);
 
-    let batchResult = null;
+    let batchResult = [];
     let success = false;
 
-    for (let attempt = 1; attempt <= 4; attempt++) {
+    for (let attempt = 1; attempt <= 3; attempt++) {
       try {
         batchResult = await callGeminiBatchCondense(currentBatch, activeKey, attempt, currentModelToUse);
         success = true;
@@ -1110,29 +1684,13 @@ async function runAiCondensePipeline() {
       } catch (err) {
         state.stats.retries++;
         const errMsg = (err.message || '').toLowerCase();
-        
-        const isDeprecatedOrUnavailable = errMsg.includes('no longer available') || 
-                                         errMsg.includes('deprecated') || 
-                                         errMsg.includes('not found') ||
-                                         errMsg.includes('404');
+        const is429 = errMsg.includes('429') || errMsg.includes('quota');
 
-        const isHighDemand = errMsg.includes('demand') || 
-                             errMsg.includes('503') || 
-                             errMsg.includes('429') ||
-                             errMsg.includes('quota') ||
-                             errMsg.includes('overloaded');
-
-        if (isDeprecatedOrUnavailable || (isHighDemand && attempt >= 2)) {
-          degradedModelsSet.add(currentModelToUse);
-          const livePool = state.sortedModelList || [];
-          const nextModel = livePool.find(m => !degradedModelsSet.has(m));
-          if (nextModel && nextModel !== currentModelToUse) {
-            addTerminalLog('warn', `Routing to alternate model: ${nextModel}...`);
-            currentModelToUse = nextModel;
-          }
-        }
-
-        if (attempt < 4) {
+        if (is429) {
+          const waitTime = Math.min(5000 * attempt, 15000);
+          addTerminalLog('warn', `Rate limit reached. Pausing ${waitTime / 1000}s before condenser retry ${attempt}/3...`);
+          await sleep(waitTime);
+        } else if (attempt < 3) {
           addTerminalLog('warn', `Retry ${attempt}/3 for batch ${bi + 1}...`);
           await sleep(1500 * attempt);
         } else {
@@ -1147,14 +1705,8 @@ async function runAiCondensePipeline() {
     }
 
     processedCount += currentBatch.length;
-    statProcessed.textContent = `${processedCount} / ${state.translatedBlocks.length}`;
-    statBatches.textContent = `${bi + 1} / ${batches.length}`;
-
-    if (success) {
-      const bWordsBefore = countTotalWords(currentBatch);
-      const bWordsAfter = countTotalWords(batchResult);
-      const bSaved = bWordsBefore > 0 ? Math.round(((bWordsBefore - bWordsAfter) / bWordsBefore) * 100) : 0;
-      addTerminalLog('ok', `Batch ${bi + 1} condensed: ${bWordsBefore}w -> ${bWordsAfter}w (${bSaved > 0 ? '-' + bSaved + '%' : 'optimized'})`);
+    if (bi < batches.length - 1) {
+      await sleep(1200);
     }
   }
 
@@ -1172,8 +1724,9 @@ async function runAiCondensePipeline() {
 
   await sleep(350);
 
-  // Present Results
+  // Present Results & Persist in IndexedDB
   showTranslationResults(finalizedBlocks, totalPercentSaved);
+  saveCurrentSession();
 
   // Auto download condensed version
   await sleep(300);
@@ -1196,6 +1749,12 @@ async function callGeminiBatchCondense(batch, key, attemptNumber, overrideModel)
     translation: (item.translatedLines || item.lines).join(' ')
   }));
 
+  let condenseLangRule = '';
+  if (lang.toLowerCase().includes('bengali') || lang === 'Bengali') {
+    condenseLangRule = `
+7. Strictly maintain natural Bangladeshi Bengali vocabulary (e.g. use "পানি", "রংধনু", "জাতিসংঘ", "গোসল", "খোদা/ঈশ্বর", "সালাম/হাই/হ্যালো"; strictly avoid West Bengal variants like "জল", "রামধনু", "ভগবান", "স্নান", "নমস্কার").`;
+  }
+
   const promptText = `You are a master subtitle compression and localization editor.
 Task: Condense and shorten the given ${lang} subtitle translations so they are readable in a split second glance.
 
@@ -1205,22 +1764,24 @@ MANDATORY RULES:
 3. Strictly preserve 100% of the core emotion, punchline, dialogue intent, and context.
 4. Output strictly in natural everyday spoken ${lang} dialogue/script.
 5. Preserve HTML tags like <i>, </i>, <b>, </b> if present.
-6. Output Format: Return ONLY a valid JSON array of objects. No markdown backticks, no explanations.
-Schema: [{"id": 0, "text": "concise dialogue in ${lang}"}, {"id": 1, "text": "concise dialogue in ${lang}"}]
+6. Return ONLY a valid JSON array of objects conforming to Schema.
+Schema: [{"id": 0, "text": "concise dialogue in ${lang}"}, {"id": 1, "text": "concise dialogue in ${lang}"}]${condenseLangRule}
 
 INPUT SUBTITLES (${batch.length} items):
 ${JSON.stringify(inputData, null, 2)}
 
-OUTPUT (Strict JSON Array in ${lang}):`;
+OUTPUT (JSON Array):`;
 
   const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent?key=${key}`;
 
   const requestBody = {
     contents: [{ parts: [{ text: promptText }] }],
     generationConfig: {
+      responseMimeType: 'application/json',
       temperature: 0.15,
       maxOutputTokens: 8192
-    }
+    },
+    safetySettings: GEMINI_SAFETY_SETTINGS
   };
 
   const response = await fetch(endpoint, {
@@ -1240,24 +1801,17 @@ OUTPUT (Strict JSON Array in ${lang}):`;
 
   if (!rawText.trim()) throw new Error('Received empty response from Gemini Condenser.');
 
-  let parsedArray;
-  try {
-    const sanitized = rawText
-      .replace(/^```json\s*/i, '')
-      .replace(/^```\s*/, '')
-      .replace(/```\s*$/, '')
-      .trim();
-    parsedArray = JSON.parse(sanitized);
-  } catch {
-    const jsonMatch = rawText.match(/\[[\s\S]*\]/);
-    if (!jsonMatch) throw new Error('Could not extract JSON array from condenser output.');
-    parsedArray = JSON.parse(jsonMatch[0]);
-  }
+  const parsedArray = parseAndRepairJson(rawText);
 
   if (!Array.isArray(parsedArray)) throw new Error('AI condenser output was not a JSON array.');
 
   return batch.map((originalBlock, idx) => {
-    let matched = parsedArray.find(item => item && (item.id == idx || item.id == idx + 1));
+    let matched = parsedArray.find(item => item && (
+      item.id === idx || 
+      item.id === String(idx) || 
+      item.id === idx + 1 || 
+      item.id === String(idx + 1)
+    ));
     if (!matched && idx < parsedArray.length) matched = parsedArray[idx];
 
     let transText = '';
@@ -1294,6 +1848,7 @@ function restoreOriginalTranslation() {
   state.translatedBlocks = JSON.parse(JSON.stringify(state.uncompressedBlocks));
   state.isCondensed = false;
   showTranslationResults(state.translatedBlocks);
+  saveCurrentSession();
   addTerminalLog('info', 'Restored original uncompressed translation.');
 }
 
@@ -1326,6 +1881,7 @@ async function condenseSingleBlock(index) {
       const activeTab = document.querySelector('.preview-tab.active')?.dataset?.tab || 'translated';
       renderActiveTab(activeTab, state.translatedBlocks);
       if (restoreOriginalBtn) restoreOriginalBtn.classList.remove('hidden');
+      saveCurrentSession();
     }
   } catch (err) {
     console.error('Error shortening line:', err);
@@ -1344,7 +1900,25 @@ function showTranslationResults(blocks, percentSaved) {
   progressCard.classList.add('hidden');
   resultCard.classList.remove('hidden');
 
-  resultStats.textContent = `${blocks.length} subtitles localized to ${targetLang.value} • 0 drift • 100% timecode integrity`;
+  const untranslatedCount = blocks.filter(b => b.isTranslated === false).length;
+
+  if (untranslatedCount > 0) {
+    resultStats.textContent = `${blocks.length - untranslatedCount} of ${blocks.length} subtitles translated to ${targetLang.value} (${untranslatedCount} in English) • 0 drift • 100% timecode integrity`;
+    if (incompleteWarningBanner) {
+      incompleteWarningBanner.classList.remove('hidden');
+      if (incompleteWarningTitle) {
+        incompleteWarningTitle.textContent = `Attention: ${untranslatedCount} subtitle lines remain untranslated`;
+      }
+      if (incompleteWarningDesc) {
+        incompleteWarningDesc.textContent = `Due to temporary rate limits or API load, ${untranslatedCount} lines could not be translated and remain in English. Click "Retry Incomplete Batches" below to translate only these lines.`;
+      }
+    }
+  } else {
+    resultStats.textContent = `${blocks.length} subtitles localized to ${targetLang.value} • 0 drift • 100% timecode integrity`;
+    if (incompleteWarningBanner) {
+      incompleteWarningBanner.classList.add('hidden');
+    }
+  }
 
   // Toggle Restore Button
   if (restoreOriginalBtn) {
@@ -1365,7 +1939,13 @@ function showTranslationResults(blocks, percentSaved) {
     });
   }
 
-  badges.push({ text: `${blocks.length} Subtitles Ready`, type: 'success' });
+  if (untranslatedCount === 0) {
+    badges.push({ text: `${blocks.length} Subtitles 100% Ready`, type: 'success' });
+  } else {
+    badges.push({ text: `${blocks.length - untranslatedCount}/${blocks.length} Subtitles Ready`, type: 'warning' });
+    badges.push({ text: `${untranslatedCount} Lines in English`, type: 'warning' });
+  }
+
   badges.push({ text: '100% Timing Preserved', type: 'success' });
 
   if (state.stats.overlapsFixed > 0) {
@@ -1379,7 +1959,7 @@ function showTranslationResults(blocks, percentSaved) {
   }
 
   if (state.stats.retries > 0) {
-    badges.push({ text: `${state.stats.retries} Batch Auto-Retries`, type: 'warning' });
+    badges.push({ text: `${state.stats.retries} Auto-Retries / Sub-Splits`, type: 'warning' });
   }
 
   fixSummary.innerHTML = badges.map(b => `

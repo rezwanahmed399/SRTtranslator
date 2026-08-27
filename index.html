@@ -506,6 +506,12 @@
                 <span class="pill-metric" id="fileSizeBadge">0 KB</span>
                 <span class="pill-metric" id="fileDurationBadge">00:00:00</span>
                 <span class="pill-metric" id="fileBatchBadge">Auto Chunks Ready</span>
+                <span class="pill-metric restored-tag hidden" id="fileRestoredBadge">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:11px;height:11px;display:inline-block;vertical-align:-1px;margin-right:3px;">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                  Session Restored
+                </span>
               </div>
             </div>
             <button class="btn-icon btn-remove" id="removeFile" title="Remove file" type="button">
@@ -547,10 +553,29 @@
       <section class="glass-card progress-section hidden" id="progressCard">
         <div class="progress-header-row">
           <div class="progress-status-info">
-            <span class="live-activity-dot"></span>
+            <span class="live-activity-dot" id="liveActivityDot"></span>
             <span class="progress-title" id="progressTitle">Initializing translation batches...</span>
           </div>
-          <span class="progress-percentage" id="progressPct">0%</span>
+          <div class="progress-header-actions">
+            <button class="btn btn-progress-ctrl" id="pauseResumeBtn" type="button" title="Pause or Resume translation">
+              <svg class="ctrl-icon-pause" id="ctrlIconPause" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="6" y="4" width="4" height="16"/>
+                <rect x="14" y="4" width="4" height="16"/>
+              </svg>
+              <svg class="ctrl-icon-resume hidden" id="ctrlIconResume" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="5 3 19 12 5 21 5 3"/>
+              </svg>
+              <span id="pauseResumeLabel">Pause</span>
+            </button>
+            <button class="btn btn-progress-cancel" id="cancelTranslateBtn" type="button" title="Cancel and keep partial translations">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+              <span>Cancel</span>
+            </button>
+            <span class="progress-percentage" id="progressPct">0%</span>
+          </div>
         </div>
 
         <div class="progress-track">
@@ -633,6 +658,26 @@
               <span>Copy Full SRT Code</span>
             </button>
           </div>
+        <!-- Incomplete Batch Warning Banner (Appears only when lines need retry) -->
+        <div class="incomplete-warning-banner hidden" id="incompleteWarningBanner">
+          <div class="warning-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+          </div>
+          <div class="warning-text-content">
+            <strong id="incompleteWarningTitle">Attention: Some subtitle lines could not be translated</strong>
+            <p id="incompleteWarningDesc">Due to temporary API rate limits or network issues, some subtitles were kept in English. Click below to retry only the incomplete lines without re-translating the entire file.</p>
+          </div>
+          <button class="btn btn-warning-retry" id="retryIncompleteBtn" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M1 4v6h6"/>
+              <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+            </svg>
+            <span>Retry Incomplete Batches</span>
+          </button>
         </div>
 
         <!-- Quality Metrics Summary -->
