@@ -36,7 +36,7 @@
         "@id": "https://srttranslator.vercel.app/#webapp",
         "name": "SRTtranslator",
         "url": "https://srttranslator.vercel.app/",
-        "description": "Free online AI subtitle translator that translates SRT files with 100% synchronized timecodes, zero overlaps, adaptive fast-reading pacing, and instant SRT export.",
+        "description": "Free online AI subtitle translator that translates SRT files with 100% synchronized timecodes, zero overlaps, adaptive fast-reading pacing, and instant SRT export across 40+ languages.",
         "applicationCategory": "MultimediaApplication",
         "operatingSystem": "All",
         "browserRequirements": "Requires JavaScript",
@@ -51,7 +51,7 @@
           "2nd-Pass AI Subtitle Condenser",
           "Zero Timing Overlap Auto-Fixer",
           "Client-Side Privacy (Local Key Storage)",
-          "30+ Supported Languages"
+          "40+ Supported Global Languages"
         ]
       },
       {
@@ -60,42 +60,66 @@
         "mainEntity": [
           {
             "@type": "Question",
+            "name": "Which languages are supported by SRTtranslator?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "SRTtranslator supports over 40 global languages including Bengali, English, Spanish, Hindi, Urdu, Arabic, French, German, Japanese, Korean, Chinese (Simplified), Portuguese, Russian, Italian, Turkish, Indonesian, Vietnamese, Thai, Tamil, Telugu, Marathi, Gujarati, Malayalam, Punjabi, Persian/Farsi, Dutch, Polish, Swedish, Norwegian, Danish, Finnish, Greek, Hebrew, Czech, Romanian, Hungarian, Ukrainian, Malay, and Filipino/Tagalog."
+            }
+          },
+          {
+            "@type": "Question",
             "name": "How do I translate an SRT subtitle file online for free?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Simply upload your .srt file to SRTtranslator, select your target language and desired subtitle pacing mode, provide your free Gemini API key, and click 'Translate Subtitles Now'. Your translated SRT file will be ready and auto-downloaded within seconds."
+              "text": "Simply upload your .srt file to SRTtranslator, select your target language from the 40+ available options, choose your desired subtitle pacing preset (e.g. Glance Speed or Fast Reading), provide your free Google Gemini API key, and click 'Translate Subtitles Now'. Your localized SRT file will be ready and automatically downloaded within seconds."
             }
           },
           {
             "@type": "Question",
-            "name": "Will the subtitle timestamps and timecodes stay 100% synchronized?",
+            "name": "Will the subtitle timestamps, timecodes, and formatting stay 100% synchronized?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Yes. SRTtranslator isolates the dialogue text while preserving every millisecond of the original start and end timecodes, ensuring 100% timing integrity with zero drift or overlap."
+              "text": "Yes, completely. SRTtranslator isolates only the spoken dialogue text during translation while preserving every millisecond of the original start and end timecodes (00:00:00,000 --> 00:00:00,000), line sequence numbering, and HTML styling tags (like <i> and <b>). It also includes an automatic overlap collision resolver."
             }
           },
           {
             "@type": "Question",
-            "name": "What is Glance-Speed Subtitle Pacing and the AI Condenser?",
+            "name": "What is Glance-Speed Subtitle Pacing and the 2nd-Pass AI Condenser?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Glance-Speed pacing and the 2nd-pass AI Condenser automatically trim unnecessary linguistic filler and compress translated lines into crisp, punchy 1 to 4 word subtitles so viewers can read them effortlessly in a split-second without missing fast video action."
+              "text": "Glance-Speed pacing is an advanced subtitle optimization mode engineered for fast-paced movies, anime, and YouTube videos. It keeps dialogue lines down to 1-4 punchy words (~0.5-1s read time). The 2nd-pass AI Condenser allows you to re-evaluate already translated subtitles, eliminating conversational padding and wordy grammar so viewers can absorb the subtitles in the blink of an eye without missing any visual action on screen."
             }
           },
           {
             "@type": "Question",
-            "name": "Is my subtitle file and API key secure?",
+            "name": "How does SRTtranslator ensure natural, cinema-grade dialogue across different languages?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Yes. SRTtranslator runs 100% client-side in your browser. Your files and API keys are stored only in your local browser storage and are never uploaded to any intermediary third-party servers."
+              "text": "Unlike standard machine translation tools that produce rigid, literal translations or inappropriate pronouns, SRTtranslator enforces language-specific cinematic localization rules. For example, in Bengali it strictly prevents disrespectful pronouns (avoiding 'তুই') and uses polite, natural speech ('তুমি/আপনি'); in Hindi/Urdu it prioritizes respectful dialogue ('तुम/आप'); in Spanish and French it maintains authentic conversational tone ('tú/usted', 'tu/vous'); and in Japanese it applies natural spoken phrasing matching character personality."
             }
           },
           {
             "@type": "Question",
-            "name": "What languages are supported by SRTtranslator?",
+            "name": "Is my subtitle file, translated text, and Gemini API key secure?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "SRTtranslator supports over 30 global languages including Bengali, Spanish, French, German, Hindi, Japanese, Korean, Arabic, Portuguese, Russian, Italian, Chinese, and many more."
+              "text": "100% private and secure. SRTtranslator runs completely client-side in your web browser. Your subtitle scripts, translations, and Gemini API keys are never sent to or stored on any intermediary backend servers. Your API key remains saved only in your browser's private local storage."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is there any file size limit, subtitle line limit, or cost?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "SRTtranslator is completely free with no file size limits or line caps. By connecting your free Google Gemini API key (which includes a generous free tier from Google AI Studio), you can translate full-length feature films, multiple TV episodes, documentaries, and long YouTube videos seamlessly."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I edit individual subtitle cards or re-shorten specific lines?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. In the Subtitles Card View and Side-by-Side Comparison tabs, each subtitle card displays live reading speed metrics (word count and estimated reading seconds) and provides an instant 'Shorten' button to compress individual lines without needing to re-translate the entire file."
             }
           }
         ]
@@ -727,32 +751,48 @@
         <div class="seo-section-header">
           <span class="seo-badge">Frequently Asked Questions</span>
           <h2 class="seo-h2">Everything You Need to Know About SRT Translation</h2>
+          <p class="seo-sub">Find quick answers to common questions about subtitle timing preservation, AI pacing modes, supported languages, and security.</p>
         </div>
 
         <div class="seo-faq-list">
           <div class="seo-faq-item">
+            <h3 class="faq-q">Which languages are supported by SRTtranslator?</h3>
+            <p class="faq-a">SRTtranslator supports over 40 global languages including Bengali, English, Spanish, Hindi, Urdu, Arabic, French, German, Japanese, Korean, Chinese (Simplified), Portuguese, Russian, Italian, Turkish, Indonesian, Vietnamese, Thai, Tamil, Telugu, Marathi, Gujarati, Malayalam, Punjabi, Persian/Farsi, Dutch, Polish, Swedish, Norwegian, Danish, Finnish, Greek, Hebrew, Czech, Romanian, Hungarian, Ukrainian, Malay, and Filipino/Tagalog.</p>
+          </div>
+
+          <div class="seo-faq-item">
             <h3 class="faq-q">How do I translate an SRT subtitle file online for free?</h3>
-            <p class="faq-a">Simply upload your .srt file to SRTtranslator, select your target language and desired subtitle pacing mode, provide your free Gemini API key, and click 'Translate Subtitles Now'. Your translated SRT file will be ready and auto-downloaded within seconds.</p>
+            <p class="faq-a">Simply upload your .srt file to SRTtranslator, select your target language from the 40+ available options, choose your desired subtitle pacing preset (e.g. Glance Speed or Fast Reading), provide your free Google Gemini API key, and click 'Translate Subtitles Now'. Your localized SRT file will be ready and automatically downloaded within seconds.</p>
           </div>
 
           <div class="seo-faq-item">
-            <h3 class="faq-q">Will the subtitle timestamps and timecodes stay 100% synchronized?</h3>
-            <p class="faq-a">Yes. SRTtranslator isolates the dialogue text while preserving every millisecond of the original start and end timecodes, ensuring 100% timing integrity with zero drift or overlap.</p>
+            <h3 class="faq-q">Will the subtitle timestamps, timecodes, and formatting stay 100% synchronized?</h3>
+            <p class="faq-a">Yes, completely. SRTtranslator isolates only the spoken dialogue text during translation while preserving every millisecond of the original start and end timecodes (<code>00:00:00,000 --&gt; 00:00:00,000</code>), line sequence numbering, and HTML styling tags (like <code>&lt;i&gt;</code> and <code>&lt;b&gt;</code>). It also includes an automatic overlap collision resolver.</p>
           </div>
 
           <div class="seo-faq-item">
-            <h3 class="faq-q">What is Glance-Speed Subtitle Pacing and the AI Condenser?</h3>
-            <p class="faq-a">Glance-Speed pacing and the 2nd-pass AI Condenser automatically trim unnecessary linguistic filler and compress translated lines into crisp, punchy 1 to 4 word subtitles so viewers can read them effortlessly in a split-second without missing fast video action.</p>
+            <h3 class="faq-q">What is Glance-Speed Subtitle Pacing and the 2nd-Pass AI Condenser?</h3>
+            <p class="faq-a">Glance-Speed pacing is an advanced subtitle optimization mode engineered for fast-paced movies, anime, and YouTube videos. It keeps dialogue lines down to 1-4 punchy words (~0.5-1s read time). The 2nd-pass AI Condenser allows you to re-evaluate already translated subtitles, eliminating conversational padding and wordy grammar so viewers can absorb the subtitles in the blink of an eye without missing any visual action on screen.</p>
           </div>
 
           <div class="seo-faq-item">
-            <h3 class="faq-q">Is my subtitle file and API key secure?</h3>
-            <p class="faq-a">Yes. SRTtranslator runs 100% client-side in your browser. Your files and API keys are stored only in your local browser storage and are never uploaded to any intermediary third-party servers.</p>
+            <h3 class="faq-q">How does SRTtranslator ensure natural, cinema-grade dialogue across different languages?</h3>
+            <p class="faq-a">Unlike standard machine translation tools that produce rigid, literal translations or inappropriate pronouns, SRTtranslator enforces language-specific cinematic localization rules. For example, in Bengali it strictly prevents disrespectful pronouns (avoiding 'তুই') and uses polite, natural speech ('তুমি/আপনি'); in Hindi/Urdu it prioritizes respectful dialogue ('तुम/आप'); in Spanish and French it maintains authentic conversational tone ('tú/usted', 'tu/vous'); and in Japanese it applies natural spoken phrasing matching character personality.</p>
           </div>
 
           <div class="seo-faq-item">
-            <h3 class="faq-q">What languages are supported by SRTtranslator?</h3>
-            <p class="faq-a">SRTtranslator supports over 30 global languages including Bengali, Spanish, French, German, Hindi, Japanese, Korean, Arabic, Portuguese, Russian, Italian, Chinese, and many more.</p>
+            <h3 class="faq-q">Is my subtitle file, translated text, and Gemini API key secure?</h3>
+            <p class="faq-a">100% private and secure. SRTtranslator runs completely client-side in your web browser. Your subtitle scripts, translations, and Gemini API keys are never sent to or stored on any intermediary backend servers. Your API key remains saved only in your browser's private local storage.</p>
+          </div>
+
+          <div class="seo-faq-item">
+            <h3 class="faq-q">Is there any file size limit, subtitle line limit, or cost?</h3>
+            <p class="faq-a">SRTtranslator is completely free with no file size limits or line caps. By connecting your free Google Gemini API key (which includes a generous free tier from Google AI Studio), you can translate full-length feature films, multiple TV episodes, documentaries, and long YouTube videos seamlessly.</p>
+          </div>
+
+          <div class="seo-faq-item">
+            <h3 class="faq-q">Can I edit individual subtitle cards or re-shorten specific lines?</h3>
+            <p class="faq-a">Yes. In the Subtitles Card View and Side-by-Side Comparison tabs, each subtitle card displays live reading speed metrics (word count and estimated reading seconds) and provides an instant 'Shorten' button to compress individual lines without needing to re-translate the entire file.</p>
           </div>
         </div>
       </section>
