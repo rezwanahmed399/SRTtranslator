@@ -717,6 +717,16 @@ body {
   box-shadow: 0 0 10px #ef4444;
 }
 
+.api-health-pill.health-disconnected {
+  background: rgba(148, 163, 184, 0.12);
+  color: #94a3b8;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+}
+.api-health-pill.health-disconnected .health-dot {
+  background: #94a3b8;
+  box-shadow: none;
+}
+
 @keyframes pulseHealth {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.65; }

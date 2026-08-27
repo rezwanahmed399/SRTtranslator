@@ -333,6 +333,8 @@ window.addEventListener('DOMContentLoaded', () => {
     state.apiKey = savedKey;
     showApiFeedback('API Key loaded from local storage. Verifying...', 'ok');
     fetchLiveGeminiModels(savedKey);
+  } else {
+    resetQuotaDashboardToDisconnected('No API Key');
   }
   setupEventListeners();
   checkReadyToTranslate();
@@ -691,22 +693,58 @@ function showApiFeedback(msg, type) {
 }
 
 // ── Automatic Live Model Fetcher ──
+function resetQuotaDashboardToDisconnected(errMsg = '') {
+  const toggleBtn = $('toggleQuotaBtn');
+  const dashboard = $('apiQuotaDashboard');
+  if (dashboard) dashboard.classList.add('hidden');
+  if (toggleBtn) {
+    toggleBtn.classList.remove('active');
+    toggleBtn.classList.add('hidden');
+  }
+
+  const qName = $('quotaModelName');
+  const qVer = $('quotaModelVersion');
+  const qContext = $('quotaContext');
+  const qOut = $('quotaOutputTokens');
+  const qRpm = $('quotaRpm');
+  const qRpd = $('quotaRpd');
+  const latencyVal = $('quotaSessionLatency');
+
+  if (qName) qName.textContent = '— (Disconnected)';
+  if (qVer) qVer.textContent = errMsg ? 'Auth Error' : 'Awaiting Valid API Key';
+  if (qContext) qContext.textContent = '—';
+  if (qOut) qOut.textContent = '—';
+  if (qRpm) qRpm.textContent = '—';
+  if (qRpd) qRpd.textContent = '—';
+  if (latencyVal) latencyVal.textContent = errMsg ? 'Ping: Error (Unauthenticated)' : 'Last Latency: —';
+
+  const isNoKey = !errMsg || errMsg === 'No API Key';
+  updateApiHealthUI(
+    isNoKey ? 'disconnected' : 'exhausted',
+    isNoKey ? 'Awaiting Valid API Key' : `API Error: ${errMsg.slice(0, 32)}`
+  );
+}
+
 async function fetchLiveGeminiModels(key) {
   if (!key) {
     modelSelect.disabled = true;
     modelSelect.innerHTML = '<option value="" disabled selected>Enter & Save Gemini API key above to load models live...</option>';
     modelLiveBadge.textContent = 'Awaiting API Key';
     modelLiveBadge.className = 'hint-tag';
+    resetQuotaDashboardToDisconnected('No API Key');
     return;
   }
 
   modelSelect.disabled = true;
   modelSelect.innerHTML = '<option value="" disabled selected>Fetching available models live from Google...</option>';
-  modelLiveBadge.textContent = 'Fetching models...';
-  modelLiveBadge.className = 'hint-tag';
+  modelLiveBadge.textContent = 'Connecting to Google...';
+  modelLiveBadge.className = 'hint-tag active-tag';
+
+  const probeStart = performance.now();
 
   try {
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
+    const probeMs = Math.round(performance.now() - probeStart);
     
     if (!res.ok) {
       const errData = await res.json().catch(() => ({}));
@@ -746,7 +784,7 @@ async function fetchLiveGeminiModels(key) {
         state.loadedModels = textModels;
         localStorage.setItem('gemini_api_key', key);
         populateModelDropdown(textModels);
-        updateQuotaDashboard(textModels);
+        updateQuotaDashboard(textModels, probeMs);
         showApiFeedback(`Connected! ${textModels.length} active Gemini models fetched live from Google API`, 'ok');
         modelLiveBadge.innerHTML = `
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:11px;height:11px;display:inline-block;margin-right:4px;vertical-align:-1px;">
@@ -767,8 +805,7 @@ async function fetchLiveGeminiModels(key) {
     modelSelect.innerHTML = `<option value="" disabled selected>Failed to load models (${escapeHtml(err.message.slice(0, 45))}...)</option>`;
     modelLiveBadge.textContent = 'Connection Error';
     modelLiveBadge.className = 'hint-tag';
-    const dashboard = $('apiQuotaDashboard');
-    if (dashboard) dashboard.classList.add('hidden');
+    resetQuotaDashboardToDisconnected(err.message);
     showApiFeedback(`Google API Error: ${err.message}`, 'err');
     checkReadyToTranslate();
   }
@@ -810,14 +847,20 @@ function updateApiHealthUI(status = 'optimal', customMessage = '', latencyMs = n
   } else if (status === 'exhausted') {
     pill.classList.add('health-error');
     text.textContent = customMessage || 'Quota Limit Reached (429)';
+  } else if (status === 'disconnected') {
+    pill.classList.add('health-disconnected');
+    text.textContent = customMessage || 'Awaiting Valid API Key';
   }
 }
 
-function updateQuotaDashboard(models) {
+function updateQuotaDashboard(models, initialLatencyMs = null) {
+  if (!models || models.length === 0) {
+    resetQuotaDashboardToDisconnected('No Models Available');
+    return;
+  }
+
   const toggleBtn = $('toggleQuotaBtn');
   if (toggleBtn) toggleBtn.classList.remove('hidden');
-
-  if (!models || models.length === 0) return;
   
   const selectedId = (modelSelect.value || models[0].name.replace(/^models\//, '')).toLowerCase();
   const activeModelObj = models.find(m => m.name.replace(/^models\//, '').toLowerCase() === selectedId) || models[0];
@@ -840,7 +883,7 @@ function updateQuotaDashboard(models) {
   if (qRpm) qRpm.textContent = isFlash ? '15 RPM' : '2 RPM';
   if (qRpd) qRpd.textContent = isFlash ? '1,500 RPD' : '50 RPD';
 
-  updateApiHealthUI(state.apiMetrics.healthStatus || 'optimal');
+  updateApiHealthUI('optimal', 'Quota Health: Optimal', initialLatencyMs);
 }
 
 function populateModelDropdown(models) {
