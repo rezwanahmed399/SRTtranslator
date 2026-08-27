@@ -327,12 +327,12 @@ async function fetchLiveGeminiModels(key) {
         localStorage.setItem('gemini_api_key', key);
         populateModelDropdown(textModels);
         updateQuotaDashboard(textModels);
-        showApiFeedback(`Connected! ${textModels.length} latest Gemini models loaded live`, 'ok');
+        showApiFeedback(`Connected! ${textModels.length} active Gemini models fetched live from Google API`, 'ok');
         modelLiveBadge.innerHTML = `
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:11px;height:11px;display:inline-block;margin-right:4px;vertical-align:-1px;">
             <polyline points="20 6 9 17 4 12"/>
           </svg>
-          <span>${textModels.length} Live Models Connected</span>
+          <span>${textModels.length} Live Google Models Connected</span>
         `;
         modelLiveBadge.className = 'hint-tag active-tag';
         modelSelect.disabled = false;
@@ -387,57 +387,98 @@ function updateQuotaDashboard(models) {
 function populateModelDropdown(models) {
   modelSelect.innerHTML = '';
 
-  // Extract clean model ID
-  const cleanModels = models.map(m => {
+  // Extract clean unique model list
+  const seenIds = new Set();
+  const cleanModels = [];
+
+  models.forEach(m => {
     const id = m.name.replace(/^models\//, '');
-    return {
-      id,
-      displayName: m.displayName || id,
-      description: m.description || '',
-      version: m.version || ''
-    };
+    if (!seenIds.has(id)) {
+      seenIds.add(id);
+      cleanModels.push({
+        id,
+        displayName: m.displayName || id,
+        description: m.description || '',
+        version: m.version || '',
+        inputTokens: m.inputTokenLimit || 1048576,
+        outputTokens: m.outputTokenLimit || 8192
+      });
+    }
   });
 
-  // Ranking: Prioritize fastest active production models (3.5-flash > 3.6-flash > 3.5-flash-lite > 1.5-flash)
-  const getVersionScore = id => {
+  // Ranking & categorization: Fast Flash Models > Pro Models > Preview/Experimental
+  const flashGroup = [];
+  const proGroup = [];
+  const expGroup = [];
+
+  cleanModels.forEach(m => {
+    const lower = m.id.toLowerCase();
+    if (lower.includes('preview') || lower.includes('exp')) {
+      expGroup.push(m);
+    } else if (lower.includes('pro')) {
+      proGroup.push(m);
+    } else {
+      flashGroup.push(m);
+    }
+  });
+
+  // Sort Flash group: newest/fastest first
+  const flashRank = id => {
     const lower = id.toLowerCase();
-    let score = 0;
-
-    if (lower === 'gemini-3.5-flash') score += 20000;
-    else if (lower === 'gemini-3.6-flash') score += 18000;
-    else if (lower.includes('3.5-flash-lite')) score += 16000;
-    else if (lower === 'gemini-1.5-flash') score += 14000;
-    else if (lower.includes('3.7-flash')) score += 12000;
-    else if (lower === 'gemini-1.5-pro' || lower === 'gemini-pro-latest') score += 10000;
-    else if (lower.includes('flash')) score += 8000;
-    else if (lower.includes('pro')) score += 5000;
-    else score += 1000;
-
-    if (lower.includes('2.5-flash') && !lower.includes('lite')) score -= 15000; // Deprecated for new API keys
-    if (lower.includes('preview')) score -= 8000;
-    if (lower === 'gemini-2.0-flash') score -= 5000;
-
-    return score;
+    if (lower === 'gemini-2.5-flash') return 100;
+    if (lower === 'gemini-2.0-flash') return 90;
+    if (lower === 'gemini-1.5-flash') return 80;
+    if (lower.includes('8b')) return 70;
+    return 50;
   };
+  flashGroup.sort((a, b) => flashRank(b.id) - flashRank(a.id));
 
-  cleanModels.sort((a, b) => getVersionScore(b.id) - getVersionScore(a.id));
+  // Save all active model IDs in priority order for failover
+  state.sortedModelList = [...flashGroup, ...proGroup, ...expGroup].map(m => m.id);
 
-  // Save ordered live model pool for intelligent dynamic failover
-  state.sortedModelList = cleanModels.map(m => m.id);
+  // Group 1: Flash Production Models
+  if (flashGroup.length > 0) {
+    const grp = document.createElement('optgroup');
+    grp.label = `⚡ Fast & Production Models (${flashGroup.length} live)`;
+    flashGroup.forEach((m, idx) => {
+      const opt = document.createElement('option');
+      opt.value = m.id;
+      opt.textContent = `${m.displayName} (${m.id})${idx === 0 ? ' — Recommended' : ''}`;
+      grp.appendChild(opt);
+    });
+    modelSelect.appendChild(grp);
+  }
 
-  cleanModels.forEach((m, idx) => {
-    const opt = document.createElement('option');
-    opt.value = m.id;
-    let label = `${m.displayName} (${m.id})`;
-    if (idx === 0) label += ' — Highly Recommended (Fast & Active)';
-    opt.textContent = label;
-    modelSelect.appendChild(opt);
-  });
+  // Group 2: Pro High-Precision Models
+  if (proGroup.length > 0) {
+    const grp = document.createElement('optgroup');
+    grp.label = `🧠 High-Precision Pro Models (${proGroup.length} live)`;
+    proGroup.forEach(m => {
+      const opt = document.createElement('option');
+      opt.value = m.id;
+      opt.textContent = `${m.displayName} (${m.id})`;
+      grp.appendChild(opt);
+    });
+    modelSelect.appendChild(grp);
+  }
 
-  // Select the highest-ranked active stable model
-  if (cleanModels.length > 0) {
-    modelSelect.value = cleanModels[0].id;
-    state.selectedModel = cleanModels[0].id;
+  // Group 3: Preview & Experimental
+  if (expGroup.length > 0) {
+    const grp = document.createElement('optgroup');
+    grp.label = `🧪 Preview & Experimental Models (${expGroup.length} live)`;
+    expGroup.forEach(m => {
+      const opt = document.createElement('option');
+      opt.value = m.id;
+      opt.textContent = `${m.displayName} (${m.id})`;
+      grp.appendChild(opt);
+    });
+    modelSelect.appendChild(grp);
+  }
+
+  // Auto-select the top recommended model
+  if (state.sortedModelList.length > 0) {
+    modelSelect.value = state.sortedModelList[0];
+    state.selectedModel = state.sortedModelList[0];
   }
 }
 
