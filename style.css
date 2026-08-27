@@ -1402,6 +1402,116 @@ select:focus, input[type="text"]:focus {
   color: var(--brand-primary-light);
 }
 
+.btn-condense-hero {
+  background: linear-gradient(135deg, #8b5cf6 0%, #06b6d4 100%);
+  color: #fff;
+  padding: 12px 20px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 20px rgba(139, 92, 246, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.btn-condense-hero:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 28px rgba(139, 92, 246, 0.5);
+  background: linear-gradient(135deg, #9333ea 0%, #0891b2 100%);
+}
+
+.btn-condense-hero:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-secondary-subtle {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-bright);
+  color: var(--text-muted);
+  padding: 12px 18px;
+  font-size: 0.86rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-secondary-subtle:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.card-meta-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.speed-pill {
+  font-size: 0.7rem;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  padding: 2px 7px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.speed-pill.ultra-fast {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.speed-pill.fast {
+  background: rgba(6, 182, 212, 0.15);
+  color: #22d3ee;
+  border: 1px solid rgba(6, 182, 212, 0.3);
+}
+
+.speed-pill.moderate {
+  background: rgba(245, 158, 11, 0.12);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.btn-card-shorten {
+  background: rgba(139, 92, 246, 0.12);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  color: #c084fc;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s;
+}
+
+.btn-card-shorten:hover {
+  background: rgba(139, 92, 246, 0.25);
+  color: #fff;
+  border-color: #a855f7;
+}
+
+.btn-card-shorten:disabled {
+  opacity: 0.4;
+  cursor: wait;
+}
+
 /* Quality Badges */
 .quality-badges-row {
   display: flex;

@@ -9,6 +9,8 @@ const state = {
   selectedModel: 'gemini-2.5-flash',
   parsedBlocks: [],       // Array of { num, timeCode, lines: [] }
   translatedBlocks: [],   // Array of { num, timeCode, lines: [], translatedLines: [] }
+  uncompressedBlocks: [], // Backup of 1st-pass translation for 1-click restore
+  isCondensed: false,
   fileName: '',
   fileSize: 0,
   durationStr: '00:00:00',
@@ -66,6 +68,8 @@ const resultCard        = $('resultCard');
 const resultStats       = $('resultStats');
 const fixSummary        = $('fixSummary');
 const tabViewContainer  = $('tabViewContainer');
+const condenseSrtBtn    = $('condenseSrtBtn');
+const restoreOriginalBtn= $('restoreOriginalBtn');
 const downloadBtn       = $('downloadBtn');
 const copySrtBtn        = $('copySrtBtn');
 const retranslateBtn    = $('retranslateBtn');
@@ -151,8 +155,20 @@ function setupEventListeners() {
   retranslateBtn.addEventListener('click', () => {
     resultCard.classList.add('hidden');
     state.translatedBlocks = [];
+    state.uncompressedBlocks = [];
+    state.isCondensed = false;
     runTranslationPipeline();
   });
+
+  // AI Condenser (2nd-Pass Refinement)
+  if (condenseSrtBtn) {
+    condenseSrtBtn.addEventListener('click', runAiCondensePipeline);
+  }
+
+  // Restore Original Uncompressed Translation
+  if (restoreOriginalBtn) {
+    restoreOriginalBtn.addEventListener('click', restoreOriginalTranslation);
+  }
 
   // Download Action
   downloadBtn.addEventListener('click', () => {
@@ -724,7 +740,13 @@ async function callGeminiBatchTranslate(batch, key, attemptNumber, overrideModel
 
   // Pacing & Reading Speed Instructions
   let pacingPrompt = '';
-  if (pace === 'concise') {
+  if (pace === 'micro' || pace === 'ultra_concise') {
+    pacingPrompt = `SUBTITLE PACING (⚡ Ultra-Short & Glance-Speed / চোখের পলকে):
+- Make subtitle lines ULTRA-SHORT, punchy, and readable in a split second / blink of an eye (চোখের পলকে).
+- Minimize word count strictly (aim for 1 to 4 words per short dialogue, or minimal concise words).
+- Ruthlessly remove filler words, prolonged formal grammar, and unnecessary particles (e.g. "আমরা এখন যাব" -> "চল যাই", "তুমি কি এটা জানো?" -> "এটা জানো?").
+- Preserve 100% of the dialogue's true punch, emotion, and dramatic tone in everyday spoken Bengali (চলতি কথ্য রূপ).`;
+  } else if (pace === 'concise') {
     pacingPrompt = `SUBTITLE PACING (Fast Reading & Concise):
 - Keep subtitle lines short, crisp, and easy to read in a quick glance.
 - Avoid over-complicated sentences and unnecessary filler words so the viewer can read comfortably without looking away from the video.
@@ -897,18 +919,347 @@ function postProcessSubtitles(blocks) {
   return result;
 }
 
+// ── Word Count & Reading Speed Helpers ──
+function countTotalWords(blocks) {
+  if (!blocks || !Array.isArray(blocks)) return 0;
+  return blocks.reduce((acc, b) => {
+    const text = (b.translatedLines || b.lines || []).join(' ');
+    const count = text.trim().split(/\s+/).filter(Boolean).length;
+    return acc + count;
+  }, 0);
+}
+
+function getReadingSpeedPill(lines) {
+  const text = (Array.isArray(lines) ? lines.join(' ') : String(lines || '')).trim();
+  const words = text.split(/\s+/).filter(Boolean).length;
+  const sec = (words * 0.22).toFixed(1);
+  if (words <= 4) {
+    return `<span class="speed-pill ultra-fast" title="Glance speed: ~${sec}s read">⚡ ${words}w • ${sec}s</span>`;
+  } else if (words <= 7) {
+    return `<span class="speed-pill fast" title="Fast reading speed: ~${sec}s read">⚡ ${words}w • ${sec}s</span>`;
+  } else {
+    return `<span class="speed-pill moderate" title="Standard reading speed: ~${sec}s read">⏱️ ${words}w • ${sec}s</span>`;
+  }
+}
+
+// ── 2nd-Pass AI Subtitle Condenser Engine ──
+async function runAiCondensePipeline() {
+  if (!state.translatedBlocks || state.translatedBlocks.length === 0) {
+    alert('Please translate subtitles first before running AI Condenser.');
+    return;
+  }
+
+  const activeKey = state.apiKey || apiKeyInput.value.trim();
+  if (!activeKey) {
+    alert('Please enter your Gemini API Key before proceeding.');
+    return;
+  }
+
+  // Backup uncompressed 1st-pass translation
+  if (!state.uncompressedBlocks || state.uncompressedBlocks.length === 0 || !state.isCondensed) {
+    state.uncompressedBlocks = JSON.parse(JSON.stringify(state.translatedBlocks));
+  }
+
+  // Update button state
+  condenseSrtBtn.disabled = true;
+  const origBtnHtml = condenseSrtBtn.innerHTML;
+  condenseSrtBtn.innerHTML = `
+    <span class="modern-spinner" style="width:16px;height:16px;border-width:2px;"></span>
+    <span>Condensing to Glance-Speed...</span>
+  `;
+
+  progressCard.classList.remove('hidden');
+  resultCard.classList.add('hidden');
+  progressLog.innerHTML = '';
+
+  const totalWordsStart = countTotalWords(state.translatedBlocks);
+  const bs = Math.min(state.optimalBatchSize || 30, 25);
+  const batches = chunkArray(state.translatedBlocks, bs);
+  const condensedResult = new Array(state.translatedBlocks.length);
+
+  updateProgressStats(0, `Starting 2nd-Pass AI Subtitle Condenser (${batches.length} batches)...`);
+  addTerminalLog('info', `⚡ AI Condenser: Compressing ${state.translatedBlocks.length} subtitles for split-second glance reading...`);
+  addTerminalLog('info', `Using full 1st-pass translation context to eliminate unnecessary filler words.`);
+
+  let processedCount = 0;
+  let currentModelToUse = (modelSelect.value || (state.sortedModelList && state.sortedModelList[0]) || 'gemini-2.5-flash').replace(/^models\//, '');
+  const degradedModelsSet = new Set();
+
+  for (let bi = 0; bi < batches.length; bi++) {
+    const currentBatch = batches[bi];
+    const startIndex = bi * bs;
+    const batchPct = Math.round((processedCount / state.translatedBlocks.length) * 94);
+
+    updateProgressStats(batchPct, `AI Condensing batch ${bi + 1} of ${batches.length} (#${currentBatch[0].num} – #${currentBatch[currentBatch.length - 1].num})...`);
+    addTerminalLog('info', `Pass 2 Batch ${bi + 1}/${batches.length}: Trimming words with ${currentModelToUse}...`);
+
+    let batchResult = null;
+    let success = false;
+
+    for (let attempt = 1; attempt <= 4; attempt++) {
+      try {
+        batchResult = await callGeminiBatchCondense(currentBatch, activeKey, attempt, currentModelToUse);
+        success = true;
+        break;
+      } catch (err) {
+        state.stats.retries++;
+        const errMsg = (err.message || '').toLowerCase();
+        
+        const isDeprecatedOrUnavailable = errMsg.includes('no longer available') || 
+                                         errMsg.includes('deprecated') || 
+                                         errMsg.includes('not found') ||
+                                         errMsg.includes('404');
+
+        const isHighDemand = errMsg.includes('demand') || 
+                             errMsg.includes('503') || 
+                             errMsg.includes('429') ||
+                             errMsg.includes('quota') ||
+                             errMsg.includes('overloaded');
+
+        if (isDeprecatedOrUnavailable || (isHighDemand && attempt >= 2)) {
+          degradedModelsSet.add(currentModelToUse);
+          const livePool = state.sortedModelList || [];
+          const nextModel = livePool.find(m => !degradedModelsSet.has(m));
+          if (nextModel && nextModel !== currentModelToUse) {
+            addTerminalLog('warn', `Routing to alternate model: ${nextModel}...`);
+            currentModelToUse = nextModel;
+          }
+        }
+
+        if (attempt < 4) {
+          addTerminalLog('warn', `Retry ${attempt}/3 for batch ${bi + 1}...`);
+          await sleep(1500 * attempt);
+        } else {
+          addTerminalLog('err', `Could not condense batch ${bi + 1}. Keeping current translation.`);
+          batchResult = currentBatch;
+        }
+      }
+    }
+
+    for (let j = 0; j < batchResult.length; j++) {
+      condensedResult[startIndex + j] = batchResult[j];
+    }
+
+    processedCount += currentBatch.length;
+    statProcessed.textContent = `${processedCount} / ${state.translatedBlocks.length}`;
+    statBatches.textContent = `${bi + 1} / ${batches.length}`;
+
+    if (success) {
+      const bWordsBefore = countTotalWords(currentBatch);
+      const bWordsAfter = countTotalWords(batchResult);
+      const bSaved = bWordsBefore > 0 ? Math.round(((bWordsBefore - bWordsAfter) / bWordsBefore) * 100) : 0;
+      addTerminalLog('ok', `Batch ${bi + 1} condensed: ${bWordsBefore}w ➔ ${bWordsAfter}w (${bSaved > 0 ? '-' + bSaved + '%' : 'optimized'})`);
+    }
+  }
+
+  updateProgressStats(98, 'Synchronizing precision timecodes for condensed subtitles...');
+  const finalizedBlocks = postProcessSubtitles(condensedResult);
+
+  state.translatedBlocks = finalizedBlocks;
+  state.isCondensed = true;
+
+  const totalWordsEnd = countTotalWords(finalizedBlocks);
+  const totalPercentSaved = totalWordsStart > 0 ? Math.max(0, Math.round(((totalWordsStart - totalWordsEnd) / totalWordsStart) * 100)) : 0;
+
+  updateProgressStats(100, `AI Condensation complete! Reduced words by ${totalPercentSaved}% for instant glance reading.`);
+  addTerminalLog('ok', `⚡ Done! Original: ${totalWordsStart} words ➔ Condensed: ${totalWordsEnd} words (-${totalPercentSaved}% reading load).`);
+
+  await sleep(350);
+
+  // Present Results
+  showTranslationResults(finalizedBlocks, totalPercentSaved);
+
+  // Auto download condensed version
+  await sleep(300);
+  downloadSRTFile(finalizedBlocks);
+  addTerminalLog('ok', 'Condensed SRT auto-downloaded.');
+
+  condenseSrtBtn.innerHTML = origBtnHtml;
+  condenseSrtBtn.disabled = false;
+}
+
+// ── Gemini 2nd-Pass Condense API Call ──
+async function callGeminiBatchCondense(batch, key, attemptNumber, overrideModel) {
+  const lang = targetLang.value || 'Bengali';
+  const rawModel = overrideModel || modelSelect.value || 'gemini-2.5-flash';
+  const selectedModel = rawModel.replace(/^models\//, '').trim();
+
+  const inputData = batch.map((item, index) => ({
+    id: index,
+    source: item.lines.join(' '),
+    translation: (item.translatedLines || item.lines).join(' ')
+  }));
+
+  const promptText = `You are a master subtitle compression and localization editor.
+Task: Condense and shorten the given ${lang} subtitle translations so they are readable in a split second / blink of an eye (চোখের পলকে পড়ার উপযোগী).
+
+MANDATORY RULES:
+1. Make every subtitle line ULTRA-SHORT and punchy (ideal 1-4 words for short lines, or minimum possible concise words).
+2. Cut away conversational padding, redundant particles, extra formal suffixes, and repetitive words (e.g. in Bengali: "আমরা এখন সেখান থেকে চলে যাব" -> "চল বের হই", "তুমি কি এটা নিশ্চিত জানো?" -> "এটা নিশ্চিত?").
+3. Strictly preserve 100% of the core emotion, punchline, dialogue intent, and context.
+4. Output strictly in natural everyday spoken ${lang} script (চলতি কথ্য রূপ).
+5. Preserve HTML tags like <i>, </i>, <b>, </b> if present.
+6. Output Format: Return ONLY a valid JSON array of objects. No markdown backticks, no explanations.
+Schema: [{"id": 0, "text": "ছোট ও পাঞ্চি অনুবাদ"}, {"id": 1, "text": "ছোট অনুবাদ"}]
+
+INPUT SUBTITLES (${batch.length} items):
+${JSON.stringify(inputData, null, 2)}
+
+OUTPUT (Strict JSON Array in ${lang}):`;
+
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent?key=${key}`;
+
+  const requestBody = {
+    contents: [{ parts: [{ text: promptText }] }],
+    generationConfig: {
+      temperature: 0.15,
+      maxOutputTokens: 8192
+    }
+  };
+
+  const response = await fetch(endpoint, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(requestBody)
+  });
+
+  if (!response.ok) {
+    const errorJson = await response.json().catch(() => ({}));
+    const errMsg = errorJson?.error?.message || `HTTP ${response.status} ${response.statusText}`;
+    throw new Error(errMsg);
+  }
+
+  const responseData = await response.json();
+  const rawText = responseData?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+  if (!rawText.trim()) throw new Error('Received empty response from Gemini Condenser.');
+
+  let parsedArray;
+  try {
+    const sanitized = rawText
+      .replace(/^```json\s*/i, '')
+      .replace(/^```\s*/, '')
+      .replace(/```\s*$/, '')
+      .trim();
+    parsedArray = JSON.parse(sanitized);
+  } catch {
+    const jsonMatch = rawText.match(/\[[\s\S]*\]/);
+    if (!jsonMatch) throw new Error('Could not extract JSON array from condenser output.');
+    parsedArray = JSON.parse(jsonMatch[0]);
+  }
+
+  if (!Array.isArray(parsedArray)) throw new Error('AI condenser output was not a JSON array.');
+
+  return batch.map((originalBlock, idx) => {
+    let matched = parsedArray.find(item => item && (item.id == idx || item.id == idx + 1));
+    if (!matched && idx < parsedArray.length) matched = parsedArray[idx];
+
+    let transText = '';
+    if (typeof matched === 'string') {
+      transText = matched.trim();
+    } else if (matched && typeof matched === 'object') {
+      transText = (
+        matched.text || 
+        matched.translation || 
+        matched.translated_text || 
+        matched.bengali || 
+        matched.content ||
+        matched.dialogue ||
+        Object.values(matched).find(v => typeof v === 'string' && v.trim().length > 0 && v !== String(matched.id)) ||
+        ''
+      ).trim();
+    }
+
+    if (!transText) {
+      return { ...originalBlock };
+    }
+
+    const lines = transText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+    return {
+      ...originalBlock,
+      translatedLines: lines.length > 0 ? lines : [transText]
+    };
+  });
+}
+
+// ── Restore Original 1st-Pass Translation ──
+function restoreOriginalTranslation() {
+  if (!state.uncompressedBlocks || state.uncompressedBlocks.length === 0) return;
+  state.translatedBlocks = JSON.parse(JSON.stringify(state.uncompressedBlocks));
+  state.isCondensed = false;
+  showTranslationResults(state.translatedBlocks);
+  addTerminalLog('info', 'Restored original uncompressed translation.');
+}
+
+// ── Single Block Interactive Shorten ──
+async function condenseSingleBlock(index) {
+  const block = state.translatedBlocks[index];
+  if (!block) return;
+  const activeKey = state.apiKey || apiKeyInput.value.trim();
+  if (!activeKey) {
+    alert('Please enter your Gemini API Key first.');
+    return;
+  }
+
+  // Backup if not done yet
+  if (!state.uncompressedBlocks || state.uncompressedBlocks.length === 0) {
+    state.uncompressedBlocks = JSON.parse(JSON.stringify(state.translatedBlocks));
+  }
+
+  const buttons = document.querySelectorAll(`.btn-card-shorten[data-idx="${index}"]`);
+  buttons.forEach(b => {
+    b.disabled = true;
+    b.textContent = '...';
+  });
+
+  try {
+    const currentModel = (modelSelect.value || 'gemini-2.5-flash').replace(/^models\//, '');
+    const result = await callGeminiBatchCondense([block], activeKey, 1, currentModel);
+    if (result && result[0]) {
+      state.translatedBlocks[index] = result[0];
+      const activeTab = document.querySelector('.preview-tab.active')?.dataset?.tab || 'translated';
+      renderActiveTab(activeTab, state.translatedBlocks);
+      if (restoreOriginalBtn) restoreOriginalBtn.classList.remove('hidden');
+    }
+  } catch (err) {
+    console.error('Error shortening line:', err);
+    alert('Could not shorten line: ' + err.message);
+  } finally {
+    buttons.forEach(b => {
+      b.disabled = false;
+      b.textContent = '⚡ Shorten';
+    });
+  }
+}
+
 // ── Render Results View ──
-function showTranslationResults(blocks) {
+function showTranslationResults(blocks, percentSaved) {
   progressCard.classList.add('hidden');
   resultCard.classList.remove('hidden');
 
   resultStats.textContent = `${blocks.length} subtitles localized to ${targetLang.value} • 0 drift • 100% timecode integrity`;
 
+  // Toggle Restore Button
+  if (restoreOriginalBtn) {
+    if (state.isCondensed || (state.uncompressedBlocks && state.uncompressedBlocks.length > 0)) {
+      restoreOriginalBtn.classList.remove('hidden');
+    } else {
+      restoreOriginalBtn.classList.add('hidden');
+    }
+  }
+
   // Badges Summary
-  const badges = [
-    { text: `${blocks.length} Subtitles Translated`, type: 'success' },
-    { text: '100% Timing Preserved', type: 'success' }
-  ];
+  const badges = [];
+
+  if (state.isCondensed) {
+    badges.push({ 
+      text: `⚡ 2nd-Pass AI Condensed (${percentSaved ? '-' + percentSaved + '% Words' : 'Glance-Speed'})`, 
+      type: 'success' 
+    });
+  }
+
+  badges.push({ text: `${blocks.length} Subtitles Ready`, type: 'success' });
+  badges.push({ text: '100% Timing Preserved', type: 'success' });
 
   if (state.stats.overlapsFixed > 0) {
     badges.push({ text: `${state.stats.overlapsFixed} Overlaps Auto-Corrected`, type: 'warning' });
@@ -951,7 +1302,7 @@ function renderActiveTab(tab, blocks) {
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
               <polyline points="14 2 14 8 20 8"/>
             </svg>
-            <span>${escapeHtml(state.fileName.replace(/\.srt$/i, ''))}_${targetLang.value.slice(0, 2).toLowerCase()}.srt</span>
+            <span>${escapeHtml(state.fileName.replace(/\.srt$/i, ''))}_${targetLang.value.slice(0, 2).toLowerCase()}${state.isCondensed ? '_glance' : ''}.srt</span>
           </div>
           <button class="codebox-copy-btn" id="inlineCodeCopyBtn" type="button">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px">
@@ -970,17 +1321,28 @@ function renderActiveTab(tab, blocks) {
   } else if (tab === 'translated') {
     tabViewContainer.innerHTML = `
       <div class="cards-scroll-view">
-        ${blocks.map(b => `
+        ${blocks.map((b, idx) => `
           <div class="subtitle-block-card">
             <div class="block-header-line">
               <span class="block-index">#${escapeHtml(b.num)}</span>
               <span class="block-timecode">${escapeHtml(b.timeCode)}</span>
+              <div class="card-meta-right">
+                ${getReadingSpeedPill(b.translatedLines)}
+                <button class="btn-card-shorten" data-idx="${idx}" type="button" title="Trim this line shorter">⚡ Shorten</button>
+              </div>
             </div>
             <div class="block-text-content">${escapeHtml(b.translatedLines.join('\n'))}</div>
           </div>
         `).join('')}
       </div>
     `;
+
+    tabViewContainer.querySelectorAll('.btn-card-shorten').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.dataset.idx, 10);
+        condenseSingleBlock(idx);
+      });
+    });
 
   } else if (tab === 'side') {
     tabViewContainer.innerHTML = `
@@ -996,6 +1358,9 @@ function renderActiveTab(tab, blocks) {
                 <div class="block-header-line">
                   <span class="block-index">#${escapeHtml(b.num)}</span>
                   <span class="block-timecode">${escapeHtml(b.timeCode)}</span>
+                  <div class="card-meta-right">
+                    ${getReadingSpeedPill(b.lines)}
+                  </div>
                 </div>
                 <div class="block-text-content" style="color:var(--text-muted); font-size:0.86rem;">
                   ${escapeHtml(b.lines.join('\n'))}
@@ -1007,15 +1372,19 @@ function renderActiveTab(tab, blocks) {
 
         <div class="comparison-column">
           <div class="column-title-bar">
-            <span>Translated (${targetLang.value})</span>
+            <span>Translated (${targetLang.value}${state.isCondensed ? ' • Condensed' : ''})</span>
             <span>SubSync AI</span>
           </div>
           <div class="comparison-scroll">
-            ${blocks.map(b => `
+            ${blocks.map((b, idx) => `
               <div class="subtitle-block-card" style="border-color: rgba(99, 102, 241, 0.2);">
                 <div class="block-header-line">
                   <span class="block-index" style="color:var(--brand-primary-light);">#${escapeHtml(b.num)}</span>
                   <span class="block-timecode">${escapeHtml(b.timeCode)}</span>
+                  <div class="card-meta-right">
+                    ${getReadingSpeedPill(b.translatedLines)}
+                    <button class="btn-card-shorten" data-idx="${idx}" type="button" title="Trim this line shorter">⚡ Shorten</button>
+                  </div>
                 </div>
                 <div class="block-text-content">
                   ${escapeHtml(b.translatedLines.join('\n'))}
@@ -1027,6 +1396,13 @@ function renderActiveTab(tab, blocks) {
       </div>
     `;
 
+    tabViewContainer.querySelectorAll('.btn-card-shorten').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.dataset.idx, 10);
+        condenseSingleBlock(idx);
+      });
+    });
+
   } else if (tab === 'original') {
     tabViewContainer.innerHTML = `
       <div class="cards-scroll-view">
@@ -1035,6 +1411,9 @@ function renderActiveTab(tab, blocks) {
             <div class="block-header-line">
               <span class="block-index">#${escapeHtml(b.num)}</span>
               <span class="block-timecode">${escapeHtml(b.timeCode)}</span>
+              <div class="card-meta-right">
+                ${getReadingSpeedPill(b.lines)}
+              </div>
             </div>
             <div class="block-text-content" style="color:var(--text-muted);">${escapeHtml(b.lines.join('\n'))}</div>
           </div>
@@ -1062,8 +1441,9 @@ function downloadSRTFile(blocks) {
 
   const baseName = (state.fileName || 'subtitles').replace(/\.srt$/i, '');
   const langCode = targetLang.value.slice(0, 2).toLowerCase();
+  const suffix = state.isCondensed ? '_glance' : '';
   a.href = url;
-  a.download = `${baseName}_${langCode}.srt`;
+  a.download = `${baseName}_${langCode}${suffix}.srt`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
