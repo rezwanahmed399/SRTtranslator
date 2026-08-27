@@ -741,11 +741,11 @@ async function callGeminiBatchTranslate(batch, key, attemptNumber, overrideModel
   // Pacing & Reading Speed Instructions
   let pacingPrompt = '';
   if (pace === 'micro' || pace === 'ultra_concise') {
-    pacingPrompt = `SUBTITLE PACING (⚡ Ultra-Short & Glance-Speed / চোখের পলকে):
-- Make subtitle lines ULTRA-SHORT, punchy, and readable in a split second / blink of an eye (চোখের পলকে).
+    pacingPrompt = `SUBTITLE PACING (Ultra-Short & Glance-Speed):
+- Make subtitle lines ULTRA-SHORT, punchy, and readable in a split second / blink of an eye.
 - Minimize word count strictly (aim for 1 to 4 words per short dialogue, or minimal concise words).
 - Ruthlessly remove filler words, prolonged formal grammar, and unnecessary particles (e.g. "আমরা এখন যাব" -> "চল যাই", "তুমি কি এটা জানো?" -> "এটা জানো?").
-- Preserve 100% of the dialogue's true punch, emotion, and dramatic tone in everyday spoken Bengali (চলতি কথ্য রূপ).`;
+- Preserve 100% of the dialogue's true punch, emotion, and dramatic tone in natural spoken phrasing (চলতি কথ্য রূপ).`;
   } else if (pace === 'concise') {
     pacingPrompt = `SUBTITLE PACING (Fast Reading & Concise):
 - Keep subtitle lines short, crisp, and easy to read in a quick glance.
@@ -933,12 +933,15 @@ function getReadingSpeedPill(lines) {
   const text = (Array.isArray(lines) ? lines.join(' ') : String(lines || '')).trim();
   const words = text.split(/\s+/).filter(Boolean).length;
   const sec = (words * 0.22).toFixed(1);
+  const flashIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;display:inline-block;vertical-align:-1px;"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>`;
+  const clockIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;display:inline-block;vertical-align:-1px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`;
+
   if (words <= 4) {
-    return `<span class="speed-pill ultra-fast" title="Glance speed: ~${sec}s read">⚡ ${words}w • ${sec}s</span>`;
+    return `<span class="speed-pill ultra-fast" title="Glance speed: ~${sec}s read">${flashIcon} ${words}w • ${sec}s</span>`;
   } else if (words <= 7) {
-    return `<span class="speed-pill fast" title="Fast reading speed: ~${sec}s read">⚡ ${words}w • ${sec}s</span>`;
+    return `<span class="speed-pill fast" title="Fast reading speed: ~${sec}s read">${flashIcon} ${words}w • ${sec}s</span>`;
   } else {
-    return `<span class="speed-pill moderate" title="Standard reading speed: ~${sec}s read">⏱️ ${words}w • ${sec}s</span>`;
+    return `<span class="speed-pill moderate" title="Standard reading speed: ~${sec}s read">${clockIcon} ${words}w • ${sec}s</span>`;
   }
 }
 
@@ -978,7 +981,7 @@ async function runAiCondensePipeline() {
   const condensedResult = new Array(state.translatedBlocks.length);
 
   updateProgressStats(0, `Starting 2nd-Pass AI Subtitle Condenser (${batches.length} batches)...`);
-  addTerminalLog('info', `⚡ AI Condenser: Compressing ${state.translatedBlocks.length} subtitles for split-second glance reading...`);
+  addTerminalLog('info', `[AI Condenser] Compressing ${state.translatedBlocks.length} subtitles for split-second glance reading...`);
   addTerminalLog('info', `Using full 1st-pass translation context to eliminate unnecessary filler words.`);
 
   let processedCount = 0;
@@ -1048,7 +1051,7 @@ async function runAiCondensePipeline() {
       const bWordsBefore = countTotalWords(currentBatch);
       const bWordsAfter = countTotalWords(batchResult);
       const bSaved = bWordsBefore > 0 ? Math.round(((bWordsBefore - bWordsAfter) / bWordsBefore) * 100) : 0;
-      addTerminalLog('ok', `Batch ${bi + 1} condensed: ${bWordsBefore}w ➔ ${bWordsAfter}w (${bSaved > 0 ? '-' + bSaved + '%' : 'optimized'})`);
+      addTerminalLog('ok', `Batch ${bi + 1} condensed: ${bWordsBefore}w -> ${bWordsAfter}w (${bSaved > 0 ? '-' + bSaved + '%' : 'optimized'})`);
     }
   }
 
@@ -1062,7 +1065,7 @@ async function runAiCondensePipeline() {
   const totalPercentSaved = totalWordsStart > 0 ? Math.max(0, Math.round(((totalWordsStart - totalWordsEnd) / totalWordsStart) * 100)) : 0;
 
   updateProgressStats(100, `AI Condensation complete! Reduced words by ${totalPercentSaved}% for instant glance reading.`);
-  addTerminalLog('ok', `⚡ Done! Original: ${totalWordsStart} words ➔ Condensed: ${totalWordsEnd} words (-${totalPercentSaved}% reading load).`);
+  addTerminalLog('ok', `[Done] Original: ${totalWordsStart} words -> Condensed: ${totalWordsEnd} words (-${totalPercentSaved}% reading load).`);
 
   await sleep(350);
 
@@ -1091,16 +1094,16 @@ async function callGeminiBatchCondense(batch, key, attemptNumber, overrideModel)
   }));
 
   const promptText = `You are a master subtitle compression and localization editor.
-Task: Condense and shorten the given ${lang} subtitle translations so they are readable in a split second / blink of an eye (চোখের পলকে পড়ার উপযোগী).
+Task: Condense and shorten the given ${lang} subtitle translations so they are readable in a split second glance.
 
 MANDATORY RULES:
 1. Make every subtitle line ULTRA-SHORT and punchy (ideal 1-4 words for short lines, or minimum possible concise words).
-2. Cut away conversational padding, redundant particles, extra formal suffixes, and repetitive words (e.g. in Bengali: "আমরা এখন সেখান থেকে চলে যাব" -> "চল বের হই", "তুমি কি এটা নিশ্চিত জানো?" -> "এটা নিশ্চিত?").
+2. Cut away conversational padding, redundant particles, extra formal suffixes, and repetitive words (e.g. in Bengali: "আমরা এখন যাব" -> "চল যাই", "তুমি কি এটা জানো?" -> "এটা জানো?").
 3. Strictly preserve 100% of the core emotion, punchline, dialogue intent, and context.
 4. Output strictly in natural everyday spoken ${lang} script (চলতি কথ্য রূপ).
 5. Preserve HTML tags like <i>, </i>, <b>, </b> if present.
 6. Output Format: Return ONLY a valid JSON array of objects. No markdown backticks, no explanations.
-Schema: [{"id": 0, "text": "ছোট ও পাঞ্চি অনুবাদ"}, {"id": 1, "text": "ছোট অনুবাদ"}]
+Schema: [{"id": 0, "text": "concise translated text"}, {"id": 1, "text": "concise translated text"}]
 
 INPUT SUBTITLES (${batch.length} items):
 ${JSON.stringify(inputData, null, 2)}
@@ -1225,9 +1228,10 @@ async function condenseSingleBlock(index) {
     console.error('Error shortening line:', err);
     alert('Could not shorten line: ' + err.message);
   } finally {
+    const shortenIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;display:inline-block;vertical-align:-1px;"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>`;
     buttons.forEach(b => {
       b.disabled = false;
-      b.textContent = '⚡ Shorten';
+      b.innerHTML = `${shortenIcon} <span>Shorten</span>`;
     });
   }
 }
@@ -1253,7 +1257,7 @@ function showTranslationResults(blocks, percentSaved) {
 
   if (state.isCondensed) {
     badges.push({ 
-      text: `⚡ 2nd-Pass AI Condensed (${percentSaved ? '-' + percentSaved + '% Words' : 'Glance-Speed'})`, 
+      text: `AI Condensed (${percentSaved ? '-' + percentSaved + '% Words' : 'Glance-Speed'})`, 
       type: 'success' 
     });
   }
@@ -1292,6 +1296,8 @@ function showTranslationResults(blocks, percentSaved) {
 
 // ── Tab View Switcher ──
 function renderActiveTab(tab, blocks) {
+  const shortenSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;display:inline-block;vertical-align:-1px;"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>`;
+
   if (tab === 'code') {
     const srtText = generateSRTString(blocks);
     tabViewContainer.innerHTML = `
@@ -1328,7 +1334,7 @@ function renderActiveTab(tab, blocks) {
               <span class="block-timecode">${escapeHtml(b.timeCode)}</span>
               <div class="card-meta-right">
                 ${getReadingSpeedPill(b.translatedLines)}
-                <button class="btn-card-shorten" data-idx="${idx}" type="button" title="Trim this line shorter">⚡ Shorten</button>
+                <button class="btn-card-shorten" data-idx="${idx}" type="button" title="Trim this line shorter">${shortenSvg} <span>Shorten</span></button>
               </div>
             </div>
             <div class="block-text-content">${escapeHtml(b.translatedLines.join('\n'))}</div>
@@ -1383,7 +1389,7 @@ function renderActiveTab(tab, blocks) {
                   <span class="block-timecode">${escapeHtml(b.timeCode)}</span>
                   <div class="card-meta-right">
                     ${getReadingSpeedPill(b.translatedLines)}
-                    <button class="btn-card-shorten" data-idx="${idx}" type="button" title="Trim this line shorter">⚡ Shorten</button>
+                    <button class="btn-card-shorten" data-idx="${idx}" type="button" title="Trim this line shorter">${shortenSvg} <span>Shorten</span></button>
                   </div>
                 </div>
                 <div class="block-text-content">
@@ -1416,7 +1422,6 @@ function renderActiveTab(tab, blocks) {
               </div>
             </div>
             <div class="block-text-content" style="color:var(--text-muted);">${escapeHtml(b.lines.join('\n'))}</div>
-          </div>
         `).join('')}
       </div>
     `;
