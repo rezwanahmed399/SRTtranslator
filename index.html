@@ -271,26 +271,38 @@
               </svg>
               <span>Live Google API Model Specifications</span>
             </div>
-            <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener" class="quota-ext-link">
-              <span>Google AI Studio Console</span>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;">
-                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-                <polyline points="15 3 21 3 21 9"/>
-                <line x1="10" y1="14" x2="21" y2="3"/>
-              </svg>
-            </a>
+            <div class="quota-header-right">
+              <div class="api-health-pill health-optimal" id="apiHealthPill" title="Real-time API & Quota Status">
+                <span class="health-dot" id="healthDot"></span>
+                <span id="apiHealthText">Quota Health: Optimal</span>
+              </div>
+              <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener" class="quota-ext-link">
+                <span>AI Studio Console</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                  <polyline points="15 3 21 3 21 9"/>
+                  <line x1="10" y1="14" x2="21" y2="3"/>
+                </svg>
+              </a>
+            </div>
           </div>
 
           <div class="quota-grid">
             <div class="quota-item">
               <div class="quota-label">Active Model</div>
-              <div class="quota-value highlight" id="quotaModelName">Gemini 3.5 Flash</div>
+              <div class="quota-value highlight" id="quotaModelName">Gemini 2.5 Flash</div>
               <div class="quota-sub" id="quotaModelVersion">v1beta • Live Verified</div>
             </div>
 
             <div class="quota-item">
+              <div class="quota-label">Session API Requests</div>
+              <div class="quota-value highlight" id="quotaSessionCalls">0 Requests</div>
+              <div class="quota-sub" id="quotaSessionLatency">Last Latency: —</div>
+            </div>
+
+            <div class="quota-item">
               <div class="quota-label">Input Context Window</div>
-              <div class="quota-value highlight" id="quotaContext">1,048,576 Tokens</div>
+              <div class="quota-value" id="quotaContext">1,048,576 Tokens</div>
               <div class="quota-sub">Direct from Google API</div>
             </div>
 
@@ -303,19 +315,13 @@
             <div class="quota-item">
               <div class="quota-label">Google Speed Rate (RPM)</div>
               <div class="quota-value" id="quotaRpm">15 RPM</div>
-              <div class="quota-sub">15 Requests / minute</div>
+              <div class="quota-sub">15 Requests / minute limit</div>
             </div>
 
             <div class="quota-item">
               <div class="quota-label">Daily Request Quota (RPD)</div>
               <div class="quota-value" id="quotaRpd">1,500 RPD</div>
-              <div class="quota-sub">1,500 Free Requests / day</div>
-            </div>
-
-            <div class="quota-item">
-              <div class="quota-label">Token Throughput (TPM)</div>
-              <div class="quota-value" id="quotaTpm">1,000,000 TPM</div>
-              <div class="quota-sub">1 Million tokens / minute</div>
+              <div class="quota-sub">1,500 Free Requests / day limit</div>
             </div>
           </div>
         </div>

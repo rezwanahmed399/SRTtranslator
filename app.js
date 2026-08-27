@@ -18,6 +18,13 @@ const state = {
   isTranslating: false,
   isPaused: false,
   isCancelled: false,
+  apiMetrics: {
+    totalRequests: 0,
+    successfulRequests: 0,
+    rateLimitHits: 0,
+    lastLatencyMs: 0,
+    healthStatus: 'optimal'
+  },
   stats: {
     total: 0,
     processed: 0,
@@ -732,6 +739,45 @@ async function fetchLiveGeminiModels(key) {
   }
 }
 
+function updateApiHealthUI(status = 'optimal', customMessage = '', latencyMs = null) {
+  const pill = $('apiHealthPill');
+  const text = $('apiHealthText');
+  const callsVal = $('quotaSessionCalls');
+  const latencyVal = $('quotaSessionLatency');
+
+  if (callsVal) {
+    callsVal.textContent = `${state.apiMetrics.totalRequests} Requests`;
+  }
+  if (latencyVal) {
+    if (latencyMs !== null) {
+      latencyVal.textContent = `Last: ${latencyMs}ms ${state.apiMetrics.rateLimitHits > 0 ? '(' + state.apiMetrics.rateLimitHits + ' limit hits)' : '(0 errors)'}`;
+    } else if (state.apiMetrics.lastLatencyMs > 0) {
+      latencyVal.textContent = `Last: ${state.apiMetrics.lastLatencyMs}ms ${state.apiMetrics.rateLimitHits > 0 ? '(' + state.apiMetrics.rateLimitHits + ' limit hits)' : '(0 errors)'}`;
+    } else {
+      latencyVal.textContent = `Last Latency: —`;
+    }
+  }
+
+  if (!pill || !text) return;
+
+  pill.className = 'api-health-pill';
+  state.apiMetrics.healthStatus = status;
+
+  if (status === 'optimal') {
+    pill.classList.add('health-optimal');
+    text.textContent = customMessage || 'Quota Health: Optimal';
+  } else if (status === 'active') {
+    pill.classList.add('health-active');
+    text.textContent = customMessage || 'Processing API Call...';
+  } else if (status === 'cooldown') {
+    pill.classList.add('health-warning');
+    text.textContent = customMessage || 'Rate Limit Cooldown Active';
+  } else if (status === 'exhausted') {
+    pill.classList.add('health-error');
+    text.textContent = customMessage || 'Quota Limit Reached (429)';
+  }
+}
+
 function updateQuotaDashboard(models) {
   const toggleBtn = $('toggleQuotaBtn');
   if (toggleBtn) toggleBtn.classList.remove('hidden');
@@ -751,7 +797,6 @@ function updateQuotaDashboard(models) {
   const qOut = $('quotaOutputTokens');
   const qRpm = $('quotaRpm');
   const qRpd = $('quotaRpd');
-  const qTpm = $('quotaTpm');
 
   if (qName) qName.textContent = activeModelObj?.displayName || selectedId;
   if (qVer) qVer.textContent = activeModelObj?.version ? `v${activeModelObj.version} • Live Google Verified` : 'v1beta • Live Google Verified';
@@ -759,7 +804,8 @@ function updateQuotaDashboard(models) {
   if (qOut) qOut.textContent = `${Number(outputLimit).toLocaleString()} Tokens`;
   if (qRpm) qRpm.textContent = isFlash ? '15 RPM' : '2 RPM';
   if (qRpd) qRpd.textContent = isFlash ? '1,500 RPD' : '50 RPD';
-  if (qTpm) qTpm.textContent = isFlash ? '1,000,000 TPM' : '32,000 TPM';
+
+  updateApiHealthUI(state.apiMetrics.healthStatus || 'optimal');
 }
 
 function populateModelDropdown(models) {
@@ -1362,8 +1408,10 @@ async function translateBatchWithAdaptiveSplitting(batch, activeKey, modelToUse,
 
     if (is429) {
       const waitTime = Math.min(5000 * attempt, 16000);
+      updateApiHealthUI('cooldown', `429 Rate Limit Cooldown (${waitTime / 1000}s)...`);
       addTerminalLog('warn', `Google API rate limit (15 RPM) reached. Pausing for ${waitTime / 1000}s to cool down before retry ${attempt}/3...`);
       await sleep(waitTime);
+      updateApiHealthUI('active', `Resuming translation...`);
       if (attempt <= 3 && !state.isCancelled) {
         return await translateBatchWithAdaptiveSplitting(batch, activeKey, modelToUse, attempt + 1);
       }
@@ -1519,17 +1567,40 @@ OUTPUT (JSON Array):`;
     safetySettings: GEMINI_SAFETY_SETTINGS
   };
 
-  const response = await fetch(endpoint, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(requestBody)
-  });
+  state.apiMetrics.totalRequests++;
+  const reqStart = Date.now();
+  updateApiHealthUI('active', `Sending Batch #${batch[0]?.num || 1}...`);
+
+  let response;
+  try {
+    response = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestBody)
+    });
+  } catch (netErr) {
+    const lat = Date.now() - reqStart;
+    updateApiHealthUI('warning', 'Network Retry...', lat);
+    throw netErr;
+  }
+
+  const duration = Date.now() - reqStart;
+  state.apiMetrics.lastLatencyMs = duration;
 
   if (!response.ok) {
     const errorJson = await response.json().catch(() => ({}));
     const errMsg = errorJson?.error?.message || `HTTP ${response.status} ${response.statusText}`;
+    if (response.status === 429 || errMsg.toLowerCase().includes('quota') || errMsg.toLowerCase().includes('rate limit')) {
+      state.apiMetrics.rateLimitHits++;
+      updateApiHealthUI('cooldown', '429 Rate Limit Cooldown', duration);
+    } else {
+      updateApiHealthUI('warning', `Google API Error (${response.status})`, duration);
+    }
     throw new Error(errMsg);
   }
+
+  state.apiMetrics.successfulRequests++;
+  updateApiHealthUI('optimal', 'Quota Health: Optimal', duration);
 
   const responseData = await response.json();
   const rawText = responseData?.candidates?.[0]?.content?.parts?.[0]?.text || '';
@@ -1947,17 +2018,40 @@ OUTPUT (JSON Array):`;
     safetySettings: GEMINI_SAFETY_SETTINGS
   };
 
-  const response = await fetch(endpoint, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(requestBody)
-  });
+  state.apiMetrics.totalRequests++;
+  const reqStart = Date.now();
+  updateApiHealthUI('active', `Condensing Subtitles...`);
+
+  let response;
+  try {
+    response = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestBody)
+    });
+  } catch (netErr) {
+    const lat = Date.now() - reqStart;
+    updateApiHealthUI('warning', 'Network Retry...', lat);
+    throw netErr;
+  }
+
+  const duration = Date.now() - reqStart;
+  state.apiMetrics.lastLatencyMs = duration;
 
   if (!response.ok) {
     const errorJson = await response.json().catch(() => ({}));
     const errMsg = errorJson?.error?.message || `HTTP ${response.status} ${response.statusText}`;
+    if (response.status === 429) {
+      state.apiMetrics.rateLimitHits++;
+      updateApiHealthUI('cooldown', '429 Rate Limit Cooldown', duration);
+    } else {
+      updateApiHealthUI('warning', `Google API (${response.status})`, duration);
+    }
     throw new Error(errMsg);
   }
+
+  state.apiMetrics.successfulRequests++;
+  updateApiHealthUI('optimal', 'Quota Health: Optimal', duration);
 
   const responseData = await response.json();
   const rawText = responseData?.candidates?.[0]?.content?.parts?.[0]?.text || '';

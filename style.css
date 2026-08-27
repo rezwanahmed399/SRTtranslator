@@ -649,6 +649,79 @@ body {
   letter-spacing: -0.01em;
 }
 
+.quota-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.api-health-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  transition: all 0.3s ease;
+  font-family: var(--font-main);
+  letter-spacing: 0.01em;
+}
+
+.health-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  display: inline-block;
+}
+
+.api-health-pill.health-optimal {
+  background: rgba(16, 185, 129, 0.14);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+.api-health-pill.health-optimal .health-dot {
+  box-shadow: 0 0 8px #10b981;
+}
+
+.api-health-pill.health-active {
+  background: rgba(99, 102, 241, 0.15);
+  color: var(--brand-primary-light);
+  border: 1px solid rgba(99, 102, 241, 0.35);
+  animation: pulseHealth 1.4s infinite ease-in-out;
+}
+.api-health-pill.health-active .health-dot {
+  background: #818cf8;
+  box-shadow: 0 0 10px #6366f1;
+}
+
+.api-health-pill.health-warning {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  animation: pulseHealth 1s infinite ease-in-out;
+}
+.api-health-pill.health-warning .health-dot {
+  background: #f59e0b;
+  box-shadow: 0 0 10px #f59e0b;
+}
+
+.api-health-pill.health-error {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+}
+.api-health-pill.health-error .health-dot {
+  background: #ef4444;
+  box-shadow: 0 0 10px #ef4444;
+}
+
+@keyframes pulseHealth {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.65; }
+}
+
 .quota-ext-link {
   display: inline-flex;
   align-items: center;
