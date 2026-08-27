@@ -759,29 +759,55 @@ async function callGeminiBatchTranslate(batch, key, attemptNumber, overrideModel
 - Translate every nuance, specific term, and sentence clause accurately and completely without summarizing.`;
   }
 
-  // Bengali specific pronoun rules
-  let pronounRule = '';
-  if (lang.toLowerCase().includes('bengali') || lang === 'Bengali') {
-    pronounRule = `
-PRONOUN & DIALOGUE RULES (Bengali):
+  // Language-specific and universal dialogue & pronoun guidelines
+  let languageRules = '';
+  const langLower = lang.toLowerCase();
+
+  if (langLower.includes('bengali') || lang === 'Bengali') {
+    languageRules = `
+DIALOGUE & PRONOUN RULES (Bengali):
 - NEVER use disrespectful or rude pronouns like "তুই", "তোর", "তোকে".
-- ALWAYS use friendly, polite, and natural conversational pronouns like "তুমি", "তোমার", "তোমাকে", "তোমরা".
-- Translate in natural everyday spoken Bengali (চলতি ভাষা) so it feels like a real movie dub/subtitle.
-- Preserve any HTML tags like <i>, </i>, <b>, </b> around the translated words.`;
+- ALWAYS use friendly, polite, and natural conversational pronouns like "তুমি", "তোমার", "তোমাকে", "তোমরা" (or "আপনি/আপনার" when addressing elders or formal roles).
+- Translate in natural everyday spoken Bengali (চলতি কথ্য ভাষা) so it feels like a real movie/drama dub.`;
+  } else if (langLower.includes('hindi') || langLower.includes('urdu')) {
+    languageRules = `
+DIALOGUE & PRONOUN RULES (${lang}):
+- AVOID disrespectful or rude pronouns like "तू" / "तेरा" / "तुझे".
+- Use friendly, polite, and natural conversational pronouns like "तुम", "तुम्हारा", "तुम्हें" (or "आप", "आपका" for respect/elders).
+- Translate in natural, modern conversational cinema/drama dialogue.`;
+  } else if (langLower.includes('spanish')) {
+    languageRules = `
+DIALOGUE RULES (Spanish):
+- Use authentic, modern spoken Spanish dialogue suitable for cinema and television subtitles.
+- Maintain appropriate familiarity (tú / usted) consistent with characters' relationships and context.`;
+  } else if (langLower.includes('french')) {
+    languageRules = `
+DIALOGUE RULES (French):
+- Use natural, fluid conversational French suitable for modern cinema and streaming subtitles.
+- Maintain consistent register (tu / vous) based on context and character relationships.`;
+  } else if (langLower.includes('japanese')) {
+    languageRules = `
+DIALOGUE RULES (Japanese):
+- Use natural spoken Japanese suitable for anime and movie subtitles (match plain/polite form to character personality and social context).`;
+  } else {
+    languageRules = `
+DIALOGUE RULES (${lang}):
+- Use natural, fluent conversational ${lang} appropriate for modern movie and video subtitles.
+- Choose natural, friendly, and respectful pronouns suitable for the characters' relationship.`;
   }
 
-  const promptText = `You are a professional subtitle localization translator.
-Task: Translate every single subtitle dialogue line into ${lang}.
+  const promptText = `You are a professional cinematic subtitle localization translator.
+Task: Translate every single subtitle dialogue line accurately into ${lang}.
 
 MANDATORY RULES:
-1. Every subtitle text MUST be translated into ${lang}. Do NOT leave original English text.
-2. If translating to Bengali, use fluent, natural Bengali script (বাংলা বর্ণমালা).
-3. Preserve subtitle meaning, punchlines, drama, and emotion.
+1. Every subtitle text MUST be translated into ${lang}. Do NOT leave original untranslated text.
+2. Output strictly in natural, fluent ${lang} script and vocabulary matching real spoken movie dialogue.
+3. Preserve 100% of subtitle meaning, punchlines, drama, context, and emotion.
 4. ${pacingPrompt}
-5. Preserve HTML formatting tags (like <i>, </i>, <b>, </b>) if present in original text.${pronounRule}
+5. Preserve HTML formatting tags (like <i>, </i>, <b>, </b>) if present in original text.${languageRules}
 ${hint ? `6. Context/Genre: ${hint}` : ''}
 7. Output Format: Return ONLY a valid JSON array of objects. No markdown backticks, no preamble, no explanations.
-Schema: [{"id": 0, "text": "বাংলা অনুবাদ এখানে"}, {"id": 1, "text": "বাংলা অনুবাদ এখানে"}]
+Schema: [{"id": 0, "text": "translated dialogue in ${lang}"}, {"id": 1, "text": "translated dialogue in ${lang}"}]
 
 INPUT SUBTITLES TO TRANSLATE (${batch.length} items):
 ${JSON.stringify(inputData, null, 2)}
@@ -1098,12 +1124,12 @@ Task: Condense and shorten the given ${lang} subtitle translations so they are r
 
 MANDATORY RULES:
 1. Make every subtitle line ULTRA-SHORT and punchy (ideal 1-4 words for short lines, or minimum possible concise words).
-2. Cut away conversational padding, redundant particles, extra formal suffixes, and repetitive words (e.g. in Bengali: "আমরা এখন যাব" -> "চল যাই", "তুমি কি এটা জানো?" -> "এটা জানো?").
+2. Cut away conversational padding, redundant particles, extra formal suffixes, and repetitive words so viewers can read instantaneously.
 3. Strictly preserve 100% of the core emotion, punchline, dialogue intent, and context.
-4. Output strictly in natural everyday spoken ${lang} script (চলতি কথ্য রূপ).
+4. Output strictly in natural everyday spoken ${lang} dialogue/script.
 5. Preserve HTML tags like <i>, </i>, <b>, </b> if present.
 6. Output Format: Return ONLY a valid JSON array of objects. No markdown backticks, no explanations.
-Schema: [{"id": 0, "text": "concise translated text"}, {"id": 1, "text": "concise translated text"}]
+Schema: [{"id": 0, "text": "concise dialogue in ${lang}"}, {"id": 1, "text": "concise dialogue in ${lang}"}]
 
 INPUT SUBTITLES (${batch.length} items):
 ${JSON.stringify(inputData, null, 2)}
