@@ -531,9 +531,10 @@ async function fetchLiveGeminiModels(key) {
 
         // Exclude non-text/specialized multimodal variants that cannot do text translation
         const nonTextTerms = [
-          'tts', 'banana', 'robotics', 'transcribe', 
+          'tts', 'banana', 'nano', 'robotics', 'transcribe', 
           'clip', 'deep-research', 'computer-use', 'customtools', 
-          'embedding', 'aqa', 'imagen', 'audio', 'realtime', 'live'
+          'embedding', 'embed', 'aqa', 'imagen', 'image', 'audio', 
+          'realtime', 'live', 'speech', 'voice', 'diffusion', 'medlm'
         ];
         if (nonTextTerms.some(term => id.includes(term))) return false;
 
