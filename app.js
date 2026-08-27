@@ -329,6 +329,7 @@ window.addEventListener('beforeunload', e => {
 window.addEventListener('DOMContentLoaded', () => {
   initTheme();
   initCustomSelects();
+  initFaqAccordion();
   const savedKey = (localStorage.getItem('gemini_api_key') || '').trim();
   if (savedKey) {
     apiKeyInput.value = savedKey;
@@ -2810,5 +2811,27 @@ function initCustomSelects() {
   document.addEventListener('click', () => closeAllCustomSelects());
   window.addEventListener('keydown', e => {
     if (e.key === 'Escape') closeAllCustomSelects();
+  });
+}
+
+// ── Interactive FAQ Accordion Engine ──
+function initFaqAccordion() {
+  const faqItems = document.querySelectorAll('.seo-faq-item');
+  if (!faqItems || faqItems.length === 0) return;
+
+  faqItems.forEach(item => {
+    const btn = item.querySelector('.faq-q-btn');
+    if (!btn) return;
+
+    btn.addEventListener('click', () => {
+      const isOpen = item.classList.contains('is-open');
+      if (isOpen) {
+        item.classList.remove('is-open');
+        btn.setAttribute('aria-expanded', 'false');
+      } else {
+        item.classList.add('is-open');
+        btn.setAttribute('aria-expanded', 'true');
+      }
+    });
   });
 }
