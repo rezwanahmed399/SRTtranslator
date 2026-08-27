@@ -93,6 +93,103 @@ const incompleteWarningBanner = $('incompleteWarningBanner');
 const incompleteWarningTitle  = $('incompleteWarningTitle');
 const incompleteWarningDesc   = $('incompleteWarningDesc');
 
+// ── Custom Modern Dialog System (UI Warnings & Alerts) ──
+const customModalBackdrop  = $('customModalBackdrop');
+const customModalBox       = $('customModalBox');
+const modalIconBadge       = $('modalIconBadge');
+const modalIconSvgWarning  = $('modalIconSvgWarning');
+const modalIconSvgInfo     = $('modalIconSvgInfo');
+const modalTitle           = $('modalTitle');
+const modalMessage         = $('modalMessage');
+const modalCancelBtn       = $('modalCancelBtn');
+const modalConfirmBtn      = $('modalConfirmBtn');
+
+let activeModalResolver = null;
+
+function showCustomConfirm({ 
+  title = 'Confirm Action', 
+  message = 'Are you sure you want to proceed?', 
+  confirmText = 'Yes, Confirm', 
+  cancelText = 'Cancel', 
+  type = 'warning' 
+} = {}) {
+  return new Promise(resolve => {
+    if (!customModalBackdrop) {
+      resolve(window.confirm(message));
+      return;
+    }
+
+    activeModalResolver = resolve;
+
+    if (modalTitle) modalTitle.textContent = title;
+    if (modalMessage) modalMessage.textContent = message;
+    if (modalCancelBtn) {
+      modalCancelBtn.textContent = cancelText;
+      modalCancelBtn.classList.remove('hidden');
+    }
+    if (modalConfirmBtn) {
+      modalConfirmBtn.textContent = confirmText;
+      modalConfirmBtn.className = `btn btn-modal-confirm ${type === 'info' ? 'btn-info' : (type === 'warning' ? 'btn-warning' : '')}`;
+    }
+
+    if (customModalBox) {
+      customModalBox.className = `custom-modal-box modal-type-${type}`;
+    }
+
+    if (modalIconSvgWarning) modalIconSvgWarning.classList.toggle('hidden', type === 'info');
+    if (modalIconSvgInfo) modalIconSvgInfo.classList.toggle('hidden', type !== 'info');
+
+    customModalBackdrop.classList.remove('hidden');
+    if (modalConfirmBtn) modalConfirmBtn.focus();
+  });
+}
+
+function showCustomAlert({ 
+  title = 'Notification', 
+  message = '', 
+  buttonText = 'Got it', 
+  type = 'info' 
+} = {}) {
+  return new Promise(resolve => {
+    if (!customModalBackdrop) {
+      window.alert(message);
+      resolve(true);
+      return;
+    }
+
+    activeModalResolver = resolve;
+
+    if (modalTitle) modalTitle.textContent = title;
+    if (modalMessage) modalMessage.textContent = message;
+    if (modalCancelBtn) modalCancelBtn.classList.add('hidden');
+    if (modalConfirmBtn) {
+      modalConfirmBtn.textContent = buttonText;
+      modalConfirmBtn.className = `btn btn-modal-confirm ${type === 'info' ? 'btn-info' : (type === 'warning' ? 'btn-warning' : '')}`;
+    }
+
+    if (customModalBox) {
+      customModalBox.className = `custom-modal-box modal-type-${type}`;
+    }
+
+    if (modalIconSvgWarning) modalIconSvgWarning.classList.toggle('hidden', type === 'info');
+    if (modalIconSvgInfo) modalIconSvgInfo.classList.toggle('hidden', type !== 'info');
+
+    customModalBackdrop.classList.remove('hidden');
+    if (modalConfirmBtn) modalConfirmBtn.focus();
+  });
+}
+
+function closeCustomModal(result = false) {
+  if (customModalBackdrop) {
+    customModalBackdrop.classList.add('hidden');
+  }
+  if (activeModalResolver) {
+    const fn = activeModalResolver;
+    activeModalResolver = null;
+    fn(result);
+  }
+}
+
 // ── IndexedDB Session Storage Engine ──
 const DB_NAME = 'SubSyncAI_DB';
 const DB_VERSION = 1;
@@ -280,10 +377,16 @@ function togglePauseTranslation() {
   }
 }
 
-function cancelTranslationProcess() {
+async function cancelTranslationProcess() {
   if (!state.isTranslating) return;
 
-  const confirmed = confirm('Are you sure you want to cancel the translation? Ongoing translation will be stopped and all translated data will be discarded.');
+  const confirmed = await showCustomConfirm({
+    title: 'Cancel Translation?',
+    message: 'Are you sure you want to cancel the ongoing translation? All translated data will be discarded and the session will be reset.',
+    confirmText: 'Yes, Discard All',
+    cancelText: 'Keep Translating',
+    type: 'danger'
+  });
   if (!confirmed) return;
 
   state.isCancelled = true;
@@ -309,6 +412,24 @@ function cancelTranslationProcess() {
 
 // ── Event Setup ──
 function setupEventListeners() {
+  // Custom Modal Dialog Listeners
+  if (modalCancelBtn) {
+    modalCancelBtn.addEventListener('click', () => closeCustomModal(false));
+  }
+  if (modalConfirmBtn) {
+    modalConfirmBtn.addEventListener('click', () => closeCustomModal(true));
+  }
+  if (customModalBackdrop) {
+    customModalBackdrop.addEventListener('click', e => {
+      if (e.target === customModalBackdrop) closeCustomModal(false);
+    });
+  }
+  window.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && customModalBackdrop && !customModalBackdrop.classList.contains('hidden')) {
+      closeCustomModal(false);
+    }
+  });
+
   // Theme Toggle
   if (themeToggleBtn) {
     themeToggleBtn.addEventListener('click', toggleTheme);
@@ -372,8 +493,14 @@ function setupEventListeners() {
 
   // Remove File
   if (removeFile) {
-    removeFile.addEventListener('click', () => {
-      const confirmed = confirm('Are you sure you want to remove this file? Any existing translations and saved session data will be removed.');
+    removeFile.addEventListener('click', async () => {
+      const confirmed = await showCustomConfirm({
+        title: 'Remove Subtitle File?',
+        message: 'Are you sure you want to remove this file? Any existing translations and saved session data will be permanently cleared.',
+        confirmText: 'Yes, Remove File',
+        cancelText: 'Keep File',
+        type: 'danger'
+      });
       if (!confirmed) return;
 
       state.parsedBlocks = [];
@@ -409,7 +536,16 @@ function setupEventListeners() {
 
   // Retranslate
   if (retranslateBtn) {
-    retranslateBtn.addEventListener('click', () => {
+    retranslateBtn.addEventListener('click', async () => {
+      const confirmed = await showCustomConfirm({
+        title: 'Retranslate Subtitles?',
+        message: 'This will reset the current translation and re-translate all subtitle lines from the beginning.',
+        confirmText: 'Yes, Retranslate',
+        cancelText: 'Cancel',
+        type: 'warning'
+      });
+      if (!confirmed) return;
+
       if (resultCard) resultCard.classList.add('hidden');
       state.translatedBlocks = [];
       state.uncompressedBlocks = [];
