@@ -2748,6 +2748,15 @@ async function runAiCondensePipeline() {
     state.uncompressedBlocks = JSON.parse(JSON.stringify(state.translatedBlocks));
   }
 
+  state.isTranslating = true;
+  state.isPaused = false;
+  state.isCancelled = false;
+
+  if (ctrlIconPause) ctrlIconPause.classList.remove('hidden');
+  if (ctrlIconResume) ctrlIconResume.classList.add('hidden');
+  if (pauseResumeLabel) pauseResumeLabel.textContent = 'Pause';
+  if (pauseResumeBtn) pauseResumeBtn.classList.remove('is-paused');
+
   const origBtnHtml = condenseSrtBtn.innerHTML;
   condenseSrtBtn.disabled = true;
   condenseSrtBtn.innerHTML = `
@@ -2760,7 +2769,7 @@ async function runAiCondensePipeline() {
   progressLog.innerHTML = '';
 
   const totalWordsStart = countTotalWords(state.translatedBlocks);
-  const bs = 25;
+  const bs = 20;
   const batches = chunkArray(state.translatedBlocks, bs);
   const condensedResult = new Array(state.translatedBlocks.length);
   let processedCount = 0;
@@ -2780,83 +2789,191 @@ async function runAiCondensePipeline() {
   updateProgressStats(0, `Starting 2nd-Pass AI Condensation (${totalWordsStart} total words)...`);
   addTerminalLog('info', `[2nd-Pass Condenser] Analyzing ${state.translatedBlocks.length} subtitles (${totalWordsStart} total words across ${batches.length} batches)...`);
 
-  for (let bi = 0; bi < batches.length; bi++) {
-    const currentBatch = batches[bi];
-    const startIndex = bi * bs;
-    const batchPct = Math.round((processedCount / state.translatedBlocks.length) * 95);
-
-    const { model: currentCondenseModel, key: currentCondenseKey } = getActiveProviderAndKey(state.selectedModel);
-    updateProgressStats(batchPct, `Condensing batch ${bi + 1} of ${batches.length} (#${currentBatch[0].num} – #${currentBatch[currentBatch.length - 1].num})...`);
-
-    let batchResult = [];
-
-    for (let attempt = 1; attempt <= 3; attempt++) {
-      try {
-        batchResult = await callAiBatchCondense(currentBatch, currentCondenseKey, attempt, currentCondenseModel);
+  try {
+    for (let bi = 0; bi < batches.length; bi++) {
+      while (state.isPaused && !state.isCancelled) {
+        await sleep(300);
+      }
+      if (state.isCancelled) {
+        addTerminalLog('warn', 'AI Condensation cancelled by user.');
         break;
-      } catch (err) {
-        state.stats.retries++;
-        const errMsg = (err.message || '').toLowerCase();
-        const is429 = errMsg.includes('429') || errMsg.includes('quota');
+      }
 
-        if (is429) {
-          const waitTime = Math.min(5000 * attempt, 15000);
-          addTerminalLog('warn', `Rate limit reached. Pausing ${waitTime / 1000}s before condenser retry ${attempt}/3...`);
-          await sleep(waitTime);
-        } else if (attempt < 3) {
-          addTerminalLog('warn', `Retry ${attempt}/3 for batch ${bi + 1}...`);
-          await sleep(1500 * attempt);
-        } else {
-          addTerminalLog('err', `Could not condense batch ${bi + 1}. Keeping current translation.`);
-          batchResult = currentBatch;
-        }
+      const currentBatch = batches[bi];
+      const startIndex = bi * bs;
+      const batchPct = Math.round((processedCount / state.translatedBlocks.length) * 95);
+
+      const { model: currentCondenseModel, key: currentCondenseKey } = getActiveProviderAndKey(state.selectedModel);
+      updateProgressStats(batchPct, `Condensing batch ${bi + 1} of ${batches.length} (#${currentBatch[0].num} – #${currentBatch[currentBatch.length - 1].num})...`);
+
+      const batchResult = await condenseBatchWithAdaptiveSplitting(currentBatch, currentCondenseKey, currentCondenseModel);
+
+      for (let j = 0; j < batchResult.length; j++) {
+        condensedResult[startIndex + j] = batchResult[j];
+      }
+
+      const batchOrigWords = countTotalWords(currentBatch);
+      const batchCondWords = countTotalWords(batchResult);
+      const batchPctSaved = batchOrigWords > 0 ? Math.max(0, Math.round(((batchOrigWords - batchCondWords) / batchOrigWords) * 100)) : 0;
+
+      processedCount += currentBatch.length;
+      state.stats.processed = processedCount;
+      statProcessed.textContent = `${processedCount} / ${state.translatedBlocks.length}`;
+      statBatches.textContent = `${bi + 1} / ${batches.length}`;
+
+      addTerminalLog('ok', `Batch ${bi + 1}/${batches.length}: ${batchOrigWords}w -> ${batchCondWords}w (-${batchPctSaved}% concise).`);
+
+      if (bi < batches.length - 1 && !state.isCancelled) {
+        await sleep(1200);
       }
     }
 
-    for (let j = 0; j < batchResult.length; j++) {
-      condensedResult[startIndex + j] = batchResult[j];
+    if (state.isCancelled) {
+      restoreOriginalTranslation();
+      return;
     }
 
-    const batchOrigWords = countTotalWords(currentBatch);
-    const batchCondWords = countTotalWords(batchResult);
-    const batchPctSaved = batchOrigWords > 0 ? Math.max(0, Math.round(((batchOrigWords - batchCondWords) / batchOrigWords) * 100)) : 0;
+    updateProgressStats(98, 'Synchronizing precision timecodes for condensed subtitles...');
+    const finalizedBlocks = postProcessSubtitles(condensedResult);
 
-    processedCount += currentBatch.length;
-    state.stats.processed = processedCount;
-    statProcessed.textContent = `${processedCount} / ${state.translatedBlocks.length}`;
-    statBatches.textContent = `${bi + 1} / ${batches.length}`;
+    state.translatedBlocks = finalizedBlocks;
+    state.isCondensed = true;
 
-    addTerminalLog('ok', `Batch ${bi + 1}/${batches.length}: ${batchOrigWords}w -> ${batchCondWords}w (-${batchPctSaved}% concise).`);
+    const totalWordsEnd = countTotalWords(finalizedBlocks);
+    const totalPercentSaved = totalWordsStart > 0 ? Math.max(0, Math.round(((totalWordsStart - totalWordsEnd) / totalWordsStart) * 100)) : 0;
+    const wordsSaved = Math.max(0, totalWordsStart - totalWordsEnd);
 
-    if (bi < batches.length - 1) {
-      await sleep(1200);
+    updateProgressStats(100, `AI Condensation complete! Reduced from ${totalWordsStart} to ${totalWordsEnd} words (-${totalPercentSaved}% reading load).`);
+    addTerminalLog('ok', `✨ [Condensation 100% Done] Total: ${totalWordsStart} words -> ${totalWordsEnd} words (${wordsSaved} words saved, -${totalPercentSaved}% reading load)!`);
+
+    await sleep(350);
+
+    showTranslationResults(finalizedBlocks, totalPercentSaved, totalWordsStart, totalWordsEnd);
+    saveCurrentSession();
+
+    await sleep(300);
+    downloadSRTFile(finalizedBlocks);
+    addTerminalLog('ok', 'Condensed SRT auto-downloaded.');
+  } finally {
+    state.isTranslating = false;
+    state.isPaused = false;
+    if (condenseSrtBtn) {
+      condenseSrtBtn.innerHTML = origBtnHtml;
+      condenseSrtBtn.disabled = false;
     }
   }
+}
 
-  updateProgressStats(98, 'Synchronizing precision timecodes for condensed subtitles...');
-  const finalizedBlocks = postProcessSubtitles(condensedResult);
+// ── Adaptive Sub-Batch Splitting Engine for Condenser (Divide & Conquer + Cross-Provider Auto-Failover) ──
+async function condenseBatchWithAdaptiveSplitting(batch, activeKey, modelToUse, attempt = 1) {
+  if (!batch || batch.length === 0) return [];
 
-  state.translatedBlocks = finalizedBlocks;
-  state.isCondensed = true;
+  while (state.isPaused && !state.isCancelled) {
+    await sleep(300);
+  }
+  if (state.isCancelled) {
+    throw new Error('Condensation cancelled by user');
+  }
 
-  const totalWordsEnd = countTotalWords(finalizedBlocks);
-  const totalPercentSaved = totalWordsStart > 0 ? Math.max(0, Math.round(((totalWordsStart - totalWordsEnd) / totalWordsStart) * 100)) : 0;
-  const wordsSaved = Math.max(0, totalWordsStart - totalWordsEnd);
+  const { providerId: currentPid, model: activeModel, key: effectiveKey } = getActiveProviderAndKey(modelToUse);
 
-  updateProgressStats(100, `AI Condensation complete! Reduced from ${totalWordsStart} to ${totalWordsEnd} words (-${totalPercentSaved}% reading load).`);
-  addTerminalLog('ok', `✨ [Condensation 100% Done] Total: ${totalWordsStart} words -> ${totalWordsEnd} words (${wordsSaved} words saved, -${totalPercentSaved}% reading load)!`);
+  try {
+    const result = await callAiBatchCondense(batch, effectiveKey, attempt, activeModel);
+    return result;
+  } catch (err) {
+    if (state.isCancelled) throw err;
+    state.stats.retries++;
+    const errMsg = (err.message || '').toLowerCase();
 
-  await sleep(350);
+    const isModelUnavailable = errMsg.includes('no longer available') ||
+      errMsg.includes('does not exist') ||
+      errMsg.includes('do not have access') ||
+      errMsg.includes('not found') ||
+      errMsg.includes('is not supported') ||
+      errMsg.includes('deprecated') ||
+      errMsg.includes('model_not_found') ||
+      errMsg.includes('invalid_model') ||
+      errMsg.includes('unrecognized model') ||
+      errMsg.includes('invalid model') ||
+      errMsg.includes('404');
 
-  showTranslationResults(finalizedBlocks, totalPercentSaved, totalWordsStart, totalWordsEnd);
-  saveCurrentSession();
+    const is429 = errMsg.includes('429') || errMsg.includes('quota') || errMsg.includes('resource has been exhausted') || errMsg.includes('rate limit');
+    const is503 = errMsg.includes('503') || errMsg.includes('overloaded') || errMsg.includes('high demand') || errMsg.includes('service unavailable');
+    const isAuthError = errMsg.includes('401') || errMsg.includes('unauthorized') || errMsg.includes('invalid api key') || errMsg.includes('incorrect api key');
 
-  await sleep(300);
-  downloadSRTFile(finalizedBlocks);
-  addTerminalLog('ok', 'Condensed SRT auto-downloaded.');
+    // 1. Permanent Model / Auth Error: Mark permanently broken and switch immediately
+    if (isModelUnavailable || isAuthError) {
+      modelHealthTracker.recordFailure(currentPid, activeModel, true, err.message);
+      if (state.autoFailoverEnabled) {
+        const backup = findFailoverBackup(currentPid, activeModel);
+        if (backup) {
+          addTerminalLog('warn', `⚡ [Auto-Failover] Condenser model "${activeModel}" is unavailable. Switching to [${backup.providerName}] ${backup.modelName} to continue condensation!`);
+          state.selectedModel = backup.model;
+          if (modelSelect) {
+            modelSelect.value = backup.model;
+            refreshCustomSelect('modelSelect');
+          }
+          updateQuotaDashboardForActiveModel();
+          await sleep(600);
+          return await condenseBatchWithAdaptiveSplitting(batch, backup.key, backup.model, 1);
+        }
+      }
+      addTerminalLog('err', `Could not condense batch with "${activeModel}": ${err.message}. Preserving uncompressed translation.`);
+      return batch;
+    }
 
-  condenseSrtBtn.innerHTML = origBtnHtml;
-  condenseSrtBtn.disabled = false;
+    // 2. Rate Limit / Overload: Record temporary cooldown and Auto-Failover
+    if ((is429 || is503) && state.autoFailoverEnabled) {
+      modelHealthTracker.recordFailure(currentPid, activeModel, false, err.message);
+      const backup = findFailoverBackup(currentPid, activeModel);
+      if (backup) {
+        addTerminalLog('warn', `⚡ [Auto-Failover • ${backup.tier}] Condenser model ${activeModel} is ${is503 ? 'overloaded (503)' : 'rate limited (429)'}. Instantly switching to [${backup.providerName}] ${backup.modelName}!`);
+        state.selectedModel = backup.model;
+        if (modelSelect) {
+          modelSelect.value = backup.model;
+          refreshCustomSelect('modelSelect');
+        }
+        updateQuotaDashboardForActiveModel();
+        await sleep(600);
+        return await condenseBatchWithAdaptiveSplitting(batch, backup.key, backup.model, 1);
+      }
+    }
+
+    // 3. Rate Limit / Overload without available backup: Cooldown and retry
+    if (is429) {
+      const waitTime = Math.min(5000 * attempt, 16000);
+      updateApiHealthUI('cooldown', `429 Rate Limit Cooldown (${waitTime / 1000}s)...`);
+      addTerminalLog('warn', `API rate limit reached on condenser. Pausing for ${waitTime / 1000}s before retry ${attempt}/3...`);
+      await sleep(waitTime);
+      updateApiHealthUI('active', `Resuming condensation...`);
+      if (attempt <= 3 && !state.isCancelled) {
+        return await condenseBatchWithAdaptiveSplitting(batch, effectiveKey, activeModel, attempt + 1);
+      }
+    } else if (is503) {
+      addTerminalLog('warn', `Condenser server busy (503). Retrying in 4s...`);
+      await sleep(4000);
+      if (attempt <= 3 && !state.isCancelled) {
+        return await condenseBatchWithAdaptiveSplitting(batch, effectiveKey, activeModel, attempt + 1);
+      }
+    }
+
+    // 4. Divide and Conquer: Split batch if larger than 1 item
+    if (batch.length > 1 && !state.isCancelled) {
+      const mid = Math.ceil(batch.length / 2);
+      const subA = batch.slice(0, mid);
+      const subB = batch.slice(mid);
+      addTerminalLog('warn', `Sub-dividing condense batch of ${batch.length} lines into smaller chunks (${subA.length} + ${subB.length})...`);
+      await sleep(1000);
+      const resA = await condenseBatchWithAdaptiveSplitting(subA, effectiveKey, activeModel, 1);
+      await sleep(1000);
+      const resB = await condenseBatchWithAdaptiveSplitting(subB, effectiveKey, activeModel, 1);
+      return [...resA, ...resB];
+    }
+
+    // 5. Final fallback for single block
+    addTerminalLog('warn', `Subtitle #${batch[0]?.num || 1} could not be condensed. Original translation preserved.`);
+    return batch;
+  }
 }
 
 // ── Gemini 2nd-Pass Condense API Call ──
