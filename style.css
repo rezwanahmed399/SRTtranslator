@@ -968,6 +968,8 @@ body {
   border: 1px solid var(--border-medium);
   border-radius: var(--radius-md);
   padding: 16px 18px;
+  position: relative;
+  z-index: 50;
 }
 
 .provider-select-label {
@@ -1857,6 +1859,11 @@ body {
   width: 100%;
   min-width: 0;
   user-select: none;
+  z-index: 10;
+}
+
+.custom-select-container.is-open {
+  z-index: 99999 !important;
 }
 
 .custom-select-trigger {
@@ -1942,7 +1949,7 @@ body {
   border: 1px solid var(--border-bright);
   border-radius: var(--radius-md);
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4), 0 0 20px var(--accent-glow);
-  z-index: 9999;
+  z-index: 99999 !important;
   overflow: hidden;
   opacity: 0;
   visibility: hidden;

@@ -113,11 +113,11 @@ const state = {
   activeTabProvider: 'gemini',
   autoFailoverEnabled: true,
   providerStatus: {
-    gemini: { connected: false, models: [], lastLatency: 0 },
-    groq: { connected: false, models: [], lastLatency: 0 },
-    openrouter: { connected: false, models: [], lastLatency: 0 },
-    deepseek: { connected: false, models: [], lastLatency: 0 },
-    openai: { connected: false, models: [], lastLatency: 0 }
+    gemini: { connected: null, models: [], lastLatency: 0 },
+    groq: { connected: null, models: [], lastLatency: 0 },
+    openrouter: { connected: null, models: [], lastLatency: 0 },
+    deepseek: { connected: null, models: [], lastLatency: 0 },
+    openai: { connected: null, models: [], lastLatency: 0 }
   },
   apiKey: '', // Backward compatibility
   availableModels: [],
@@ -621,13 +621,21 @@ function switchAppTab(tabId) {
 
 function hasAnyConnectedApiKey() {
   return Object.keys(AI_PROVIDERS).some(pid => {
-    return state.providerStatus[pid]?.connected === true && (state.apiKeys[pid] && state.apiKeys[pid].trim().length > 5);
+    const memKey = state.apiKeys[pid] ? state.apiKeys[pid].trim() : '';
+    const storedKey = (localStorage.getItem(AI_PROVIDERS[pid].storageKey) || '').trim();
+    const hasKeyString = (memKey.length > 5) || (storedKey.length > 5);
+    if (state.providerStatus[pid]?.connected === true) return true;
+    if (hasKeyString && state.providerStatus[pid]?.connected !== false) return true;
+    return false;
   });
 }
 
 function getConnectedProviderNames() {
   const connected = Object.keys(AI_PROVIDERS).filter(pid => {
-    return state.providerStatus[pid]?.connected === true && (state.apiKeys[pid] && state.apiKeys[pid].length > 5);
+    const memKey = state.apiKeys[pid] ? state.apiKeys[pid].trim() : '';
+    const storedKey = (localStorage.getItem(AI_PROVIDERS[pid].storageKey) || '').trim();
+    const hasKeyString = (memKey.length > 5) || (storedKey.length > 5);
+    return state.providerStatus[pid]?.connected === true || (hasKeyString && state.providerStatus[pid]?.connected !== false);
   });
   return connected.map(pid => AI_PROVIDERS[pid]?.name || pid);
 }
@@ -1067,17 +1075,16 @@ async function verifyAndLoadProvider(providerId, key) {
     showProviderFeedback(providerId, `Connected! ${loadedModels.length} live models verified (Ping: ${probeMs}ms).`, 'ok');
     updateProviderStatusUI(providerId, true, `${loadedModels.length} models, ${probeMs}ms`);
 
+    updateApiGuardAndHeaderStatus();
     populateCombinedModelDropdown();
     updateQuotaDashboardForActiveModel();
     checkReadyToTranslate();
   } catch (err) {
     console.warn(`Error verifying ${pConf.name}:`, err);
-    state.apiKeys[providerId] = '';
-    if (providerId === 'gemini') state.apiKey = '';
-    localStorage.removeItem(pConf.storageKey);
     state.providerStatus[providerId] = { connected: false, models: [], lastLatency: 0 };
     showProviderFeedback(providerId, `${pConf.name} Error: ${err.message}`, 'err');
     updateProviderStatusUI(providerId, false);
+    updateApiGuardAndHeaderStatus();
     populateCombinedModelDropdown();
     checkReadyToTranslate();
   }
