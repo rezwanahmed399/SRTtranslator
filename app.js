@@ -447,7 +447,7 @@ window.addEventListener('beforeunload', e => {
 // ── Android Native App Integration (Capacitor) ──
 function initNativeAppIntegrations() {
   if (typeof window !== 'undefined' && window.Capacitor && window.Capacitor.isNativePlatform()) {
-    console.log('📱 Running inside native Android app via Capacitor.');
+    console.log('[Native App] Running inside Android via Capacitor.');
 
     // 1. Android Status Bar Styling
     if (window.Capacitor.Plugins && window.Capacitor.Plugins.StatusBar) {
@@ -506,7 +506,7 @@ async function acquireWakeLock() {
       wakeLock.addEventListener('release', () => {
         wakeLock = null;
       });
-      console.log('⚡ Screen WakeLock active: Device will stay awake during translation.');
+      console.log('[WakeLock] Screen WakeLock active: Device will stay awake during translation.');
     }
   } catch (err) {
     console.warn('Wake Lock request error:', err);
@@ -518,7 +518,7 @@ function releaseWakeLock() {
     if (wakeLock) {
       wakeLock.release();
       wakeLock = null;
-      console.log('💤 Screen WakeLock released.');
+      console.log('[WakeLock] Screen WakeLock released.');
     }
   } catch (err) {}
 }
@@ -621,12 +621,18 @@ function switchAppTab(tabId) {
 
 function hasAnyConnectedApiKey() {
   return Object.keys(AI_PROVIDERS).some(pid => {
-    return (state.apiKeys[pid] && state.apiKeys[pid].trim().length > 5) || (state.providerStatus[pid]?.connected);
+    const memKey = state.apiKeys[pid] ? state.apiKeys[pid].trim() : '';
+    const storedKey = (localStorage.getItem(AI_PROVIDERS[pid].storageKey) || '').trim();
+    return (memKey.length > 5) || (storedKey.length > 5) || (state.providerStatus[pid]?.connected);
   });
 }
 
 function getConnectedProviderNames() {
-  const connected = Object.keys(AI_PROVIDERS).filter(pid => state.providerStatus[pid]?.connected || (state.apiKeys[pid] && state.apiKeys[pid].length > 5));
+  const connected = Object.keys(AI_PROVIDERS).filter(pid => {
+    const memKey = state.apiKeys[pid] ? state.apiKeys[pid].trim() : '';
+    const storedKey = (localStorage.getItem(AI_PROVIDERS[pid].storageKey) || '').trim();
+    return state.providerStatus[pid]?.connected || (memKey.length > 5) || (storedKey.length > 5);
+  });
   return connected.map(pid => AI_PROVIDERS[pid]?.name || pid);
 }
 
@@ -657,7 +663,7 @@ function updateApiGuardAndHeaderStatus() {
     const primaryName = connectedNames[0] || 'AI';
     if (headerBadge) {
       headerBadge.className = 'header-ai-status-badge badge-on';
-      if (headerText) headerText.textContent = `${primaryName} Connected`;
+      if (headerText) headerText.textContent = `${primaryName} Active`;
     }
     if (settingsNavDot) {
       settingsNavDot.className = 'settings-nav-dot dot-on';
@@ -669,11 +675,19 @@ function updateApiGuardAndHeaderStatus() {
 // ── Multi-AI Provider Engine & State Manager ──
 function switchProviderTab(providerId) {
   state.activeTabProvider = providerId;
-  
-  // Update Tab buttons
-  document.querySelectorAll('.provider-tab-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.provider === providerId);
-  });
+
+  const providerSelect = $('providerSelect');
+  const providerSelectedTag = $('providerSelectedTag');
+  const pConf = AI_PROVIDERS[providerId];
+
+  if (providerSelect && providerSelect.value !== providerId) {
+    providerSelect.value = providerId;
+    refreshCustomSelect('providerSelect');
+  }
+
+  if (providerSelectedTag && pConf) {
+    providerSelectedTag.textContent = pConf.name;
+  }
 
   // Update Panels
   document.querySelectorAll('.provider-panel').forEach(panel => {
@@ -712,6 +726,8 @@ function initMultiProviderHub() {
     }
   });
 
+  updateApiGuardAndHeaderStatus();
+
   if (!atLeastOneConnected) {
     resetQuotaDashboardToDisconnected('No API Key');
     populateCombinedModelDropdown();
@@ -733,6 +749,14 @@ async function handleSaveProviderKey(providerId) {
     return;
   }
 
+  // Store in memory and storage immediately so UI reflects key entry instantly
+  state.apiKeys[providerId] = rawKey;
+  if (providerId === 'gemini') state.apiKey = rawKey;
+  localStorage.setItem(pConf.storageKey, rawKey);
+
+  updateApiGuardAndHeaderStatus();
+  checkReadyToTranslate();
+
   if (saveBtn) {
     saveBtn.disabled = true;
     saveBtn.innerHTML = '<span>Verifying...</span>';
@@ -742,6 +766,8 @@ async function handleSaveProviderKey(providerId) {
   try {
     await verifyAndLoadProvider(providerId, rawKey);
   } finally {
+    updateApiGuardAndHeaderStatus();
+    checkReadyToTranslate();
     if (saveBtn) {
       saveBtn.disabled = false;
       saveBtn.innerHTML = `<span>Connect ${pConf.name}</span>`;
@@ -1562,13 +1588,16 @@ function setupEventListeners() {
     });
   }
 
+  // Provider Select Dropdown Switcher
+  const providerSelect = $('providerSelect');
+  if (providerSelect) {
+    providerSelect.addEventListener('change', () => {
+      switchProviderTab(providerSelect.value);
+    });
+  }
+
   // Theme Toggle
   if (themeToggleBtn) themeToggleBtn.addEventListener('click', toggleTheme);
-
-  // Multi-Provider Tab Buttons
-  document.querySelectorAll('.provider-tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => switchProviderTab(btn.dataset.provider));
-  });
 
   // Auto-Failover Switch
   const autoFailoverToggle = $('autoFailoverToggle');
@@ -4062,7 +4091,7 @@ function syncCustomSelectDisabled(selectId) {
 }
 
 function initCustomSelects() {
-  ['targetLang', 'modelSelect', 'styleMode'].forEach(id => {
+  ['targetLang', 'modelSelect', 'styleMode', 'providerSelect'].forEach(id => {
     const el = $(id);
     if (el) buildCustomSelect(el);
   });

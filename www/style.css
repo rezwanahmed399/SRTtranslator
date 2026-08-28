@@ -961,7 +961,25 @@ body {
   transform: translateY(-1px);
 }
 
-/* ── Multi-Provider Tab Bar & Switcher ── */
+/* ── Multi-Provider Dropdown & Switcher ── */
+.provider-select-box {
+  margin-bottom: 20px;
+  background: var(--surface-inner);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-md);
+  padding: 16px 18px;
+}
+
+.provider-select-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
 .failover-control-badge {
   display: flex;
   align-items: center;

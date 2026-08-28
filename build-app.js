@@ -30,4 +30,4 @@ filesToCopy.forEach(file => {
   }
 });
 
-console.log('✨ Build complete: Web assets packaged into www/ directory successfully.');
+console.log('[Build Complete] Web assets packaged into www/ directory successfully.');

@@ -633,65 +633,28 @@
             </div>
           </div>
 
-          <!-- Provider Tab Bar -->
-          <div class="provider-tabs-nav" id="providerTabsNav">
-            <button type="button" class="provider-tab-btn active" data-provider="gemini" id="tabBtn_gemini">
-              <span class="provider-tab-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          <!-- Provider Dropdown Selector (Fits cleanly on any screen width) -->
+          <div class="provider-select-box">
+            <label for="providerSelect" class="provider-select-label">
+              <span class="field-label-group">
+                <svg class="field-icon icon-ai" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                  <line x1="8" y1="21" x2="16" y2="21"/>
+                  <line x1="12" y1="17" x2="12" y2="21"/>
                 </svg>
+                <span>Select AI Provider to Configure</span>
               </span>
-              <span class="provider-tab-name">Google Gemini</span>
-              <span class="provider-status-dot dot-off" id="statusDot_gemini" title="Status"></span>
-            </button>
-
-            <button type="button" class="provider-tab-btn" data-provider="groq" id="tabBtn_groq">
-              <span class="provider-tab-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-                </svg>
-              </span>
-              <span class="provider-tab-name">Groq (Fast &amp; Free)</span>
-              <span class="provider-status-dot dot-off" id="statusDot_groq" title="Status"></span>
-            </button>
-
-            <button type="button" class="provider-tab-btn" data-provider="openrouter" id="tabBtn_openrouter">
-              <span class="provider-tab-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="18" cy="5" r="3"/>
-                  <circle cx="6" cy="12" r="3"/>
-                  <circle cx="18" cy="19" r="3"/>
-                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
-                  <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
-                </svg>
-              </span>
-              <span class="provider-tab-name">OpenRouter</span>
-              <span class="provider-status-dot dot-off" id="statusDot_openrouter" title="Status"></span>
-            </button>
-
-            <button type="button" class="provider-tab-btn" data-provider="deepseek" id="tabBtn_deepseek">
-              <span class="provider-tab-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="12" cy="12" r="10"/>
-                  <path d="M12 8v8"/>
-                  <path d="M8 12h8"/>
-                </svg>
-              </span>
-              <span class="provider-tab-name">DeepSeek</span>
-              <span class="provider-status-dot dot-off" id="statusDot_deepseek" title="Status"></span>
-            </button>
-
-            <button type="button" class="provider-tab-btn" data-provider="openai" id="tabBtn_openai">
-              <span class="provider-tab-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="12" cy="12" r="10"/>
-                  <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/>
-                  <path d="M2 12h20"/>
-                </svg>
-              </span>
-              <span class="provider-tab-name">OpenAI</span>
-              <span class="provider-status-dot dot-off" id="statusDot_openai" title="Status"></span>
-            </button>
+              <span class="hint-tag active-tag" id="providerSelectedTag">Google Gemini</span>
+            </label>
+            <div class="select-wrapper">
+              <select id="providerSelect">
+                <option value="gemini" selected>Google Gemini (Free AI Studio • 1.5 &amp; 2.0 Flash)</option>
+                <option value="groq">Groq Cloud (Fast &amp; Free • Llama 3.3 70B &amp; DeepSeek R1)</option>
+                <option value="openrouter">OpenRouter (Multi-Model Hub • Claude, Llama, DeepSeek)</option>
+                <option value="deepseek">DeepSeek Official (DeepSeek V3 &amp; R1 Reasoner)</option>
+                <option value="openai">OpenAI (GPT-4o &amp; GPT-4o Mini)</option>
+              </select>
+            </div>
           </div>
 
           <!-- Provider Panel: Gemini -->
