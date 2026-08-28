@@ -958,15 +958,54 @@ function populateCombinedModelDropdown() {
   updateQuotaDashboardForActiveModel();
 }
 
+// Dynamic Model Failure & Cooldown Tracker
+const modelHealthTracker = {
+  failures: new Map(),
+
+  recordFailure(providerId, modelId, isPermanent, error) {
+    const key = `${providerId}:${(modelId || '').replace(/^models\//, '')}`.toLowerCase();
+    this.failures.set(key, {
+      failedAt: Date.now(),
+      isPermanent: !!isPermanent,
+      error: error || 'Unknown failure'
+    });
+  },
+
+  isAvailable(providerId, modelId) {
+    const key = `${providerId}:${(modelId || '').replace(/^models\//, '')}`.toLowerCase();
+    const entry = this.failures.get(key);
+    if (!entry) return true;
+    if (entry.isPermanent) return false;
+    // 5-minute cooldown for temporary 429 rate limit or 503 overload
+    if (Date.now() - entry.failedAt < 300000) {
+      return false;
+    }
+    this.failures.delete(key);
+    return true;
+  },
+
+  reset() {
+    this.failures.clear();
+  }
+};
+
 function getActiveProviderAndKey(modelId) {
   const targetModel = modelId || (modelSelect && modelSelect.value ? modelSelect.value : '') || state.selectedModel || 'gemini-2.0-flash';
   const cleanModel = targetModel.replace(/^models\//, '').trim();
 
-  // Explicit provider identification by model prefix/pattern
+  // 1. Check live model lists from connected providers first
+  for (const pid of ['gemini', 'groq', 'deepseek', 'openrouter', 'openai']) {
+    const list = state.providerStatus[pid]?.models;
+    if (Array.isArray(list) && list.some(m => m.id === cleanModel || m.id === targetModel || m.id?.replace(/^models\//, '') === cleanModel)) {
+      return { providerId: pid, model: cleanModel, key: state.apiKeys[pid] };
+    }
+  }
+
+  // 2. Explicit provider identification by model prefix/pattern
   if (cleanModel.startsWith('gemini')) {
     return { providerId: 'gemini', model: cleanModel, key: state.apiKeys.gemini };
   }
-  if (cleanModel.startsWith('llama-') || cleanModel.startsWith('deepseek-r1-distill') || cleanModel.startsWith('mixtral-') || cleanModel.startsWith('gemma')) {
+  if (cleanModel.startsWith('llama-') || cleanModel.startsWith('deepseek-r1-distill') || cleanModel.startsWith('mixtral-') || cleanModel.startsWith('gemma') || cleanModel.startsWith('qwen')) {
     return { providerId: 'groq', model: cleanModel, key: state.apiKeys.groq };
   }
   if (cleanModel.includes('/') || cleanModel.startsWith('anthropic/') || cleanModel.startsWith('meta-llama/')) {
@@ -978,11 +1017,11 @@ function getActiveProviderAndKey(modelId) {
     }
     return { providerId: 'openrouter', model: `deepseek/${cleanModel}`, key: state.apiKeys.openrouter };
   }
-  if (cleanModel.startsWith('gpt-')) {
+  if (cleanModel.startsWith('gpt-') || cleanModel.startsWith('o1') || cleanModel.startsWith('o3')) {
     return { providerId: 'openai', model: cleanModel, key: state.apiKeys.openai };
   }
 
-  // Fallback to first available connected provider
+  // 3. Fallback to first available connected provider
   for (const pid of ['gemini', 'groq', 'deepseek', 'openrouter', 'openai']) {
     if (state.apiKeys[pid] && state.providerStatus[pid]?.connected) {
       return { providerId: pid, model: AI_PROVIDERS[pid].defaultModel, key: state.apiKeys[pid] };
@@ -995,17 +1034,23 @@ function getActiveProviderAndKey(modelId) {
 function findFailoverBackup(currentProviderId, currentModelId) {
   if (!state.autoFailoverEnabled) return null;
 
-  // 1. Primary Search: Top-ranked model from a different connected provider
+  function isValid(pid, mid) {
+    if (!state.apiKeys[pid] || !state.providerStatus[pid]?.connected) return false;
+    if (!modelHealthTracker.isAvailable(pid, mid)) return false;
+    return true;
+  }
+
+  // 1. Primary Search: Top-ranked model from a DIFFERENT connected provider
   for (const entry of TRANSLATION_MODEL_RANKING) {
     const pid = entry.providerId;
     const mid = entry.modelId;
 
     if (pid === currentProviderId) continue;
 
-    if (state.apiKeys[pid] && state.providerStatus[pid]?.connected) {
+    if (isValid(pid, mid)) {
       return {
         providerId: pid,
-        providerName: AI_PROVIDERS[pid].name,
+        providerName: AI_PROVIDERS[pid]?.name || pid,
         model: mid,
         modelName: entry.name,
         tier: entry.tier,
@@ -1015,23 +1060,42 @@ function findFailoverBackup(currentProviderId, currentModelId) {
     }
   }
 
-  // 2. Secondary Fallback: Different model within the same connected provider
-  for (const entry of TRANSLATION_MODEL_RANKING) {
-    const pid = entry.providerId;
-    const mid = entry.modelId;
+  // 2. Secondary Search: Any live connected model from other providers
+  for (const pid of ['gemini', 'groq', 'deepseek', 'openrouter', 'openai']) {
+    if (pid === currentProviderId) continue;
+    if (!state.apiKeys[pid] || !state.providerStatus[pid]?.connected) continue;
 
-    if (pid === currentProviderId && mid !== currentModelId) {
-      if (state.apiKeys[pid] && state.providerStatus[pid]?.connected) {
+    const liveModels = state.providerStatus[pid]?.models || AI_PROVIDERS[pid]?.models || [];
+    for (const m of liveModels) {
+      const mid = m.id;
+      if (isValid(pid, mid)) {
         return {
           providerId: pid,
-          providerName: AI_PROVIDERS[pid].name,
+          providerName: AI_PROVIDERS[pid]?.name || pid,
           model: mid,
-          modelName: entry.name,
-          tier: entry.tier,
-          desc: entry.desc,
+          modelName: m.displayName || m.name || mid,
+          tier: 'Live Model Backup',
+          desc: m.desc || 'Available Connected Model',
           key: state.apiKeys[pid]
         };
       }
+    }
+  }
+
+  // 3. Tertiary Fallback: Different working model within the SAME connected provider
+  const sameModels = state.providerStatus[currentProviderId]?.models || AI_PROVIDERS[currentProviderId]?.models || [];
+  for (const m of sameModels) {
+    const mid = m.id;
+    if (mid !== currentModelId && isValid(currentProviderId, mid)) {
+      return {
+        providerId: currentProviderId,
+        providerName: AI_PROVIDERS[currentProviderId]?.name || currentProviderId,
+        model: mid,
+        modelName: m.displayName || m.name || mid,
+        tier: 'Alternative Same-Provider Model',
+        desc: m.desc || 'Alternative Model',
+        key: state.apiKeys[currentProviderId]
+      };
     }
   }
 
@@ -1842,12 +1906,16 @@ async function runTranslationPipeline() {
       const startIndex = bi * bs;
       const batchPct = Math.round((processedCount / state.parsedBlocks.length) * 94);
 
+      // Always resolve active provider, model, and key dynamically
+      const activeModelId = state.selectedModel || currentModelToUse;
+      const { providerId: bPid, model: currentModel, key: batchKey } = getActiveProviderAndKey(activeModelId);
+
       updateProgressStats(batchPct, `Translating batch ${bi + 1} of ${batches.length} (#${currentBatch[0].num} – #${currentBatch[currentBatch.length - 1].num})...`);
-      addTerminalLog('info', `Batch ${bi + 1}/${batches.length}: Translating ${currentBatch.length} lines with ${state.selectedModel || currentModelToUse}...`);
+      addTerminalLog('info', `Batch ${bi + 1}/${batches.length}: Translating ${currentBatch.length} lines with [${AI_PROVIDERS[bPid]?.name || bPid}] ${currentModel}...`);
 
       let batchResult = [];
       try {
-        batchResult = await translateBatchWithAdaptiveSplitting(currentBatch, activeKey, state.selectedModel || currentModelToUse);
+        batchResult = await translateBatchWithAdaptiveSplitting(currentBatch, batchKey, currentModel);
       } catch (err) {
         if (state.isCancelled) break;
         addTerminalLog('err', `Batch ${bi + 1} could not be fully completed: ${err.message}. Original lines safely preserved.`);
@@ -1940,10 +2008,10 @@ async function translateBatchWithAdaptiveSplitting(batch, activeKey, modelToUse,
     throw new Error('Translation cancelled by user');
   }
 
-  const { providerId: currentPid, model: activeModel } = getActiveProviderAndKey(modelToUse);
+  const { providerId: currentPid, model: activeModel, key: effectiveKey } = getActiveProviderAndKey(modelToUse);
 
   try {
-    const result = await callAiBatchTranslate(batch, activeKey, attempt, activeModel);
+    const result = await callAiBatchTranslate(batch, effectiveKey, attempt, activeModel);
     const translatedCount = result.filter(b => b && b.isTranslated).length;
 
     // If all items translated successfully, return
@@ -1957,9 +2025,9 @@ async function translateBatchWithAdaptiveSplitting(batch, activeKey, modelToUse,
       addTerminalLog('warn', `Batch of ${batch.length} lines had ${batch.length - translatedCount} missing translations. Dividing into smaller sub-batches to ensure 100% completion...`);
       const mid = Math.ceil(batch.length / 2);
       await sleep(1000);
-      const resA = await translateBatchWithAdaptiveSplitting(batch.slice(0, mid), activeKey, activeModel, 1);
+      const resA = await translateBatchWithAdaptiveSplitting(batch.slice(0, mid), effectiveKey, activeModel, 1);
       await sleep(1200);
-      const resB = await translateBatchWithAdaptiveSplitting(batch.slice(mid), activeKey, activeModel, 1);
+      const resB = await translateBatchWithAdaptiveSplitting(batch.slice(mid), effectiveKey, activeModel, 1);
       return [...resA, ...resB];
     }
 
@@ -1968,26 +2036,61 @@ async function translateBatchWithAdaptiveSplitting(batch, activeKey, modelToUse,
     if (state.isCancelled) throw err;
     state.stats.retries++;
     const errMsg = (err.message || '').toLowerCase();
+
+    const isModelUnavailable = errMsg.includes('no longer available') ||
+      errMsg.includes('does not exist') ||
+      errMsg.includes('do not have access') ||
+      errMsg.includes('not found') ||
+      errMsg.includes('is not supported') ||
+      errMsg.includes('deprecated') ||
+      errMsg.includes('model_not_found') ||
+      errMsg.includes('invalid_model') ||
+      errMsg.includes('unrecognized model') ||
+      errMsg.includes('invalid model') ||
+      errMsg.includes('404');
+
     const is429 = errMsg.includes('429') || errMsg.includes('quota') || errMsg.includes('resource has been exhausted') || errMsg.includes('rate limit');
     const is503 = errMsg.includes('503') || errMsg.includes('overloaded') || errMsg.includes('high demand') || errMsg.includes('service unavailable');
-    const isModelUnavailable = errMsg.includes('no longer available') || errMsg.includes('not found') || errMsg.includes('is not supported') || errMsg.includes('deprecated') || errMsg.includes('404');
+    const isAuthError = errMsg.includes('401') || errMsg.includes('unauthorized') || errMsg.includes('invalid api key') || errMsg.includes('incorrect api key');
 
-    // ⚡ SMART AUTO-FAILOVER: Switch to another configured AI provider on rate limit / server busy / model unavailable / quota exhaustion
-    if ((is429 || is503 || isModelUnavailable) && state.autoFailoverEnabled) {
+    // 1. Permanent Model / Auth Error: Mark permanently broken and switch immediately
+    if (isModelUnavailable || isAuthError) {
+      modelHealthTracker.recordFailure(currentPid, activeModel, true, err.message);
+      if (state.autoFailoverEnabled) {
+        const backup = findFailoverBackup(currentPid, activeModel);
+        if (backup) {
+          addTerminalLog('warn', `⚡ [Auto-Failover] Model "${activeModel}" is unavailable on ${AI_PROVIDERS[currentPid]?.name || currentPid}. Automatically switching to [${backup.providerName}] ${backup.modelName} to continue translation!`);
+          state.selectedModel = backup.model;
+          if (modelSelect) {
+            modelSelect.value = backup.model;
+            refreshCustomSelect('modelSelect');
+          }
+          updateQuotaDashboardForActiveModel();
+          await sleep(600);
+          return await translateBatchWithAdaptiveSplitting(batch, backup.key, backup.model, 1);
+        }
+      }
+      throw new Error(`Model "${activeModel}" is not accessible on ${AI_PROVIDERS[currentPid]?.name || currentPid} (${err.message}) and no other working backup model is connected.`);
+    }
+
+    // 2. Rate Limit / Overload: Record temporary cooldown and Auto-Failover
+    if ((is429 || is503) && state.autoFailoverEnabled) {
+      modelHealthTracker.recordFailure(currentPid, activeModel, false, err.message);
       const backup = findFailoverBackup(currentPid, activeModel);
       if (backup) {
-        addTerminalLog('warn', `⚡ [Auto-Failover • ${backup.tier}] Model ${activeModel} is ${isModelUnavailable ? 'deprecated/unavailable' : is503 ? 'overloaded (503)' : 'rate limited (429)'}. Switching to [${backup.providerName}] ${backup.modelName} (${backup.desc}) to continue translation!`);
+        addTerminalLog('warn', `⚡ [Auto-Failover • ${backup.tier}] Model ${activeModel} is ${is503 ? 'overloaded (503)' : 'rate limited (429)'}. Instantly switching to [${backup.providerName}] ${backup.modelName} to keep translating without delay!`);
         state.selectedModel = backup.model;
         if (modelSelect) {
           modelSelect.value = backup.model;
           refreshCustomSelect('modelSelect');
         }
         updateQuotaDashboardForActiveModel();
-        await sleep(1000);
+        await sleep(600);
         return await translateBatchWithAdaptiveSplitting(batch, backup.key, backup.model, 1);
       }
     }
 
+    // 3. Rate Limit / Overload without available backup: Cooldown and retry
     if (is429) {
       const waitTime = Math.min(5000 * attempt, 16000);
       updateApiHealthUI('cooldown', `429 Rate Limit Cooldown (${waitTime / 1000}s)...`);
@@ -1995,31 +2098,31 @@ async function translateBatchWithAdaptiveSplitting(batch, activeKey, modelToUse,
       await sleep(waitTime);
       updateApiHealthUI('active', `Resuming translation...`);
       if (attempt <= 3 && !state.isCancelled) {
-        return await translateBatchWithAdaptiveSplitting(batch, activeKey, modelToUse, attempt + 1);
+        return await translateBatchWithAdaptiveSplitting(batch, effectiveKey, activeModel, attempt + 1);
       }
     } else if (is503) {
       addTerminalLog('warn', `${AI_PROVIDERS[currentPid]?.name || 'AI Server'} busy (503). Retrying in 4s...`);
       await sleep(4000);
       if (attempt <= 3 && !state.isCancelled) {
-        return await translateBatchWithAdaptiveSplitting(batch, activeKey, modelToUse, attempt + 1);
+        return await translateBatchWithAdaptiveSplitting(batch, effectiveKey, activeModel, attempt + 1);
       }
     }
 
-    // If batch has multiple items and failed, SPLIT into 2 sub-batches (Divide and Conquer)
+    // 4. Divide and Conquer: Split batch if larger than 1 item and retry on same working model
     if (batch.length > 1 && !state.isCancelled) {
       const mid = Math.ceil(batch.length / 2);
       const subA = batch.slice(0, mid);
       const subB = batch.slice(mid);
       addTerminalLog('warn', `Sub-dividing batch of ${batch.length} lines into smaller chunks (${subA.length} + ${subB.length}) to isolate error...`);
-      await sleep(1200);
-      const resA = await translateBatchWithAdaptiveSplitting(subA, activeKey, modelToUse, 1);
-      await sleep(1200);
-      const resB = await translateBatchWithAdaptiveSplitting(subB, activeKey, modelToUse, 1);
+      await sleep(1000);
+      const resA = await translateBatchWithAdaptiveSplitting(subA, effectiveKey, activeModel, 1);
+      await sleep(1000);
+      const resB = await translateBatchWithAdaptiveSplitting(subB, effectiveKey, activeModel, 1);
       return [...resA, ...resB];
     }
 
-    // Single block failed all attempts
-    addTerminalLog('err', `Subtitle #${batch[0].num} could not be translated: ${err.message}. Marking as incomplete.`);
+    // 5. Final fallback for single block
+    addTerminalLog('err', `Subtitle #${batch[0].num} could not be translated: ${err.message}. Original lines preserved.`);
     return batch.map(b => ({
       ...b,
       translatedLines: b.lines,
@@ -2031,8 +2134,12 @@ async function translateBatchWithAdaptiveSplitting(batch, activeKey, modelToUse,
 // ── Universal AI Translation Dispatcher ──
 async function callAiBatchTranslate(batch, key, attemptNumber, overrideModel) {
   const modelToUse = overrideModel || modelSelect?.value || state.selectedModel;
-  const { providerId, model, key: activeKey } = getActiveProviderAndKey(modelToUse);
-  const effectiveKey = key || activeKey;
+  const { providerId, model, key: providerKey } = getActiveProviderAndKey(modelToUse);
+  const effectiveKey = providerKey || state.apiKeys[providerId] || key;
+
+  if (!effectiveKey) {
+    throw new Error(`No API key configured for ${AI_PROVIDERS[providerId]?.name || providerId}. Please enter your key in the provider tabs.`);
+  }
 
   if (providerId === 'gemini') {
     return await callGeminiBatchTranslate(batch, effectiveKey, attemptNumber, model);
@@ -2658,8 +2765,8 @@ function getReadingSpeedPill(lines) {
 // ── Universal AI Condenser Dispatcher ──
 async function callAiBatchCondense(batch, key, attemptNumber, overrideModel) {
   const modelToUse = overrideModel || modelSelect?.value || state.selectedModel;
-  const { providerId, model, key: activeKey } = getActiveProviderAndKey(modelToUse);
-  const effectiveKey = key || activeKey;
+  const { providerId, model, key: providerKey } = getActiveProviderAndKey(modelToUse);
+  const effectiveKey = providerKey || state.apiKeys[providerId] || key;
 
   if (providerId === 'gemini') {
     return await callGeminiBatchCondense(batch, effectiveKey, attemptNumber, model);
@@ -2701,20 +2808,20 @@ async function runAiCondensePipeline() {
   const batches = chunkArray(state.translatedBlocks, bs);
   const condensedResult = new Array(state.translatedBlocks.length);
   let processedCount = 0;
-  const currentModelToUse = activeModel;
 
   for (let bi = 0; bi < batches.length; bi++) {
     const currentBatch = batches[bi];
     const startIndex = bi * bs;
     const batchPct = Math.round((processedCount / state.translatedBlocks.length) * 95);
 
+    const { model: currentCondenseModel, key: currentCondenseKey } = getActiveProviderAndKey(state.selectedModel);
     updateProgressStats(batchPct, `Condensing batch ${bi + 1} of ${batches.length}...`);
 
     let batchResult = [];
 
     for (let attempt = 1; attempt <= 3; attempt++) {
       try {
-        batchResult = await callAiBatchCondense(currentBatch, activeKey, attempt, currentModelToUse);
+        batchResult = await callAiBatchCondense(currentBatch, currentCondenseKey, attempt, currentCondenseModel);
         break;
       } catch (err) {
         state.stats.retries++;
