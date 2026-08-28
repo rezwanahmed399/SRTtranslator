@@ -2071,7 +2071,7 @@ DIALOGUE & REGIONAL VOCABULARY RULES (Bengali / বাংলা):
   } else if (langLower.includes('hindi') || langLower.includes('urdu')) {
     languageRules = `
 DIALOGUE & PRONOUN RULES (${lang}):
-- AVOID disrespectful or rude pronouns like "तू" / "तेরা" / "तुझे".
+- AVOID disrespectful or rude pronouns like "तू" / "तेरा" / "तुझे".
 - Use friendly, polite, and natural conversational pronouns like "तुम", "तुम्हारा", "तुम्हें" (or "आप", "आपका" for respect/elders).
 - Translate in natural, modern conversational cinema/drama dialogue.`;
   } else {
@@ -2279,7 +2279,7 @@ DIALOGUE & REGIONAL VOCABULARY RULES (Bengali / বাংলা):
   } else if (langLower.includes('hindi') || langLower.includes('urdu')) {
     languageRules = `
 DIALOGUE & PRONOUN RULES (${lang}):
-- AVOID disrespectful or rude pronouns like "तू" / "तेরা" / "तुझे".
+- AVOID disrespectful or rude pronouns like "तू" / "तेरा" / "तुझे".
 - Use friendly, polite, and natural conversational pronouns like "तुम", "तुम्हारा", "तुम्हें" (or "आप", "आपका" for respect/elders).
 - Translate in natural, modern conversational cinema/drama dialogue.`;
   } else {
