@@ -200,7 +200,7 @@
     <!-- Main Container -->
     <main class="main-content">
       
-      <!-- API Key Card -->
+      <!-- Multi-AI Provider Hub & Key Management -->
       <section class="glass-card api-section" id="apiSection">
         <div class="card-header">
           <div class="title-with-icon">
@@ -211,49 +211,274 @@
               </svg>
             </div>
             <div>
-              <h3>Gemini API Key</h3>
-              <p class="desc">Stored securely in your local browser only. Never sent to any 3rd-party server.</p>
+              <h3>AI Providers &amp; API Keys</h3>
+              <p class="desc">Connect Gemini, Groq, OpenRouter, DeepSeek or OpenAI. Auto-failover seamlessly switches models if limits are reached.</p>
             </div>
           </div>
-          <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener" class="get-key-link">
-            <span>Get free key</span>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;display:inline-block;">
-              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-              <polyline points="15 3 21 3 21 9"/>
-              <line x1="10" y1="14" x2="21" y2="3"/>
-            </svg>
-          </a>
+          
+          <div class="failover-control-badge">
+            <label class="failover-toggle-label" title="Automatically switch to a configured backup AI model if primary model reaches rate limits or errors">
+              <input type="checkbox" id="autoFailoverToggle" checked />
+              <span class="failover-toggle-switch"></span>
+              <span class="failover-toggle-text">Auto-Failover</span>
+            </label>
+          </div>
         </div>
 
-        <div class="api-form-row">
-          <div class="input-glow-wrapper">
-            <input
-              type="password"
-              id="apiKeyInput"
-              placeholder="Paste your Gemini API key (AIzaSy...)"
-              autocomplete="off"
-              spellcheck="false"
-            />
-            <button id="toggleApiKey" class="input-action-btn" title="Show or hide key" type="button">
-              <svg id="eyeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                <circle cx="12" cy="12" r="3"/>
+        <!-- Provider Tab Bar -->
+        <div class="provider-tabs-nav" id="providerTabsNav">
+          <button type="button" class="provider-tab-btn active" data-provider="gemini" id="tabBtn_gemini">
+            <span class="provider-tab-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
               </svg>
-            </button>
-          </div>
-          <button id="saveApiKey" class="btn btn-save" type="button">
-            <span>Connect & Load Models</span>
+            </span>
+            <span class="provider-tab-name">Google Gemini</span>
+            <span class="provider-status-dot dot-off" id="statusDot_gemini" title="Status"></span>
+          </button>
+
+          <button type="button" class="provider-tab-btn" data-provider="groq" id="tabBtn_groq">
+            <span class="provider-tab-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+              </svg>
+            </span>
+            <span class="provider-tab-name">Groq (Fast &amp; Free)</span>
+            <span class="provider-status-dot dot-off" id="statusDot_groq" title="Status"></span>
+          </button>
+
+          <button type="button" class="provider-tab-btn" data-provider="openrouter" id="tabBtn_openrouter">
+            <span class="provider-tab-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="18" cy="5" r="3"/>
+                <circle cx="6" cy="12" r="3"/>
+                <circle cx="18" cy="19" r="3"/>
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+              </svg>
+            </span>
+            <span class="provider-tab-name">OpenRouter</span>
+            <span class="provider-status-dot dot-off" id="statusDot_openrouter" title="Status"></span>
+          </button>
+
+          <button type="button" class="provider-tab-btn" data-provider="deepseek" id="tabBtn_deepseek">
+            <span class="provider-tab-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 8v8"/>
+                <path d="M8 12h8"/>
+              </svg>
+            </span>
+            <span class="provider-tab-name">DeepSeek</span>
+            <span class="provider-status-dot dot-off" id="statusDot_deepseek" title="Status"></span>
+          </button>
+
+          <button type="button" class="provider-tab-btn" data-provider="openai" id="tabBtn_openai">
+            <span class="provider-tab-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/>
+                <path d="M2 12h20"/>
+              </svg>
+            </span>
+            <span class="provider-tab-name">OpenAI</span>
+            <span class="provider-status-dot dot-off" id="statusDot_openai" title="Status"></span>
           </button>
         </div>
-        <div class="api-feedback-row">
-          <div id="apiStatus" class="api-feedback"></div>
-          <button id="toggleQuotaBtn" class="btn-toggle-quota hidden" type="button">
+
+        <!-- Provider Panel: Gemini -->
+        <div class="provider-panel active" id="panel_gemini">
+          <div class="api-form-row">
+            <div class="input-glow-wrapper">
+              <input
+                type="password"
+                id="apiKeyInput"
+                placeholder="Paste your Google Gemini API key (AIzaSy...)"
+                autocomplete="off"
+                spellcheck="false"
+              />
+              <button id="toggleApiKey" class="input-action-btn" title="Show or hide key" type="button">
+                <svg id="eyeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+              </button>
+            </div>
+            <button id="saveApiKey" class="btn btn-save" type="button">
+              <span>Connect Gemini</span>
+            </button>
+            <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener" class="provider-get-key-btn">
+              <span>Get Free Key</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                <polyline points="15 3 21 3 21 9"/>
+                <line x1="10" y1="14" x2="21" y2="3"/>
+              </svg>
+            </a>
+          </div>
+          <div class="api-feedback-row">
+            <div id="apiStatus" class="api-feedback"></div>
+          </div>
+        </div>
+
+        <!-- Provider Panel: Groq -->
+        <div class="provider-panel" id="panel_groq">
+          <div class="api-form-row">
+            <div class="input-glow-wrapper">
+              <input
+                type="password"
+                id="apiKeyInput_groq"
+                placeholder="Paste your Groq API key (gsk_...)"
+                autocomplete="off"
+                spellcheck="false"
+              />
+              <button id="toggleApiKey_groq" class="input-action-btn" title="Show or hide key" type="button">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+              </button>
+            </div>
+            <button id="saveApiKey_groq" class="btn btn-save" type="button">
+              <span>Connect Groq</span>
+            </button>
+            <a href="https://console.groq.com/keys" target="_blank" rel="noopener" class="provider-get-key-btn">
+              <span>Get Free Key</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                <polyline points="15 3 21 3 21 9"/>
+                <line x1="10" y1="14" x2="21" y2="3"/>
+              </svg>
+            </a>
+          </div>
+          <div class="api-feedback-row">
+            <div id="apiStatus_groq" class="api-feedback"></div>
+          </div>
+        </div>
+
+        <!-- Provider Panel: OpenRouter -->
+        <div class="provider-panel" id="panel_openrouter">
+          <div class="api-form-row">
+            <div class="input-glow-wrapper">
+              <input
+                type="password"
+                id="apiKeyInput_openrouter"
+                placeholder="Paste your OpenRouter API key (sk-or-...)"
+                autocomplete="off"
+                spellcheck="false"
+              />
+              <button id="toggleApiKey_openrouter" class="input-action-btn" title="Show or hide key" type="button">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+              </button>
+            </div>
+            <button id="saveApiKey_openrouter" class="btn btn-save" type="button">
+              <span>Connect OpenRouter</span>
+            </button>
+            <a href="https://openrouter.ai/keys" target="_blank" rel="noopener" class="provider-get-key-btn">
+              <span>Get Key</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                <polyline points="15 3 21 3 21 9"/>
+                <line x1="10" y1="14" x2="21" y2="3"/>
+              </svg>
+            </a>
+          </div>
+          <div class="api-feedback-row">
+            <div id="apiStatus_openrouter" class="api-feedback"></div>
+          </div>
+        </div>
+
+        <!-- Provider Panel: DeepSeek -->
+        <div class="provider-panel" id="panel_deepseek">
+          <div class="api-form-row">
+            <div class="input-glow-wrapper">
+              <input
+                type="password"
+                id="apiKeyInput_deepseek"
+                placeholder="Paste your DeepSeek API key (sk-...)"
+                autocomplete="off"
+                spellcheck="false"
+              />
+              <button id="toggleApiKey_deepseek" class="input-action-btn" title="Show or hide key" type="button">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+              </button>
+            </div>
+            <button id="saveApiKey_deepseek" class="btn btn-save" type="button">
+              <span>Connect DeepSeek</span>
+            </button>
+            <a href="https://platform.deepseek.com/api_keys" target="_blank" rel="noopener" class="provider-get-key-btn">
+              <span>Get Key</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                <polyline points="15 3 21 3 21 9"/>
+                <line x1="10" y1="14" x2="21" y2="3"/>
+              </svg>
+            </a>
+          </div>
+          <div class="api-feedback-row">
+            <div id="apiStatus_deepseek" class="api-feedback"></div>
+          </div>
+        </div>
+
+        <!-- Provider Panel: OpenAI -->
+        <div class="provider-panel" id="panel_openai">
+          <div class="api-form-row">
+            <div class="input-glow-wrapper">
+              <input
+                type="password"
+                id="apiKeyInput_openai"
+                placeholder="Paste your OpenAI API key (sk-...)"
+                autocomplete="off"
+                spellcheck="false"
+              />
+              <button id="toggleApiKey_openai" class="input-action-btn" title="Show or hide key" type="button">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+              </button>
+            </div>
+            <button id="saveApiKey_openai" class="btn btn-save" type="button">
+              <span>Connect OpenAI</span>
+            </button>
+            <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener" class="provider-get-key-btn">
+              <span>Get Key</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                <polyline points="15 3 21 3 21 9"/>
+                <line x1="10" y1="14" x2="21" y2="3"/>
+              </svg>
+            </a>
+          </div>
+          <div class="api-feedback-row">
+            <div id="apiStatus_openai" class="api-feedback"></div>
+          </div>
+        </div>
+
+        <!-- Active Providers Strip & Failover Summary -->
+        <div class="providers-summary-bar">
+          <div class="connected-providers-list" id="connectedProvidersList">
+            <span class="summary-label">Configured AI Providers:</span>
+            <span class="provider-chip" id="chip_gemini">Gemini: Not Configured</span>
+            <span class="provider-chip" id="chip_groq">Groq: Off</span>
+            <span class="provider-chip" id="chip_openrouter">OpenRouter: Off</span>
+            <span class="provider-chip" id="chip_deepseek">DeepSeek: Off</span>
+            <span class="provider-chip" id="chip_openai">OpenAI: Off</span>
+          </div>
+
+          <button id="toggleQuotaBtn" class="btn-toggle-quota" type="button">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;">
               <circle cx="12" cy="12" r="10"/>
               <line x1="12" y1="16" x2="12" y2="12"/>
               <line x1="12" y1="8" x2="12.01" y2="8"/>
             </svg>
-            <span id="toggleQuotaText">View Google Model Specs & Limits</span>
+            <span id="toggleQuotaText">Live Model Specs &amp; Health</span>
             <svg id="toggleQuotaChevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;transition:transform 0.2s;">
               <polyline points="6 9 12 15 18 9"/>
             </svg>

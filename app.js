@@ -1,12 +1,104 @@
 // =========================================================
-// SubSync AI — Client-Side Subtitle Engine Logic
+// SubSync AI — Client-Side Multi-AI Subtitle Localization Engine
 // =========================================================
+
+// ── Multi-AI Provider Registry ──
+const AI_PROVIDERS = {
+  gemini: {
+    id: 'gemini',
+    name: 'Google Gemini',
+    storageKey: 'gemini_api_key',
+    docLink: 'https://aistudio.google.com/app/apikey',
+    type: 'gemini',
+    defaultModel: 'gemini-2.5-flash',
+    models: [
+      { id: 'gemini-2.5-flash', displayName: 'Gemini 2.5 Flash', version: '2.5', inputTokens: 1048576, outputTokens: 8192, rpm: '15 RPM', rpd: '1,500 RPD', desc: 'Fastest & Recommended' },
+      { id: 'gemini-2.5-pro', displayName: 'Gemini 2.5 Pro', version: '2.5', inputTokens: 2097152, outputTokens: 8192, rpm: '2 RPM', rpd: '50 RPD', desc: 'Deep Reasoning & Context' },
+      { id: 'gemini-2.0-flash', displayName: 'Gemini 2.0 Flash', version: '2.0', inputTokens: 1048576, outputTokens: 8192, rpm: '15 RPM', rpd: '1,500 RPD', desc: 'Next-Gen Ultra Fast' },
+      { id: 'gemini-1.5-flash', displayName: 'Gemini 1.5 Flash', version: '1.5', inputTokens: 1048576, outputTokens: 8192, rpm: '15 RPM', rpd: '1,500 RPD', desc: 'High Volume Translation' },
+      { id: 'gemini-1.5-pro', displayName: 'Gemini 1.5 Pro', version: '1.5', inputTokens: 2097152, outputTokens: 8192, rpm: '2 RPM', rpd: '50 RPD', desc: 'Complex Nuances' }
+    ]
+  },
+  groq: {
+    id: 'groq',
+    name: 'Groq Cloud',
+    storageKey: 'groq_api_key',
+    docLink: 'https://console.groq.com/keys',
+    endpoint: 'https://api.groq.com/openai/v1/chat/completions',
+    type: 'openai_compatible',
+    defaultModel: 'llama-3.3-70b-versatile',
+    models: [
+      { id: 'llama-3.3-70b-versatile', displayName: 'Llama 3.3 70B (Versatile)', version: '3.3', inputTokens: 128000, outputTokens: 32768, rpm: '30 RPM', rpd: '14,400 RPD', desc: 'Ultra-Fast & Free (Groq)' },
+      { id: 'deepseek-r1-distill-llama-70b', displayName: 'DeepSeek R1 Distill 70B', version: 'R1', inputTokens: 128000, outputTokens: 32768, rpm: '30 RPM', rpd: '14,400 RPD', desc: 'Reasoning Subtitles' },
+      { id: 'llama-3.1-8b-instant', displayName: 'Llama 3.1 8B Instant', version: '3.1', inputTokens: 128000, outputTokens: 8192, rpm: '30 RPM', rpd: '14,400 RPD', desc: 'Sub-second Speed' },
+      { id: 'mixtral-8x7b-32768', displayName: 'Mixtral 8x7B 32k', version: '8x7B', inputTokens: 32768, outputTokens: 32768, rpm: '30 RPM', rpd: '14,400 RPD', desc: 'High Multilingual Throughput' }
+    ]
+  },
+  openrouter: {
+    id: 'openrouter',
+    name: 'OpenRouter',
+    storageKey: 'openrouter_api_key',
+    docLink: 'https://openrouter.ai/keys',
+    endpoint: 'https://openrouter.ai/api/v1/chat/completions',
+    type: 'openai_compatible',
+    defaultModel: 'deepseek/deepseek-chat',
+    models: [
+      { id: 'deepseek/deepseek-chat', displayName: 'DeepSeek V3 (Chat)', version: 'V3', inputTokens: 64000, outputTokens: 8192, rpm: 'Dynamic', rpd: 'Unlimited', desc: 'Top Multilingual Subtitles' },
+      { id: 'meta-llama/llama-3.3-70b-instruct', displayName: 'Meta Llama 3.3 70B', version: '3.3', inputTokens: 128000, outputTokens: 8192, rpm: 'Dynamic', rpd: 'Unlimited', desc: 'Natural Dialogue Flow' },
+      { id: 'google/gemini-2.5-flash', displayName: 'Gemini 2.5 Flash', version: '2.5', inputTokens: 1048576, outputTokens: 8192, rpm: 'Dynamic', rpd: 'Unlimited', desc: 'Ultra Fast via OpenRouter' },
+      { id: 'anthropic/claude-3.5-haiku', displayName: 'Claude 3.5 Haiku', version: '3.5', inputTokens: 200000, outputTokens: 8192, rpm: 'Dynamic', rpd: 'Unlimited', desc: 'Natural Spoken Dubbing' }
+    ]
+  },
+  deepseek: {
+    id: 'deepseek',
+    name: 'DeepSeek Official',
+    storageKey: 'deepseek_api_key',
+    docLink: 'https://platform.deepseek.com/api_keys',
+    endpoint: 'https://api.deepseek.com/chat/completions',
+    type: 'openai_compatible',
+    defaultModel: 'deepseek-chat',
+    models: [
+      { id: 'deepseek-chat', displayName: 'DeepSeek V3 (deepseek-chat)', version: 'V3', inputTokens: 64000, outputTokens: 8192, rpm: '60 RPM', rpd: 'Unlimited', desc: 'Official API - Recommended' },
+      { id: 'deepseek-reasoner', displayName: 'DeepSeek R1 (deepseek-reasoner)', version: 'R1', inputTokens: 64000, outputTokens: 8192, rpm: '60 RPM', rpd: 'Unlimited', desc: 'Full Reasoning Chain' }
+    ]
+  },
+  openai: {
+    id: 'openai',
+    name: 'OpenAI',
+    storageKey: 'openai_api_key',
+    docLink: 'https://platform.openai.com/api-keys',
+    endpoint: 'https://api.openai.com/v1/chat/completions',
+    type: 'openai_compatible',
+    defaultModel: 'gpt-4o-mini',
+    models: [
+      { id: 'gpt-4o-mini', displayName: 'GPT-4o Mini', version: '4o-mini', inputTokens: 128000, outputTokens: 16384, rpm: '500 RPM', rpd: 'Unlimited', desc: 'Fast & Precise Subtitles' },
+      { id: 'gpt-4o', displayName: 'GPT-4o Full', version: '4o', inputTokens: 128000, outputTokens: 16384, rpm: '500 RPM', rpd: 'Unlimited', desc: 'Flagship Multilingual' }
+    ]
+  }
+};
 
 // Global State
 const state = {
-  apiKey: '',
+  apiKeys: {
+    gemini: '',
+    groq: '',
+    openrouter: '',
+    deepseek: '',
+    openai: ''
+  },
+  activeTabProvider: 'gemini',
+  autoFailoverEnabled: true,
+  providerStatus: {
+    gemini: { connected: false, models: [], lastLatency: 0 },
+    groq: { connected: false, models: [], lastLatency: 0 },
+    openrouter: { connected: false, models: [], lastLatency: 0 },
+    deepseek: { connected: false, models: [], lastLatency: 0 },
+    openai: { connected: false, models: [], lastLatency: 0 }
+  },
+  apiKey: '', // Backward compatibility
   availableModels: [],
   selectedModel: 'gemini-2.5-flash',
+  activeProvider: 'gemini',
   parsedBlocks: [],       // Array of { num, timeCode, lines: [] }
   translatedBlocks: [],   // Array of { num, timeCode, lines: [], translatedLines: [] }
   uncompressedBlocks: [], // Backup of 1st-pass translation for 1-click restore
@@ -331,19 +423,455 @@ window.addEventListener('DOMContentLoaded', () => {
   initCustomSelects();
   initFaqAccordion();
   initSeoGuideToggle();
-  const savedKey = (localStorage.getItem('gemini_api_key') || '').trim();
-  if (savedKey) {
-    apiKeyInput.value = savedKey;
-    state.apiKey = savedKey;
-    showApiFeedback('API Key loaded from local storage. Verifying...', 'ok');
-    fetchLiveGeminiModels(savedKey);
-  } else {
-    resetQuotaDashboardToDisconnected('No API Key');
-  }
+  initMultiProviderHub();
   setupEventListeners();
   checkReadyToTranslate();
   restoreSessionIfAvailable();
 });
+
+// ── Multi-AI Provider Engine & State Manager ──
+function switchProviderTab(providerId) {
+  state.activeTabProvider = providerId;
+  
+  // Update Tab buttons
+  document.querySelectorAll('.provider-tab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.provider === providerId);
+  });
+
+  // Update Panels
+  document.querySelectorAll('.provider-panel').forEach(panel => {
+    panel.classList.toggle('active', panel.id === `panel_${providerId}`);
+  });
+}
+
+function initMultiProviderHub() {
+  // Load Auto-Failover setting
+  const savedFailover = localStorage.getItem('auto_failover_enabled');
+  state.autoFailoverEnabled = savedFailover !== 'false';
+  const autoFailoverToggle = $('autoFailoverToggle');
+  if (autoFailoverToggle) {
+    autoFailoverToggle.checked = state.autoFailoverEnabled;
+  }
+
+  // Load saved keys for each provider
+  let atLeastOneConnected = false;
+  ['gemini', 'groq', 'openrouter', 'deepseek', 'openai'].forEach(pid => {
+    const pConf = AI_PROVIDERS[pid];
+    const savedKey = (localStorage.getItem(pConf.storageKey) || '').trim();
+    if (savedKey) {
+      state.apiKeys[pid] = savedKey;
+      if (pid === 'gemini') {
+        state.apiKey = savedKey;
+        if (apiKeyInput) apiKeyInput.value = savedKey;
+      } else {
+        const inp = $(`apiKeyInput_${pid}`);
+        if (inp) inp.value = savedKey;
+      }
+      showProviderFeedback(pid, 'Stored key loaded. Verifying...', 'ok');
+      verifyAndLoadProvider(pid, savedKey);
+      atLeastOneConnected = true;
+    } else {
+      updateProviderStatusUI(pid, false);
+    }
+  });
+
+  if (!atLeastOneConnected) {
+    resetQuotaDashboardToDisconnected('No API Key');
+    populateCombinedModelDropdown();
+  }
+}
+
+async function handleSaveProviderKey(providerId) {
+  const pConf = AI_PROVIDERS[providerId];
+  if (!pConf) return;
+
+  const inp = providerId === 'gemini' ? apiKeyInput : $(`apiKeyInput_${providerId}`);
+  const saveBtn = providerId === 'gemini' ? saveApiKey : $(`saveApiKey_${providerId}`);
+  if (!inp) return;
+
+  const rawKey = inp.value.trim().replace(/^["']|["']$/g, '');
+
+  if (!rawKey || rawKey.length < 5) {
+    showProviderFeedback(providerId, `Please enter a valid ${pConf.name} API Key.`, 'err');
+    return;
+  }
+
+  if (saveBtn) {
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<span>Verifying...</span>';
+  }
+  showProviderFeedback(providerId, `Connecting & verifying with ${pConf.name}...`, 'ok');
+
+  try {
+    await verifyAndLoadProvider(providerId, rawKey);
+  } finally {
+    if (saveBtn) {
+      saveBtn.disabled = false;
+      saveBtn.innerHTML = `<span>Connect ${pConf.name}</span>`;
+    }
+  }
+}
+
+async function verifyAndLoadProvider(providerId, key) {
+  const pConf = AI_PROVIDERS[providerId];
+  if (!pConf || !key) return;
+
+  const startTime = performance.now();
+
+  try {
+    if (providerId === 'gemini') {
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
+      const probeMs = Math.round(performance.now() - startTime);
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData?.error?.message || `HTTP ${res.status}: Invalid Gemini API Key.`);
+      }
+
+      const data = await res.json();
+      const textModels = (data.models || []).filter(m => {
+        const id = m.name.replace(/^models\//, '').toLowerCase();
+        const hasGenContent = Array.isArray(m.supportedGenerationMethods) && m.supportedGenerationMethods.includes('generateContent');
+        if (!hasGenContent || !id.startsWith('gemini')) return false;
+        const nonText = ['tts', 'banana', 'nano', 'robotics', 'transcribe', 'clip', 'deep-research', 'embedding', 'embed', 'imagen', 'image', 'audio', 'realtime'];
+        return !nonText.some(t => id.includes(t));
+      });
+
+      state.apiKeys.gemini = key;
+      state.apiKey = key;
+      localStorage.setItem('gemini_api_key', key);
+      
+      const loadedModels = textModels.length > 0 ? textModels.map(m => ({
+        id: m.name.replace(/^models\//, ''),
+        displayName: m.displayName || m.name.replace(/^models\//, ''),
+        version: m.version || '2.5',
+        inputTokens: m.inputTokenLimit || 1048576,
+        outputTokens: m.outputTokenLimit || 8192,
+        rpm: '15 RPM',
+        rpd: '1,500 RPD',
+        desc: m.description || ''
+      })) : pConf.models;
+
+      state.providerStatus.gemini = {
+        connected: true,
+        models: loadedModels,
+        lastLatency: probeMs
+      };
+
+      showProviderFeedback('gemini', `Connected! ${loadedModels.length} Google Gemini models active.`, 'ok');
+      updateProviderStatusUI('gemini', true, `${loadedModels.length} models`);
+    } else {
+      // OpenAI-compatible providers: Groq, OpenRouter, DeepSeek, OpenAI
+      let headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${key}`
+      };
+      if (providerId === 'openrouter') {
+        headers['HTTP-Referer'] = window.location.origin || 'https://srttranslator.vercel.app';
+        headers['X-Title'] = 'SRTtranslator';
+      }
+
+      const testPayload = {
+        model: pConf.models[0].id,
+        messages: [{ role: 'user', content: 'test' }],
+        max_tokens: 1
+      };
+
+      const res = await fetch(pConf.endpoint, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(testPayload)
+      });
+
+      const probeMs = Math.round(performance.now() - startTime);
+
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        const errTxt = errJson?.error?.message || `HTTP ${res.status}: Verification failed`;
+        if (res.status === 401 || res.status === 403) {
+          throw new Error(errTxt);
+        }
+      }
+
+      state.apiKeys[providerId] = key;
+      localStorage.setItem(pConf.storageKey, key);
+
+      state.providerStatus[providerId] = {
+        connected: true,
+        models: pConf.models,
+        lastLatency: probeMs
+      };
+
+      showProviderFeedback(providerId, `Connected! ${pConf.models.length} ${pConf.name} models active.`, 'ok');
+      updateProviderStatusUI(providerId, true, `${pConf.models.length} models`);
+    }
+
+    populateCombinedModelDropdown();
+    updateQuotaDashboardForActiveModel();
+    checkReadyToTranslate();
+  } catch (err) {
+    console.warn(`Error verifying ${pConf.name}:`, err);
+    state.providerStatus[providerId] = { connected: false, models: [], lastLatency: 0 };
+    showProviderFeedback(providerId, `${pConf.name} Error: ${err.message}`, 'err');
+    updateProviderStatusUI(providerId, false);
+    populateCombinedModelDropdown();
+    checkReadyToTranslate();
+  }
+}
+
+function updateProviderStatusUI(providerId, isConnected, extraText = '') {
+  const dot = $(`statusDot_${providerId}`);
+  const chip = $(`chip_${providerId}`);
+  const pConf = AI_PROVIDERS[providerId];
+  if (!pConf) return;
+
+  if (dot) {
+    dot.className = `provider-status-dot ${isConnected ? 'dot-connected' : 'dot-off'}`;
+    dot.title = isConnected ? `Connected (${extraText})` : 'Not Configured';
+  }
+
+  if (chip) {
+    if (isConnected) {
+      chip.className = 'provider-chip is-active-chip';
+      chip.textContent = `${pConf.name}: Active`;
+    } else {
+      chip.className = 'provider-chip';
+      chip.textContent = `${pConf.name}: Off`;
+    }
+  }
+}
+
+function showProviderFeedback(providerId, msg, type) {
+  const feedbackDiv = providerId === 'gemini' ? apiStatus : $(`apiStatus_${providerId}`);
+  if (!feedbackDiv) return;
+
+  const icon = type === 'ok'
+    ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin-right:6px;"><polyline points="20 6 9 17 4 12"/></svg>`
+    : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin-right:6px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
+
+  feedbackDiv.innerHTML = `${icon}<span>${escapeHtml(msg)}</span>`;
+  feedbackDiv.className = 'api-feedback ' + type;
+}
+
+function populateCombinedModelDropdown() {
+  if (!modelSelect) return;
+  modelSelect.innerHTML = '';
+
+  const connectedProviders = Object.keys(AI_PROVIDERS).filter(pid => state.providerStatus[pid]?.connected);
+
+  if (connectedProviders.length === 0) {
+    modelSelect.disabled = true;
+    modelSelect.innerHTML = '<option value="" disabled selected>Connect at least one AI Provider (Gemini, Groq, DeepSeek, etc.) above...</option>';
+    if (modelLiveBadge) {
+      modelLiveBadge.textContent = 'Awaiting API Key';
+      modelLiveBadge.className = 'hint-tag';
+    }
+    syncCustomSelectDisabled('modelSelect');
+    refreshCustomSelect('modelSelect');
+    return;
+  }
+
+  let totalModelsCount = 0;
+  let firstModelValue = null;
+
+  connectedProviders.forEach(pid => {
+    const pConf = AI_PROVIDERS[pid];
+    const pModels = state.providerStatus[pid]?.models || pConf.models;
+    totalModelsCount += pModels.length;
+
+    const optgroup = document.createElement('optgroup');
+    optgroup.label = `${pConf.name} (${pModels.length} models)`;
+
+    pModels.forEach((m, idx) => {
+      const opt = document.createElement('option');
+      opt.value = m.id;
+      opt.textContent = `[${pConf.name}] ${m.displayName || m.id}${idx === 0 ? ' — Recommended' : ''}`;
+      if (!firstModelValue) firstModelValue = m.id;
+      optgroup.appendChild(opt);
+    });
+
+    modelSelect.appendChild(optgroup);
+  });
+
+  modelSelect.disabled = false;
+  
+  // Restore previously selected model or pick the first connected model
+  const existingSelection = state.selectedModel;
+  const isExistingValid = Array.from(modelSelect.options).some(o => o.value === existingSelection);
+  if (isExistingValid) {
+    modelSelect.value = existingSelection;
+  } else if (firstModelValue) {
+    modelSelect.value = firstModelValue;
+    state.selectedModel = firstModelValue;
+  }
+
+  if (modelLiveBadge) {
+    modelLiveBadge.innerHTML = `
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:11px;height:11px;display:inline-block;margin-right:4px;vertical-align:-1px;">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+      <span>${totalModelsCount} Live Models (${connectedProviders.length} Providers)</span>
+    `;
+    modelLiveBadge.className = 'hint-tag active-tag';
+  }
+
+  syncCustomSelectDisabled('modelSelect');
+  refreshCustomSelect('modelSelect');
+  updateQuotaDashboardForActiveModel();
+}
+
+function getActiveProviderAndKey(modelId) {
+  const cleanModel = (modelId || state.selectedModel || 'gemini-2.5-flash').replace(/^models\//, '').trim();
+
+  // Explicit provider identification by model prefix/pattern
+  if (cleanModel.startsWith('gemini')) {
+    return { providerId: 'gemini', model: cleanModel, key: state.apiKeys.gemini };
+  }
+  if (cleanModel.startsWith('llama-') || cleanModel.startsWith('deepseek-r1-distill') || cleanModel.startsWith('mixtral-')) {
+    return { providerId: 'groq', model: cleanModel, key: state.apiKeys.groq };
+  }
+  if (cleanModel.includes('/') || cleanModel.startsWith('anthropic/') || cleanModel.startsWith('meta-llama/')) {
+    return { providerId: 'openrouter', model: cleanModel, key: state.apiKeys.openrouter };
+  }
+  if (cleanModel === 'deepseek-chat' || cleanModel === 'deepseek-reasoner') {
+    if (state.apiKeys.deepseek) {
+      return { providerId: 'deepseek', model: cleanModel, key: state.apiKeys.deepseek };
+    }
+    return { providerId: 'openrouter', model: `deepseek/${cleanModel}`, key: state.apiKeys.openrouter };
+  }
+  if (cleanModel.startsWith('gpt-')) {
+    return { providerId: 'openai', model: cleanModel, key: state.apiKeys.openai };
+  }
+
+  // Fallback to first available connected provider
+  for (const pid of ['gemini', 'groq', 'openrouter', 'deepseek', 'openai']) {
+    if (state.apiKeys[pid] && state.providerStatus[pid]?.connected) {
+      return { providerId: pid, model: AI_PROVIDERS[pid].defaultModel, key: state.apiKeys[pid] };
+    }
+  }
+
+  return { providerId: 'gemini', model: 'gemini-2.5-flash', key: state.apiKeys.gemini || '' };
+}
+
+function findFailoverBackup(currentProviderId) {
+  if (!state.autoFailoverEnabled) return null;
+  const candidateProviders = ['groq', 'gemini', 'openrouter', 'deepseek', 'openai'].filter(p => p !== currentProviderId);
+
+  for (const pid of candidateProviders) {
+    if (state.apiKeys[pid] && state.providerStatus[pid]?.connected) {
+      return {
+        providerId: pid,
+        providerName: AI_PROVIDERS[pid].name,
+        model: AI_PROVIDERS[pid].defaultModel,
+        key: state.apiKeys[pid]
+      };
+    }
+  }
+  return null;
+}
+
+function updateQuotaDashboardForActiveModel() {
+  const modelToInspect = (modelSelect ? modelSelect.value : state.selectedModel) || 'gemini-2.5-flash';
+  const { providerId, model } = getActiveProviderAndKey(modelToInspect);
+  const pConf = AI_PROVIDERS[providerId];
+  if (!pConf) return;
+
+  const toggleBtn = $('toggleQuotaBtn');
+  if (toggleBtn) toggleBtn.classList.remove('hidden');
+
+  const modelsList = state.providerStatus[providerId]?.models || pConf.models;
+  const mObj = modelsList.find(m => m.id === model) || modelsList[0];
+
+  const qName = $('quotaModelName');
+  const qVer = $('quotaModelVersion');
+  const qContext = $('quotaContext');
+  const qOut = $('quotaOutputTokens');
+  const qRpm = $('quotaRpm');
+  const qRpd = $('quotaRpd');
+
+  if (qName) qName.textContent = `[${pConf.name}] ${mObj?.displayName || model}`;
+  if (qVer) qVer.textContent = `${pConf.name} • Live Verified`;
+  if (qContext) qContext.textContent = mObj?.inputTokens ? `${Number(mObj.inputTokens).toLocaleString()} Tokens` : '128,000 Tokens';
+  if (qOut) qOut.textContent = mObj?.outputTokens ? `${Number(mObj.outputTokens).toLocaleString()} Tokens` : '8,192 Tokens';
+  if (qRpm) qRpm.textContent = mObj?.rpm || 'Dynamic';
+  if (qRpd) qRpd.textContent = mObj?.rpd || 'Unlimited';
+
+  updateApiHealthUI('optimal', `Active AI: ${pConf.name}`);
+}
+
+// ── Automatic Live Model Fetcher ──
+function resetQuotaDashboardToDisconnected(errMsg = '') {
+  const toggleBtn = $('toggleQuotaBtn');
+  const dashboard = $('apiQuotaDashboard');
+  if (dashboard) dashboard.classList.add('hidden');
+  if (toggleBtn) {
+    toggleBtn.classList.remove('active');
+  }
+
+  const qName = $('quotaModelName');
+  const qVer = $('quotaModelVersion');
+  const qContext = $('quotaContext');
+  const qOut = $('quotaOutputTokens');
+  const qRpm = $('quotaRpm');
+  const qRpd = $('quotaRpd');
+  const latencyVal = $('quotaSessionLatency');
+
+  if (qName) qName.textContent = '— (Disconnected)';
+  if (qVer) qVer.textContent = errMsg ? 'Auth Error' : 'Awaiting API Key';
+  if (qContext) qContext.textContent = '—';
+  if (qOut) qOut.textContent = '—';
+  if (qRpm) qRpm.textContent = '—';
+  if (qRpd) qRpd.textContent = '—';
+  if (latencyVal) latencyVal.textContent = errMsg ? 'Ping: Error' : 'Last Latency: —';
+
+  const isNoKey = !errMsg || errMsg === 'No API Key';
+  updateApiHealthUI(
+    isNoKey ? 'disconnected' : 'exhausted',
+    isNoKey ? 'Awaiting API Key' : `API Error: ${errMsg.slice(0, 32)}`
+  );
+}
+
+function updateApiHealthUI(status = 'optimal', customMessage = '', latencyMs = null) {
+  const pill = $('apiHealthPill');
+  const text = $('apiHealthText');
+  const callsVal = $('quotaSessionCalls');
+  const latencyVal = $('quotaSessionLatency');
+
+  if (callsVal) {
+    callsVal.textContent = `${state.apiMetrics.totalRequests} Requests`;
+  }
+  if (latencyVal) {
+    if (latencyMs !== null) {
+      latencyVal.textContent = `Last: ${latencyMs}ms ${state.apiMetrics.rateLimitHits > 0 ? '(' + state.apiMetrics.rateLimitHits + ' limit hits)' : '(0 errors)'}`;
+    } else if (state.apiMetrics.lastLatencyMs > 0) {
+      latencyVal.textContent = `Last: ${state.apiMetrics.lastLatencyMs}ms ${state.apiMetrics.rateLimitHits > 0 ? '(' + state.apiMetrics.rateLimitHits + ' limit hits)' : '(0 errors)'}`;
+    } else {
+      latencyVal.textContent = `Last Latency: —`;
+    }
+  }
+
+  if (!pill || !text) return;
+
+  pill.className = 'api-health-pill';
+  state.apiMetrics.healthStatus = status;
+
+  if (status === 'optimal') {
+    pill.classList.add('health-optimal');
+    text.textContent = customMessage || 'Quota Health: Optimal';
+  } else if (status === 'active') {
+    pill.classList.add('health-active');
+    text.textContent = customMessage || 'Processing API Call...';
+  } else if (status === 'cooldown') {
+    pill.classList.add('health-warning');
+    text.textContent = customMessage || 'Rate Limit Cooldown Active';
+  } else if (status === 'exhausted') {
+    pill.classList.add('health-error');
+    text.textContent = customMessage || 'Quota Limit Reached (429)';
+  } else if (status === 'disconnected') {
+    pill.classList.add('health-disconnected');
+    text.textContent = customMessage || 'Awaiting API Key';
+  }
+}
 
 // ── Theme Switcher ──
 function initTheme() {
@@ -415,13 +943,11 @@ async function cancelTranslationProcess() {
   state.isPaused = false;
   state.isTranslating = false;
 
-  // Discard all translated state and delete stored session
   state.translatedBlocks = [];
   state.uncompressedBlocks = [];
   state.isCondensed = false;
   clearSavedSession();
 
-  // Reset UI elements cleanly
   if (progressCard) progressCard.classList.add('hidden');
   if (resultCard) resultCard.classList.add('hidden');
   if (incompleteWarningBanner) incompleteWarningBanner.classList.add('hidden');
@@ -434,13 +960,9 @@ async function cancelTranslationProcess() {
 
 // ── Event Setup ──
 function setupEventListeners() {
-  // Custom Modal Dialog Listeners
-  if (modalCancelBtn) {
-    modalCancelBtn.addEventListener('click', () => closeCustomModal(false));
-  }
-  if (modalConfirmBtn) {
-    modalConfirmBtn.addEventListener('click', () => closeCustomModal(true));
-  }
+  // Modal dialog listeners
+  if (modalCancelBtn) modalCancelBtn.addEventListener('click', () => closeCustomModal(false));
+  if (modalConfirmBtn) modalConfirmBtn.addEventListener('click', () => closeCustomModal(true));
   if (customModalBackdrop) {
     customModalBackdrop.addEventListener('click', e => {
       if (e.target === customModalBackdrop) closeCustomModal(false);
@@ -453,36 +975,44 @@ function setupEventListeners() {
   });
 
   // Theme Toggle
-  if (themeToggleBtn) {
-    themeToggleBtn.addEventListener('click', toggleTheme);
-  }
-  // API Key Toggle Visibility
-  if (toggleApiKey && apiKeyInput && eyeIcon) {
-    toggleApiKey.addEventListener('click', () => {
-      const isPass = apiKeyInput.type === 'password';
-      apiKeyInput.type = isPass ? 'text' : 'password';
-      eyeIcon.innerHTML = isPass
-        ? `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
-           <line x1="1" y1="1" x2="23" y2="23"/>`
-        : `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-           <circle cx="12" cy="12" r="3"/>`;
+  if (themeToggleBtn) themeToggleBtn.addEventListener('click', toggleTheme);
+
+  // Multi-Provider Tab Buttons
+  document.querySelectorAll('.provider-tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => switchProviderTab(btn.dataset.provider));
+  });
+
+  // Auto-Failover Switch
+  const autoFailoverToggle = $('autoFailoverToggle');
+  if (autoFailoverToggle) {
+    autoFailoverToggle.addEventListener('change', e => {
+      state.autoFailoverEnabled = e.target.checked;
+      localStorage.setItem('auto_failover_enabled', e.target.checked ? 'true' : 'false');
     });
   }
 
-  // Allow pressing Enter in API Key input
-  if (apiKeyInput) {
-    apiKeyInput.addEventListener('keydown', e => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        handleSaveApiKey();
-      }
-    });
-  }
+  // Provider Inputs & Save Buttons
+  ['gemini', 'groq', 'openrouter', 'deepseek', 'openai'].forEach(pid => {
+    const input = pid === 'gemini' ? apiKeyInput : $(`apiKeyInput_${pid}`);
+    const saveBtn = pid === 'gemini' ? saveApiKey : $(`saveApiKey_${pid}`);
+    const eyeBtn = pid === 'gemini' ? toggleApiKey : $(`toggleApiKey_${pid}`);
 
-  // Save API Key and load live models
-  if (saveApiKey) {
-    saveApiKey.addEventListener('click', handleSaveApiKey);
-  }
+    if (saveBtn) saveBtn.addEventListener('click', () => handleSaveProviderKey(pid));
+    if (input) {
+      input.addEventListener('keydown', e => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          handleSaveProviderKey(pid);
+        }
+      });
+    }
+    if (eyeBtn && input) {
+      eyeBtn.addEventListener('click', () => {
+        const isPass = input.type === 'password';
+        input.type = isPass ? 'text' : 'password';
+      });
+    }
+  });
 
   // Drag & Drop
   if (dropZone && fileInput) {
@@ -543,25 +1073,16 @@ function setupEventListeners() {
   }
 
   // Start Translation
-  if (translateBtn) {
-    translateBtn.addEventListener('click', runTranslationPipeline);
-  }
-
-  // Pause / Resume & Cancel Translation Controls
-  if (pauseResumeBtn) {
-    pauseResumeBtn.addEventListener('click', togglePauseTranslation);
-  }
-
-  if (cancelTranslateBtn) {
-    cancelTranslateBtn.addEventListener('click', cancelTranslationProcess);
-  }
+  if (translateBtn) translateBtn.addEventListener('click', runTranslationPipeline);
+  if (pauseResumeBtn) pauseResumeBtn.addEventListener('click', togglePauseTranslation);
+  if (cancelTranslateBtn) cancelTranslateBtn.addEventListener('click', cancelTranslationProcess);
 
   // Retranslate
   if (retranslateBtn) {
     retranslateBtn.addEventListener('click', async () => {
       const confirmed = await showCustomConfirm({
         title: 'Retranslate Subtitles?',
-        message: 'This will reset the current translation and re-translate all subtitle lines from the beginning.',
+        message: 'This will reset current translations and re-translate from the beginning.',
         confirmText: 'Yes, Retranslate',
         cancelText: 'Cancel',
         type: 'warning'
@@ -578,19 +1099,13 @@ function setupEventListeners() {
   }
 
   // Retry Incomplete Batches
-  if (retryIncompleteBtn) {
-    retryIncompleteBtn.addEventListener('click', retryIncompleteBatchesPipeline);
-  }
+  if (retryIncompleteBtn) retryIncompleteBtn.addEventListener('click', retryIncompleteBatchesPipeline);
 
   // AI Condenser (2nd-Pass Refinement)
-  if (condenseSrtBtn) {
-    condenseSrtBtn.addEventListener('click', runAiCondensePipeline);
-  }
+  if (condenseSrtBtn) condenseSrtBtn.addEventListener('click', runAiCondensePipeline);
 
   // Restore Original Uncompressed Translation
-  if (restoreOriginalBtn) {
-    restoreOriginalBtn.addEventListener('click', restoreOriginalTranslation);
-  }
+  if (restoreOriginalBtn) restoreOriginalBtn.addEventListener('click', restoreOriginalTranslation);
 
   // Download Action
   if (downloadBtn) {
@@ -600,9 +1115,7 @@ function setupEventListeners() {
   }
 
   // Copy Action
-  if (copySrtBtn) {
-    copySrtBtn.addEventListener('click', copyFullSRTCode);
-  }
+  if (copySrtBtn) copySrtBtn.addEventListener('click', copyFullSRTCode);
 
   // Subtitle Pacing Preset Change
   const pacingBadge = $('pacingBadge');
@@ -651,7 +1164,7 @@ function setupEventListeners() {
   if (modelSelect) {
     modelSelect.addEventListener('change', () => {
       state.selectedModel = modelSelect.value;
-      if (state.loadedModels) updateQuotaDashboard(state.loadedModels);
+      updateQuotaDashboardForActiveModel();
     });
   }
 
@@ -665,11 +1178,11 @@ function setupEventListeners() {
       if (isHidden) {
         quotaDashboard.classList.remove('hidden');
         toggleQuotaBtn.classList.add('active');
-        if (toggleQuotaText) toggleQuotaText.textContent = 'Hide Google Model Specs';
+        if (toggleQuotaText) toggleQuotaText.textContent = 'Hide Model Specs & Health';
       } else {
         quotaDashboard.classList.add('hidden');
         toggleQuotaBtn.classList.remove('active');
-        if (toggleQuotaText) toggleQuotaText.textContent = 'View Google Model Specs & Limits';
+        if (toggleQuotaText) toggleQuotaText.textContent = 'Live Model Specs & Health';
       }
     });
   }
@@ -682,345 +1195,6 @@ function setupEventListeners() {
       renderActiveTab(this.dataset.tab, state.translatedBlocks);
     });
   });
-}
-
-function handleSaveApiKey() {
-  const raw = apiKeyInput.value.trim();
-  // Clean surrounding quotes, spaces, or formatting artifacts
-  const cleanKey = raw.replace(/^["']|["']$/g, '').trim();
-
-  if (!cleanKey || cleanKey.length < 10) {
-    showApiFeedback('Please enter a valid Gemini API key from Google AI Studio.', 'err');
-    return;
-  }
-
-  saveApiKey.disabled = true;
-  saveApiKey.innerHTML = '<span>Verifying...</span>';
-  showApiFeedback('Connecting to Google Gemini API & loading live models...', 'ok');
-  
-  fetchLiveGeminiModels(cleanKey).finally(() => {
-    saveApiKey.disabled = false;
-    saveApiKey.innerHTML = '<span>Connect & Load Models</span>';
-  });
-}
-
-function showApiFeedback(msg, type) {
-  const icon = type === 'ok'
-    ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin-right:6px;"><polyline points="20 6 9 17 4 12"/></svg>`
-    : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin-right:6px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
-
-  apiStatus.innerHTML = `${icon}<span>${escapeHtml(msg)}</span>`;
-  apiStatus.className = 'api-feedback ' + type;
-}
-
-// ── Automatic Live Model Fetcher ──
-function resetQuotaDashboardToDisconnected(errMsg = '') {
-  const toggleBtn = $('toggleQuotaBtn');
-  const dashboard = $('apiQuotaDashboard');
-  if (dashboard) dashboard.classList.add('hidden');
-  if (toggleBtn) {
-    toggleBtn.classList.remove('active');
-    toggleBtn.classList.add('hidden');
-  }
-
-  const qName = $('quotaModelName');
-  const qVer = $('quotaModelVersion');
-  const qContext = $('quotaContext');
-  const qOut = $('quotaOutputTokens');
-  const qRpm = $('quotaRpm');
-  const qRpd = $('quotaRpd');
-  const latencyVal = $('quotaSessionLatency');
-
-  if (qName) qName.textContent = '— (Disconnected)';
-  if (qVer) qVer.textContent = errMsg ? 'Auth Error' : 'Awaiting Valid API Key';
-  if (qContext) qContext.textContent = '—';
-  if (qOut) qOut.textContent = '—';
-  if (qRpm) qRpm.textContent = '—';
-  if (qRpd) qRpd.textContent = '—';
-  if (latencyVal) latencyVal.textContent = errMsg ? 'Ping: Error (Unauthenticated)' : 'Last Latency: —';
-
-  const isNoKey = !errMsg || errMsg === 'No API Key';
-  updateApiHealthUI(
-    isNoKey ? 'disconnected' : 'exhausted',
-    isNoKey ? 'Awaiting Valid API Key' : `API Error: ${errMsg.slice(0, 32)}`
-  );
-
-  syncCustomSelectDisabled('modelSelect');
-  refreshCustomSelect('modelSelect');
-}
-
-async function fetchLiveGeminiModels(key) {
-  if (!key) {
-    modelSelect.disabled = true;
-    modelSelect.innerHTML = '<option value="" disabled selected>Enter & Save Gemini API key above to load models live...</option>';
-    modelLiveBadge.textContent = 'Awaiting API Key';
-    modelLiveBadge.className = 'hint-tag';
-    resetQuotaDashboardToDisconnected('No API Key');
-    return;
-  }
-
-  modelSelect.disabled = true;
-  modelSelect.innerHTML = '<option value="" disabled selected>Fetching available models live from Google...</option>';
-  modelLiveBadge.textContent = 'Connecting to Google...';
-  modelLiveBadge.className = 'hint-tag active-tag';
-  syncCustomSelectDisabled('modelSelect');
-  refreshCustomSelect('modelSelect');
-
-  const probeStart = performance.now();
-
-  try {
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
-    const probeMs = Math.round(performance.now() - probeStart);
-    
-    if (!res.ok) {
-      const errData = await res.json().catch(() => ({}));
-      const errorMsg = errData?.error?.message || `HTTP ${res.status}: Invalid API Key or request rejected by Google.`;
-      throw new Error(errorMsg);
-    }
-    
-    const data = await res.json();
-    
-    if (data && Array.isArray(data.models)) {
-      // Filter strictly for official, active, general text & translation Gemini models
-      const textModels = data.models.filter(m => {
-        const id = m.name.replace(/^models\//, '').toLowerCase();
-        
-        // Must support text generation
-        const hasGenContent = Array.isArray(m.supportedGenerationMethods) && 
-                              m.supportedGenerationMethods.includes('generateContent');
-        if (!hasGenContent) return false;
-
-        // Must be a Gemini core model (exclude non-Gemini like Gemma, Lyria, etc.)
-        if (!id.startsWith('gemini')) return false;
-
-        // Exclude non-text/specialized multimodal variants that cannot do text translation
-        const nonTextTerms = [
-          'tts', 'banana', 'nano', 'robotics', 'transcribe', 
-          'clip', 'deep-research', 'computer-use', 'customtools', 
-          'embedding', 'embed', 'aqa', 'imagen', 'image', 'audio', 
-          'realtime', 'live', 'speech', 'voice', 'diffusion', 'medlm'
-        ];
-        if (nonTextTerms.some(term => id.includes(term))) return false;
-
-        return true;
-      });
-
-      if (textModels.length > 0) {
-        state.apiKey = key;
-        state.loadedModels = textModels;
-        localStorage.setItem('gemini_api_key', key);
-        populateModelDropdown(textModels);
-        updateQuotaDashboard(textModels, probeMs);
-        showApiFeedback(`Connected! ${textModels.length} active Gemini models fetched live from Google API`, 'ok');
-        modelLiveBadge.innerHTML = `
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:11px;height:11px;display:inline-block;margin-right:4px;vertical-align:-1px;">
-            <polyline points="20 6 9 17 4 12"/>
-          </svg>
-          <span>${textModels.length} Live Google Models Connected</span>
-        `;
-        modelLiveBadge.className = 'hint-tag active-tag';
-        modelSelect.disabled = false;
-        syncCustomSelectDisabled('modelSelect');
-        refreshCustomSelect('modelSelect');
-        checkReadyToTranslate();
-        return;
-      }
-    }
-    throw new Error('No compatible translation models found for this API key.');
-  } catch (err) {
-    console.warn('Could not auto-fetch models from API:', err);
-    modelSelect.disabled = true;
-    modelSelect.innerHTML = `<option value="" disabled selected>Failed to load models (${escapeHtml(err.message.slice(0, 45))}...)</option>`;
-    modelLiveBadge.textContent = 'Connection Error';
-    modelLiveBadge.className = 'hint-tag';
-    resetQuotaDashboardToDisconnected(err.message);
-    showApiFeedback(`Google API Error: ${err.message}`, 'err');
-    checkReadyToTranslate();
-  }
-}
-
-function updateApiHealthUI(status = 'optimal', customMessage = '', latencyMs = null) {
-  const pill = $('apiHealthPill');
-  const text = $('apiHealthText');
-  const callsVal = $('quotaSessionCalls');
-  const latencyVal = $('quotaSessionLatency');
-
-  if (callsVal) {
-    callsVal.textContent = `${state.apiMetrics.totalRequests} Requests`;
-  }
-  if (latencyVal) {
-    if (latencyMs !== null) {
-      latencyVal.textContent = `Last: ${latencyMs}ms ${state.apiMetrics.rateLimitHits > 0 ? '(' + state.apiMetrics.rateLimitHits + ' limit hits)' : '(0 errors)'}`;
-    } else if (state.apiMetrics.lastLatencyMs > 0) {
-      latencyVal.textContent = `Last: ${state.apiMetrics.lastLatencyMs}ms ${state.apiMetrics.rateLimitHits > 0 ? '(' + state.apiMetrics.rateLimitHits + ' limit hits)' : '(0 errors)'}`;
-    } else {
-      latencyVal.textContent = `Last Latency: —`;
-    }
-  }
-
-  if (!pill || !text) return;
-
-  pill.className = 'api-health-pill';
-  state.apiMetrics.healthStatus = status;
-
-  if (status === 'optimal') {
-    pill.classList.add('health-optimal');
-    text.textContent = customMessage || 'Quota Health: Optimal';
-  } else if (status === 'active') {
-    pill.classList.add('health-active');
-    text.textContent = customMessage || 'Processing API Call...';
-  } else if (status === 'cooldown') {
-    pill.classList.add('health-warning');
-    text.textContent = customMessage || 'Rate Limit Cooldown Active';
-  } else if (status === 'exhausted') {
-    pill.classList.add('health-error');
-    text.textContent = customMessage || 'Quota Limit Reached (429)';
-  } else if (status === 'disconnected') {
-    pill.classList.add('health-disconnected');
-    text.textContent = customMessage || 'Awaiting Valid API Key';
-  }
-}
-
-function updateQuotaDashboard(models, initialLatencyMs = null) {
-  if (!models || models.length === 0) {
-    resetQuotaDashboardToDisconnected('No Models Available');
-    return;
-  }
-
-  const toggleBtn = $('toggleQuotaBtn');
-  if (toggleBtn) toggleBtn.classList.remove('hidden');
-  
-  const selectedId = (modelSelect.value || models[0].name.replace(/^models\//, '')).toLowerCase();
-  const activeModelObj = models.find(m => m.name.replace(/^models\//, '').toLowerCase() === selectedId) || models[0];
-
-  const inputLimit = activeModelObj?.inputTokenLimit || 1048576;
-  const outputLimit = activeModelObj?.outputTokenLimit || 8192;
-  const isFlash = selectedId.includes('flash');
-
-  const qName = $('quotaModelName');
-  const qVer = $('quotaModelVersion');
-  const qContext = $('quotaContext');
-  const qOut = $('quotaOutputTokens');
-  const qRpm = $('quotaRpm');
-  const qRpd = $('quotaRpd');
-
-  if (qName) qName.textContent = activeModelObj?.displayName || selectedId;
-  if (qVer) qVer.textContent = activeModelObj?.version ? `v${activeModelObj.version} • Live Google Verified` : 'v1beta • Live Google Verified';
-  if (qContext) qContext.textContent = `${Number(inputLimit).toLocaleString()} Tokens`;
-  if (qOut) qOut.textContent = `${Number(outputLimit).toLocaleString()} Tokens`;
-  if (qRpm) qRpm.textContent = isFlash ? '15 RPM' : '2 RPM';
-  if (qRpd) qRpd.textContent = isFlash ? '1,500 RPD' : '50 RPD';
-
-  updateApiHealthUI('optimal', 'Quota Health: Optimal', initialLatencyMs);
-}
-
-function populateModelDropdown(models) {
-  modelSelect.innerHTML = '';
-
-  // Extract clean unique model list
-  const seenIds = new Set();
-  const cleanModels = [];
-
-  models.forEach(m => {
-    const id = m.name.replace(/^models\//, '');
-    if (!seenIds.has(id)) {
-      seenIds.add(id);
-      cleanModels.push({
-        id,
-        displayName: m.displayName || id,
-        description: m.description || '',
-        version: m.version || '',
-        inputTokens: m.inputTokenLimit || 1048576,
-        outputTokens: m.outputTokenLimit || 8192
-      });
-    }
-  });
-
-  // Ranking & categorization: Flash Models > Pro Models > Preview/Experimental
-  const flashGroup = [];
-  const proGroup = [];
-  const expGroup = [];
-
-  cleanModels.forEach(m => {
-    const lower = m.id.toLowerCase();
-    if (lower.includes('preview') || lower.includes('exp')) {
-      expGroup.push(m);
-    } else if (lower.includes('pro')) {
-      proGroup.push(m);
-    } else {
-      flashGroup.push(m);
-    }
-  });
-
-  // Dynamic mathematical version extractor (e.g., "gemini-3.5-flash" -> 3.5, "gemini-2.0-flash" -> 2.0)
-  const extractVersionNumber = id => {
-    const match = id.match(/(\d+(?:\.\d+)?)/);
-    return match ? parseFloat(match[1]) : 1.0;
-  };
-
-  // Sort any group dynamically by highest version number first
-  const sortByVersionDesc = (a, b) => {
-    const verDiff = extractVersionNumber(b.id) - extractVersionNumber(a.id);
-    if (verDiff !== 0) return verDiff;
-    // Prefer non-8b over 8b for equal version numbers
-    const isA8b = a.id.includes('8b') ? 1 : 0;
-    const isB8b = b.id.includes('8b') ? 1 : 0;
-    return isA8b - isB8b;
-  };
-
-  flashGroup.sort(sortByVersionDesc);
-  proGroup.sort(sortByVersionDesc);
-  expGroup.sort(sortByVersionDesc);
-
-  // Save all active model IDs in priority order for failover
-  state.sortedModelList = [...flashGroup, ...proGroup, ...expGroup].map(m => m.id);
-
-  // Group 1: Flash Production Models
-  if (flashGroup.length > 0) {
-    const grp = document.createElement('optgroup');
-    grp.label = `Fast & Production Models (Flash — ${flashGroup.length} live)`;
-    flashGroup.forEach((m, idx) => {
-      const opt = document.createElement('option');
-      opt.value = m.id;
-      opt.textContent = `${m.displayName} (${m.id})${idx === 0 ? ' — Recommended' : ''}`;
-      grp.appendChild(opt);
-    });
-    modelSelect.appendChild(grp);
-  }
-
-  // Group 2: Pro High-Precision Models
-  if (proGroup.length > 0) {
-    const grp = document.createElement('optgroup');
-    grp.label = `High-Precision Models (Pro — ${proGroup.length} live)`;
-    proGroup.forEach(m => {
-      const opt = document.createElement('option');
-      opt.value = m.id;
-      opt.textContent = `${m.displayName} (${m.id})`;
-      grp.appendChild(opt);
-    });
-    modelSelect.appendChild(grp);
-  }
-
-  // Group 3: Preview & Experimental
-  if (expGroup.length > 0) {
-    const grp = document.createElement('optgroup');
-    grp.label = `Preview & Experimental Models (${expGroup.length} live)`;
-    expGroup.forEach(m => {
-      const opt = document.createElement('option');
-      opt.value = m.id;
-      opt.textContent = `${m.displayName} (${m.id})`;
-      grp.appendChild(opt);
-    });
-    modelSelect.appendChild(grp);
-  }
-
-  // Auto-select the top recommended model
-  if (state.sortedModelList.length > 0) {
-    modelSelect.value = state.sortedModelList[0];
-    state.selectedModel = state.sortedModelList[0];
-  }
-
-  refreshCustomSelect('modelSelect');
 }
 
 // ── File Selection & Adaptive Batching ──
@@ -1190,16 +1364,19 @@ function displayLoadedFileInfo(file, blocks) {
 
 function checkReadyToTranslate() {
   const hasFile = state.parsedBlocks.length > 0;
-  const hasKey = (state.apiKey || apiKeyInput.value.trim()).length > 15;
+  const connectedKeys = Object.values(state.apiKeys).filter(k => k && k.length > 4);
+  const hasKey = connectedKeys.length > 0;
 
   translateBtn.disabled = !(hasFile && hasKey);
 
   if (!hasKey) {
-    ctaHint.textContent = 'Please enter your Gemini API key above to enable automatic model loading & translation.';
+    ctaHint.textContent = 'Please enter & connect at least one AI Provider (Gemini, Groq, DeepSeek, OpenRouter, OpenAI) above.';
   } else if (!hasFile) {
     ctaHint.textContent = 'Please upload an SRT subtitle file above.';
   } else {
-    ctaHint.textContent = `Ready! Click the button above to translate ${state.parsedBlocks.length} subtitles into ${targetLang.value}.`;
+    const { providerId } = getActiveProviderAndKey();
+    const pName = AI_PROVIDERS[providerId]?.name || 'AI';
+    ctaHint.textContent = `Ready! Click the button above to translate ${state.parsedBlocks.length} subtitles into ${targetLang.value} using [${pName}].`;
   }
 }
 
@@ -1326,9 +1503,9 @@ function parseAndRepairJson(rawText) {
 
 // ── Translation Pipeline ──
 async function runTranslationPipeline() {
-  const activeKey = state.apiKey || apiKeyInput.value.trim();
+  const { providerId, model: initialModel, key: activeKey } = getActiveProviderAndKey();
   if (!activeKey) {
-    alert('Please enter your Gemini API Key before proceeding.');
+    alert('Please enter and connect at least one AI API Key before proceeding.');
     return;
   }
 
@@ -1367,8 +1544,9 @@ async function runTranslationPipeline() {
   updateProgressStats(0, `Auto-configured ${batches.length} optimal batches (${bs} subtitles/batch)...`);
   addTerminalLog('info', `File: ${state.fileName} (${state.parsedBlocks.length} subtitles, duration: ${state.durationStr})`);
   
-  const currentModelToUse = (modelSelect.value || (state.sortedModelList && state.sortedModelList[0]) || 'gemini-2.5-flash').replace(/^models\//, '');
-  addTerminalLog('info', `Active Model: ${currentModelToUse} • Adaptive Batching: ${bs} lines`);
+  const currentModelToUse = initialModel;
+  const pName = AI_PROVIDERS[providerId]?.name || 'AI';
+  addTerminalLog('info', `Initial AI: [${pName}] ${currentModelToUse} • Auto-Failover: ${state.autoFailoverEnabled ? 'Enabled' : 'Disabled'}`);
 
   let processedCount = 0;
 
@@ -1388,11 +1566,11 @@ async function runTranslationPipeline() {
       const batchPct = Math.round((processedCount / state.parsedBlocks.length) * 94);
 
       updateProgressStats(batchPct, `Translating batch ${bi + 1} of ${batches.length} (#${currentBatch[0].num} – #${currentBatch[currentBatch.length - 1].num})...`);
-      addTerminalLog('info', `Batch ${bi + 1}/${batches.length}: Translating ${currentBatch.length} lines with ${currentModelToUse}...`);
+      addTerminalLog('info', `Batch ${bi + 1}/${batches.length}: Translating ${currentBatch.length} lines with ${state.selectedModel || currentModelToUse}...`);
 
       let batchResult = [];
       try {
-        batchResult = await translateBatchWithAdaptiveSplitting(currentBatch, activeKey, currentModelToUse);
+        batchResult = await translateBatchWithAdaptiveSplitting(currentBatch, activeKey, state.selectedModel || currentModelToUse);
       } catch (err) {
         if (state.isCancelled) break;
         addTerminalLog('err', `Batch ${bi + 1} could not be fully completed: ${err.message}. Original lines safely preserved.`);
@@ -1420,7 +1598,7 @@ async function runTranslationPipeline() {
         addTerminalLog('warn', `Batch ${bi + 1}/${batches.length} completed with ${currentBatch.length - batchSuccessCount} lines in English.`);
       }
 
-      // Smooth inter-batch pacing delay to respect Google API 15 RPM rate limits
+      // Smooth inter-batch pacing delay
       if (bi < batches.length - 1 && !state.isCancelled) {
         await sleep(1400);
       }
@@ -1473,7 +1651,7 @@ async function runTranslationPipeline() {
   }
 }
 
-// ── Adaptive Sub-Batch Splitting Engine (Divide & Conquer) ──
+// ── Adaptive Sub-Batch Splitting Engine (Divide & Conquer + Cross-Provider Auto-Failover) ──
 async function translateBatchWithAdaptiveSplitting(batch, activeKey, modelToUse, attempt = 1) {
   if (!batch || batch.length === 0) return [];
 
@@ -1485,8 +1663,10 @@ async function translateBatchWithAdaptiveSplitting(batch, activeKey, modelToUse,
     throw new Error('Translation cancelled by user');
   }
 
+  const { providerId: currentPid, model: activeModel } = getActiveProviderAndKey(modelToUse);
+
   try {
-    const result = await callGeminiBatchTranslate(batch, activeKey, attempt, modelToUse);
+    const result = await callAiBatchTranslate(batch, activeKey, attempt, activeModel);
     const translatedCount = result.filter(b => b && b.isTranslated).length;
 
     // If all items translated successfully, return
@@ -1500,9 +1680,9 @@ async function translateBatchWithAdaptiveSplitting(batch, activeKey, modelToUse,
       addTerminalLog('warn', `Batch of ${batch.length} lines had ${batch.length - translatedCount} missing translations. Dividing into smaller sub-batches to ensure 100% completion...`);
       const mid = Math.ceil(batch.length / 2);
       await sleep(1000);
-      const resA = await translateBatchWithAdaptiveSplitting(batch.slice(0, mid), activeKey, modelToUse, 1);
+      const resA = await translateBatchWithAdaptiveSplitting(batch.slice(0, mid), activeKey, activeModel, 1);
       await sleep(1200);
-      const resB = await translateBatchWithAdaptiveSplitting(batch.slice(mid), activeKey, modelToUse, 1);
+      const resB = await translateBatchWithAdaptiveSplitting(batch.slice(mid), activeKey, activeModel, 1);
       return [...resA, ...resB];
     }
 
@@ -1511,20 +1691,36 @@ async function translateBatchWithAdaptiveSplitting(batch, activeKey, modelToUse,
     if (state.isCancelled) throw err;
     state.stats.retries++;
     const errMsg = (err.message || '').toLowerCase();
-    const is429 = errMsg.includes('429') || errMsg.includes('quota') || errMsg.includes('resource has been exhausted');
-    const is503 = errMsg.includes('503') || errMsg.includes('overloaded') || errMsg.includes('high demand');
+    const is429 = errMsg.includes('429') || errMsg.includes('quota') || errMsg.includes('resource has been exhausted') || errMsg.includes('rate limit');
+    const is503 = errMsg.includes('503') || errMsg.includes('overloaded') || errMsg.includes('high demand') || errMsg.includes('service unavailable');
+
+    // ⚡ SMART AUTO-FAILOVER: Switch to another configured AI provider on rate limit / quota exhaustion
+    if (is429 && state.autoFailoverEnabled) {
+      const backup = findFailoverBackup(currentPid);
+      if (backup) {
+        addTerminalLog('warn', `⚡ [Smart Auto-Failover] Rate limit reached on ${AI_PROVIDERS[currentPid].name}. Automatically switching to [${backup.providerName}] (${backup.model}) to continue seamless translation!`);
+        state.selectedModel = backup.model;
+        if (modelSelect) {
+          modelSelect.value = backup.model;
+          refreshCustomSelect('modelSelect');
+        }
+        updateQuotaDashboardForActiveModel();
+        await sleep(1000);
+        return await translateBatchWithAdaptiveSplitting(batch, backup.key, backup.model, 1);
+      }
+    }
 
     if (is429) {
       const waitTime = Math.min(5000 * attempt, 16000);
       updateApiHealthUI('cooldown', `429 Rate Limit Cooldown (${waitTime / 1000}s)...`);
-      addTerminalLog('warn', `Google API rate limit (15 RPM) reached. Pausing for ${waitTime / 1000}s to cool down before retry ${attempt}/3...`);
+      addTerminalLog('warn', `API rate limit reached on ${AI_PROVIDERS[currentPid]?.name || 'provider'}. Pausing for ${waitTime / 1000}s before retry ${attempt}/3...`);
       await sleep(waitTime);
       updateApiHealthUI('active', `Resuming translation...`);
       if (attempt <= 3 && !state.isCancelled) {
         return await translateBatchWithAdaptiveSplitting(batch, activeKey, modelToUse, attempt + 1);
       }
     } else if (is503) {
-      addTerminalLog('warn', `Google server busy (503). Retrying in 4s...`);
+      addTerminalLog('warn', `${AI_PROVIDERS[currentPid]?.name || 'AI Server'} busy (503). Retrying in 4s...`);
       await sleep(4000);
       if (attempt <= 3 && !state.isCancelled) {
         return await translateBatchWithAdaptiveSplitting(batch, activeKey, modelToUse, attempt + 1);
@@ -1554,23 +1750,33 @@ async function translateBatchWithAdaptiveSplitting(batch, activeKey, modelToUse,
   }
 }
 
-// ── Gemini Translation Engine ──
+// ── Universal AI Translation Dispatcher ──
+async function callAiBatchTranslate(batch, key, attemptNumber, overrideModel) {
+  const modelToUse = overrideModel || modelSelect?.value || state.selectedModel;
+  const { providerId, model, key: activeKey } = getActiveProviderAndKey(modelToUse);
+  const effectiveKey = key || activeKey;
+
+  if (providerId === 'gemini') {
+    return await callGeminiBatchTranslate(batch, effectiveKey, attemptNumber, model);
+  } else {
+    return await callOpenAiCompatibleBatchTranslate(batch, providerId, model, effectiveKey, attemptNumber);
+  }
+}
+
+// ── Google Gemini Translation Engine ──
 async function callGeminiBatchTranslate(batch, key, attemptNumber, overrideModel) {
   const lang = targetLang.value || 'Bengali';
   const pace = styleMode.value;
   const hint = contextHint.value.trim();
   
-  // Clean model ID to strictly avoid double 'models/' prefix
   const rawModel = overrideModel || modelSelect.value || 'gemini-2.5-flash';
   const selectedModel = rawModel.replace(/^models\//, '').trim();
 
-  // Construct structured payload (Only subtitle text and ID is passed; timecodes remain 100% untouched)
   const inputData = batch.map((item, index) => ({
     id: index,
     text: item.lines.join('\n')
   }));
 
-  // Pacing & Reading Speed Instructions
   let pacingPrompt = '';
   if (pace === 'micro' || pace === 'ultra_concise') {
     pacingPrompt = `SUBTITLE PACING (Ultra-Short & Glance-Speed):
@@ -1591,7 +1797,6 @@ async function callGeminiBatchTranslate(batch, key, attemptNumber, overrideModel
 - Translate every nuance, specific term, and sentence clause accurately and completely without summarizing.`;
   }
 
-  // Language-specific and universal dialogue & pronoun guidelines
   let languageRules = '';
   const langLower = lang.toLowerCase();
 
@@ -1618,20 +1823,6 @@ DIALOGUE & PRONOUN RULES (${lang}):
 - AVOID disrespectful or rude pronouns like "तू" / "तेরা" / "तुझे".
 - Use friendly, polite, and natural conversational pronouns like "तुम", "तुम्हारा", "तुम्हें" (or "आप", "आपका" for respect/elders).
 - Translate in natural, modern conversational cinema/drama dialogue.`;
-  } else if (langLower.includes('spanish')) {
-    languageRules = `
-DIALOGUE RULES (Spanish):
-- Use authentic, modern spoken Spanish dialogue suitable for cinema and television subtitles.
-- Maintain appropriate familiarity (tú / usted) consistent with characters' relationships and context.`;
-  } else if (langLower.includes('french')) {
-    languageRules = `
-DIALOGUE RULES (French):
-- Use natural, fluid conversational French suitable for modern cinema and streaming subtitles.
-- Maintain consistent register (tu / vous) based on context and character relationships.`;
-  } else if (langLower.includes('japanese')) {
-    languageRules = `
-DIALOGUE RULES (Japanese):
-- Use natural spoken Japanese suitable for anime and movie subtitles (match plain/polite form to character personality and social context).`;
   } else {
     languageRules = `
 DIALOGUE RULES (${lang}):
@@ -1677,7 +1868,7 @@ OUTPUT (JSON Array):`;
 
   state.apiMetrics.totalRequests++;
   const reqStart = Date.now();
-  updateApiHealthUI('active', `Sending Batch #${batch[0]?.num || 1}...`);
+  updateApiHealthUI('active', `[Gemini] Sending Batch #${batch[0]?.num || 1}...`);
 
   let response;
   try {
@@ -1688,7 +1879,7 @@ OUTPUT (JSON Array):`;
     });
   } catch (netErr) {
     const lat = Date.now() - reqStart;
-    updateApiHealthUI('warning', 'Network Retry...', lat);
+    updateApiHealthUI('warning', '[Gemini] Network Retry...', lat);
     throw netErr;
   }
 
@@ -1700,7 +1891,7 @@ OUTPUT (JSON Array):`;
     const errMsg = errorJson?.error?.message || `HTTP ${response.status} ${response.statusText}`;
     if (response.status === 429 || errMsg.toLowerCase().includes('quota') || errMsg.toLowerCase().includes('rate limit')) {
       state.apiMetrics.rateLimitHits++;
-      updateApiHealthUI('cooldown', '429 Rate Limit Cooldown', duration);
+      updateApiHealthUI('cooldown', '[Gemini] 429 Rate Limit Hit', duration);
     } else {
       updateApiHealthUI('warning', `Google API Error (${response.status})`, duration);
     }
@@ -1708,7 +1899,7 @@ OUTPUT (JSON Array):`;
   }
 
   state.apiMetrics.successfulRequests++;
-  updateApiHealthUI('optimal', 'Quota Health: Optimal', duration);
+  updateApiHealthUI('optimal', 'Quota Health: Optimal (Gemini)', duration);
 
   const responseData = await response.json();
   const rawText = responseData?.candidates?.[0]?.content?.parts?.[0]?.text || '';
@@ -1723,7 +1914,220 @@ OUTPUT (JSON Array):`;
     throw new Error('AI output was not a JSON array.');
   }
 
-  // Map results back to blocks with universal property fallback
+  return batch.map((originalBlock, idx) => {
+    let matched = null;
+    if (Array.isArray(parsedArray)) {
+      matched = parsedArray.find(item => item && (
+        item.id === idx || 
+        item.id === String(idx) || 
+        item.id === idx + 1 || 
+        item.id === String(idx + 1) ||
+        item.id === originalBlock.num
+      ));
+
+      if (!matched && idx < parsedArray.length) {
+        matched = parsedArray[idx];
+      }
+    }
+
+    let transText = '';
+    if (typeof matched === 'string') {
+      transText = matched.trim();
+    } else if (matched && typeof matched === 'object') {
+      transText = (
+        matched.text || 
+        matched.translation || 
+        matched.translated_text || 
+        matched.bengali || 
+        matched.content ||
+        matched.translatedText ||
+        matched.translated ||
+        matched.dialogue ||
+        Object.values(matched).find(v => typeof v === 'string' && v.trim().length > 0 && v !== String(matched.id)) ||
+        ''
+      ).trim();
+    }
+
+    if (!transText) {
+      return {
+        ...originalBlock,
+        translatedLines: originalBlock.lines,
+        isTranslated: false
+      };
+    }
+
+    const lines = transText
+      .split('\n')
+      .map(l => l.trim())
+      .filter(l => l.length > 0);
+
+    return {
+      ...originalBlock,
+      translatedLines: lines.length > 0 ? lines : [transText],
+      isTranslated: true
+    };
+  });
+}
+
+// ── OpenAI-Compatible Translation Engine (Groq, OpenRouter, DeepSeek, OpenAI) ──
+async function callOpenAiCompatibleBatchTranslate(batch, providerId, modelId, key, attemptNumber) {
+  const pConf = AI_PROVIDERS[providerId];
+  if (!pConf || !key) {
+    throw new Error(`No configuration or API key for provider "${providerId}".`);
+  }
+
+  const lang = targetLang.value || 'Bengali';
+  const pace = styleMode.value;
+  const hint = contextHint.value.trim();
+
+  const inputData = batch.map((item, index) => ({
+    id: index,
+    text: item.lines.join('\n')
+  }));
+
+  let pacingPrompt = '';
+  if (pace === 'micro' || pace === 'ultra_concise') {
+    pacingPrompt = `SUBTITLE PACING (Ultra-Short & Glance-Speed):
+- Make subtitle lines ULTRA-SHORT, punchy, and readable in a split second / blink of an eye.
+- Minimize word count strictly (aim for 1 to 4 words per short dialogue, or minimal concise words).
+- Ruthlessly remove filler words, prolonged formal grammar, and unnecessary particles (e.g. "আমরা এখন যাব" -> "চল যাই", "তুমি কি এটা জানো?" -> "এটা জানো?").
+- Preserve 100% of the dialogue's true punch, emotion, and dramatic tone in natural spoken phrasing (চলতি কথ্য রূপ).`;
+  } else if (pace === 'concise') {
+    pacingPrompt = `SUBTITLE PACING (Fast Reading & Concise):
+- Keep subtitle lines short, crisp, and easy to read in a quick glance.
+- Avoid over-complicated sentences and unnecessary filler words so the viewer can read comfortably without looking away from the video.
+- Preserve 100% of the dialogue's true meaning, emotion, and tone.`;
+  } else if (pace === 'balanced') {
+    pacingPrompt = `SUBTITLE PACING (Balanced & Natural):
+- Keep translations natural, conversational, and comfortable to read at normal dialogue speed.`;
+  } else if (pace === 'detailed') {
+    pacingPrompt = `SUBTITLE PACING (Detailed & Complete):
+- Translate every nuance, specific term, and sentence clause accurately and completely without summarizing.`;
+  }
+
+  let languageRules = '';
+  const langLower = lang.toLowerCase();
+
+  if (langLower.includes('bengali') || lang === 'Bengali') {
+    languageRules = `
+DIALOGUE & REGIONAL VOCABULARY RULES (Bengali / বাংলা):
+- Strictly use modern standard Bangladeshi Bengali phrasing and natural vocabulary commonly used across Bangladesh.
+- Standard Vocabulary Mapping:
+  * Use "পানি" (NEVER use "জল" for water).
+  * Use "রংধনু" (NEVER use "রামধনু").
+  * Use "জাতিসংঘ" (NEVER use "রাষ্ট্রপুঞ্জ").
+  * Use "গোসল" (NEVER use "স্নান").
+  * Use "দাওয়াত" / "আমন্ত্রণ" (NEVER use "নিমন্ত্রণ").
+  * Use "খোদা" / "ঈশ্বর" / "আল্লাহ" (NEVER use "ভগবান" as default generic deity).
+  * For greetings, use "সালাম" / "হাই" / "হ্যালো" / "কেমন আছেন" (avoid "নমস্কার" unless character-specific religious setting).
+- Avoid West Bengal / Indian regional vocabulary (e.g. জল, রামধনু, ভগবান, স্নান, রাষ্ট্রপুঞ্জ, নিমন্ত্রণ, দিদিমণি, মশাই, ইত্যাদি).
+- PRONOUNS:
+  * NEVER use disrespectful pronouns like "তুই", "তোর", "তোকে" unless explicitly required by intense hostility/abuse.
+  * ALWAYS use polite, friendly, and natural conversational pronouns like "তুমি", "তোমার", "তোমাকে", "তোমরা" (or "আপনি/আপনার" for elders/formal roles).
+- Translate in lively, natural everyday spoken Bangladeshi Bengali (চলতি কথ্য ভাষা) so it feels like a top-tier cinematic dub.`;
+  } else if (langLower.includes('hindi') || langLower.includes('urdu')) {
+    languageRules = `
+DIALOGUE & PRONOUN RULES (${lang}):
+- AVOID disrespectful or rude pronouns like "तू" / "तेরা" / "तुझे".
+- Use friendly, polite, and natural conversational pronouns like "तुम", "तुम्हारा", "तुम्हें" (or "आप", "आपका" for respect/elders).
+- Translate in natural, modern conversational cinema/drama dialogue.`;
+  } else {
+    languageRules = `
+DIALOGUE RULES (${lang}):
+- Use natural, fluent conversational ${lang} appropriate for modern movie and video subtitles.
+- Choose natural, friendly, and respectful pronouns suitable for the characters' relationship.`;
+  }
+
+  const systemPrompt = `You are a professional cinematic subtitle localization translator.
+Task: Translate every single subtitle dialogue line accurately into ${lang}.
+
+MANDATORY RULES:
+1. Every subtitle text MUST be translated into ${lang}. Do NOT leave original untranslated text.
+2. Return ONLY a valid JSON array of objects conforming to Schema.
+   Schema: [{"id": 0, "text": "translated dialogue in ${lang}"}, {"id": 1, "text": "translated dialogue in ${lang}"}]
+3. Preserve 100% of subtitle meaning, punchlines, drama, context, and emotion.
+4. ${pacingPrompt}
+5. Formatting & Tags:
+   - Preserve HTML formatting tags (like <i>, </i>, <b>, </b>) if present in original text.
+   - Preserve speaker tags or sound effects (e.g. [Music], (Laughter), [Door slams], JOHN:) appropriately without mangling brackets.
+   - If original subtitle text has multiple dialogue lines (e.g. starting with "- "), keep clean line breaks in translated text.${languageRules}
+${hint ? `6. Context/Genre: ${hint}` : ''}`;
+
+  const userPrompt = `INPUT SUBTITLES TO TRANSLATE (${batch.length} items):
+${JSON.stringify(inputData, null, 2)}
+
+OUTPUT (JSON Array):`;
+
+  let headers = {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${key}`
+  };
+  if (providerId === 'openrouter') {
+    headers['HTTP-Referer'] = window.location.origin || 'https://srttranslator.vercel.app';
+    headers['X-Title'] = 'SRTtranslator';
+  }
+
+  const requestBody = {
+    model: modelId,
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt }
+    ],
+    temperature: 0.15
+  };
+
+  if (providerId === 'groq' || providerId === 'openai' || providerId === 'deepseek') {
+    requestBody.response_format = { type: 'json_object' };
+  }
+
+  state.apiMetrics.totalRequests++;
+  const reqStart = Date.now();
+  updateApiHealthUI('active', `[${pConf.name}] Translating Batch #${batch[0]?.num || 1}...`);
+
+  let response;
+  try {
+    response = await fetch(pConf.endpoint, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(requestBody)
+    });
+  } catch (netErr) {
+    const lat = Date.now() - reqStart;
+    updateApiHealthUI('warning', `[${pConf.name}] Network Retry...`, lat);
+    throw netErr;
+  }
+
+  const duration = Date.now() - reqStart;
+  state.apiMetrics.lastLatencyMs = duration;
+
+  if (!response.ok) {
+    const errorJson = await response.json().catch(() => ({}));
+    const errMsg = errorJson?.error?.message || `HTTP ${response.status} ${response.statusText}`;
+    if (response.status === 429 || errMsg.toLowerCase().includes('quota') || errMsg.toLowerCase().includes('rate limit')) {
+      state.apiMetrics.rateLimitHits++;
+      updateApiHealthUI('cooldown', `[${pConf.name}] Rate Limit Hit`, duration);
+    } else {
+      updateApiHealthUI('warning', `[${pConf.name}] Error (${response.status})`, duration);
+    }
+    throw new Error(errMsg);
+  }
+
+  state.apiMetrics.successfulRequests++;
+  updateApiHealthUI('optimal', `Quota Health: Optimal (${pConf.name})`, duration);
+
+  const responseData = await response.json();
+  const rawText = responseData?.choices?.[0]?.message?.content || '';
+
+  if (!rawText.trim()) {
+    throw new Error(`Received empty response from ${pConf.name} API.`);
+  }
+
+  const parsedArray = parseAndRepairJson(rawText);
+
+  if (!Array.isArray(parsedArray)) {
+    throw new Error(`${pConf.name} AI output was not a valid JSON array.`);
+  }
+
   return batch.map((originalBlock, idx) => {
     let matched = null;
     if (Array.isArray(parsedArray)) {
@@ -1781,9 +2185,9 @@ OUTPUT (JSON Array):`;
 
 // ── Selective Retry Pipeline for Incomplete Batches ──
 async function retryIncompleteBatchesPipeline() {
-  const activeKey = state.apiKey || apiKeyInput.value.trim();
+  const { providerId, model: initialModel, key: activeKey } = getActiveProviderAndKey();
   if (!activeKey) {
-    alert('Please enter your Gemini API Key before proceeding.');
+    alert('Please enter and connect at least one AI API Key before proceeding.');
     return;
   }
 
@@ -1831,7 +2235,7 @@ async function retryIncompleteBatchesPipeline() {
   const bs = Math.min(state.optimalBatchSize || 20, 15);
   const batches = chunkArray(blocksToRetry, bs);
   let processed = 0;
-  const currentModelToUse = (modelSelect.value || (state.sortedModelList && state.sortedModelList[0]) || 'gemini-2.5-flash').replace(/^models\//, '');
+  const currentModelToUse = initialModel;
 
   try {
     for (let bi = 0; bi < batches.length; bi++) {
@@ -1849,7 +2253,7 @@ async function retryIncompleteBatchesPipeline() {
       addTerminalLog('info', `Retrying lines ${currentBatch.map(b => '#' + b.num).join(', ')}...`);
 
       try {
-        const res = await translateBatchWithAdaptiveSplitting(currentBatch, activeKey, currentModelToUse);
+        const res = await translateBatchWithAdaptiveSplitting(currentBatch, activeKey, state.selectedModel || currentModelToUse);
         res.forEach((translatedBlock, i) => {
           const origIdx = currentBatch[i].originalIndex;
           if (translatedBlock.isTranslated) {
@@ -1973,12 +2377,25 @@ function getReadingSpeedPill(lines) {
   }
 }
 
+// ── Universal AI Condenser Dispatcher ──
+async function callAiBatchCondense(batch, key, attemptNumber, overrideModel) {
+  const modelToUse = overrideModel || modelSelect?.value || state.selectedModel;
+  const { providerId, model, key: activeKey } = getActiveProviderAndKey(modelToUse);
+  const effectiveKey = key || activeKey;
+
+  if (providerId === 'gemini') {
+    return await callGeminiBatchCondense(batch, effectiveKey, attemptNumber, model);
+  } else {
+    return await callOpenAiCompatibleBatchCondense(batch, providerId, model, effectiveKey, attemptNumber);
+  }
+}
+
 // ── AI 2nd-Pass Condenser Pipeline ──
 async function runAiCondensePipeline() {
   if (state.translatedBlocks.length === 0) return;
-  const activeKey = state.apiKey || apiKeyInput.value.trim();
+  const { providerId, model: activeModel, key: activeKey } = getActiveProviderAndKey();
   if (!activeKey) {
-    alert('Please enter your Gemini API Key before proceeding.');
+    alert('Please enter and connect at least one AI API Key before proceeding.');
     return;
   }
 
@@ -2006,7 +2423,7 @@ async function runAiCondensePipeline() {
   const batches = chunkArray(state.translatedBlocks, bs);
   const condensedResult = new Array(state.translatedBlocks.length);
   let processedCount = 0;
-  const currentModelToUse = (modelSelect.value || (state.sortedModelList && state.sortedModelList[0]) || 'gemini-2.5-flash').replace(/^models\//, '');
+  const currentModelToUse = activeModel;
 
   for (let bi = 0; bi < batches.length; bi++) {
     const currentBatch = batches[bi];
@@ -2016,12 +2433,10 @@ async function runAiCondensePipeline() {
     updateProgressStats(batchPct, `Condensing batch ${bi + 1} of ${batches.length}...`);
 
     let batchResult = [];
-    let success = false;
 
     for (let attempt = 1; attempt <= 3; attempt++) {
       try {
-        batchResult = await callGeminiBatchCondense(currentBatch, activeKey, attempt, currentModelToUse);
-        success = true;
+        batchResult = await callAiBatchCondense(currentBatch, activeKey, attempt, currentModelToUse);
         break;
       } catch (err) {
         state.stats.retries++;
@@ -2066,11 +2481,9 @@ async function runAiCondensePipeline() {
 
   await sleep(350);
 
-  // Present Results & Persist in IndexedDB
   showTranslationResults(finalizedBlocks, totalPercentSaved);
   saveCurrentSession();
 
-  // Auto download condensed version
   await sleep(300);
   downloadSRTFile(finalizedBlocks);
   addTerminalLog('ok', 'Condensed SRT auto-downloaded.');
@@ -2128,7 +2541,7 @@ OUTPUT (JSON Array):`;
 
   state.apiMetrics.totalRequests++;
   const reqStart = Date.now();
-  updateApiHealthUI('active', `Condensing Subtitles...`);
+  updateApiHealthUI('active', `[Gemini] Condensing Subtitles...`);
 
   let response;
   try {
@@ -2139,7 +2552,7 @@ OUTPUT (JSON Array):`;
     });
   } catch (netErr) {
     const lat = Date.now() - reqStart;
-    updateApiHealthUI('warning', 'Network Retry...', lat);
+    updateApiHealthUI('warning', '[Gemini] Network Retry...', lat);
     throw netErr;
   }
 
@@ -2151,7 +2564,7 @@ OUTPUT (JSON Array):`;
     const errMsg = errorJson?.error?.message || `HTTP ${response.status} ${response.statusText}`;
     if (response.status === 429) {
       state.apiMetrics.rateLimitHits++;
-      updateApiHealthUI('cooldown', '429 Rate Limit Cooldown', duration);
+      updateApiHealthUI('cooldown', '[Gemini] 429 Rate Limit Cooldown', duration);
     } else {
       updateApiHealthUI('warning', `Google API (${response.status})`, duration);
     }
@@ -2159,12 +2572,150 @@ OUTPUT (JSON Array):`;
   }
 
   state.apiMetrics.successfulRequests++;
-  updateApiHealthUI('optimal', 'Quota Health: Optimal', duration);
+  updateApiHealthUI('optimal', 'Quota Health: Optimal (Gemini)', duration);
 
   const responseData = await response.json();
   const rawText = responseData?.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
   if (!rawText.trim()) throw new Error('Received empty response from Gemini Condenser.');
+
+  const parsedArray = parseAndRepairJson(rawText);
+
+  if (!Array.isArray(parsedArray)) throw new Error('AI condenser output was not a JSON array.');
+
+  return batch.map((originalBlock, idx) => {
+    let matched = parsedArray.find(item => item && (
+      item.id === idx || 
+      item.id === String(idx) || 
+      item.id === idx + 1 || 
+      item.id === String(idx + 1)
+    ));
+    if (!matched && idx < parsedArray.length) matched = parsedArray[idx];
+
+    let transText = '';
+    if (typeof matched === 'string') {
+      transText = matched.trim();
+    } else if (matched && typeof matched === 'object') {
+      transText = (
+        matched.text || 
+        matched.translation || 
+        matched.translated_text || 
+        matched.bengali || 
+        matched.content ||
+        matched.dialogue ||
+        Object.values(matched).find(v => typeof v === 'string' && v.trim().length > 0 && v !== String(matched.id)) ||
+        ''
+      ).trim();
+    }
+
+    if (!transText) {
+      return { ...originalBlock };
+    }
+
+    const lines = transText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+    return {
+      ...originalBlock,
+      translatedLines: lines.length > 0 ? lines : [transText]
+    };
+  });
+}
+
+// ── OpenAI-Compatible 2nd-Pass Condense API Call ──
+async function callOpenAiCompatibleBatchCondense(batch, providerId, modelId, key, attemptNumber) {
+  const pConf = AI_PROVIDERS[providerId];
+  if (!pConf || !key) throw new Error(`No configuration for provider "${providerId}".`);
+
+  const lang = targetLang.value || 'Bengali';
+  const inputData = batch.map((item, index) => ({
+    id: index,
+    source: item.lines.join(' '),
+    translation: (item.translatedLines || item.lines).join(' ')
+  }));
+
+  let condenseLangRule = '';
+  if (lang.toLowerCase().includes('bengali') || lang === 'Bengali') {
+    condenseLangRule = `
+7. Strictly maintain natural Bangladeshi Bengali vocabulary (e.g. use "পানি", "রংধনু", "জাতিসংঘ", "গোসল", "খোদা/ঈশ্বর", "সালাম/হাই/হ্যালো"; strictly avoid West Bengal variants like "জল", "রামধনু", "ভগবান", "স্নান", "নমস্কার").`;
+  }
+
+  const systemPrompt = `You are a master subtitle compression and localization editor.
+Task: Condense and shorten the given ${lang} subtitle translations so they are readable in a split second glance.
+
+MANDATORY RULES:
+1. Make every subtitle line ULTRA-SHORT and punchy (ideal 1-4 words for short lines, or minimum possible concise words).
+2. Cut away conversational padding, redundant particles, extra formal suffixes, and repetitive words so viewers can read instantaneously.
+3. Strictly preserve 100% of the core emotion, punchline, dialogue intent, and context.
+4. Output strictly in natural everyday spoken ${lang} dialogue/script.
+5. Preserve HTML tags like <i>, </i>, <b>, </b> if present.
+6. Return ONLY a valid JSON array of objects conforming to Schema.
+Schema: [{"id": 0, "text": "concise dialogue in ${lang}"}, {"id": 1, "text": "concise dialogue in ${lang}"}]${condenseLangRule}`;
+
+  const userPrompt = `INPUT SUBTITLES (${batch.length} items):
+${JSON.stringify(inputData, null, 2)}
+
+OUTPUT (JSON Array):`;
+
+  let headers = {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${key}`
+  };
+  if (providerId === 'openrouter') {
+    headers['HTTP-Referer'] = window.location.origin || 'https://srttranslator.vercel.app';
+    headers['X-Title'] = 'SRTtranslator';
+  }
+
+  const requestBody = {
+    model: modelId,
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt }
+    ],
+    temperature: 0.15
+  };
+
+  if (providerId === 'groq' || providerId === 'openai' || providerId === 'deepseek') {
+    requestBody.response_format = { type: 'json_object' };
+  }
+
+  state.apiMetrics.totalRequests++;
+  const reqStart = Date.now();
+  updateApiHealthUI('active', `[${pConf.name}] Condensing Subtitles...`);
+
+  let response;
+  try {
+    response = await fetch(pConf.endpoint, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(requestBody)
+    });
+  } catch (netErr) {
+    const lat = Date.now() - reqStart;
+    updateApiHealthUI('warning', `[${pConf.name}] Network Retry...`, lat);
+    throw netErr;
+  }
+
+  const duration = Date.now() - reqStart;
+  state.apiMetrics.lastLatencyMs = duration;
+
+  if (!response.ok) {
+    const errorJson = await response.json().catch(() => ({}));
+    const errMsg = errorJson?.error?.message || `HTTP ${response.status} ${response.statusText}`;
+    if (response.status === 429) {
+      state.apiMetrics.rateLimitHits++;
+      updateApiHealthUI('cooldown', `[${pConf.name}] 429 Rate Limit`, duration);
+    } else {
+      updateApiHealthUI('warning', `[${pConf.name}] Error (${response.status})`, duration);
+    }
+    throw new Error(errMsg);
+  }
+
+  state.apiMetrics.successfulRequests++;
+  updateApiHealthUI('optimal', `Quota Health: Optimal (${pConf.name})`, duration);
+
+  const responseData = await response.json();
+  const rawText = responseData?.choices?.[0]?.message?.content || '';
+
+  if (!rawText.trim()) throw new Error(`Received empty response from ${pConf.name} Condenser.`);
 
   const parsedArray = parseAndRepairJson(rawText);
 
@@ -2221,9 +2772,9 @@ function restoreOriginalTranslation() {
 async function condenseSingleBlock(index) {
   const block = state.translatedBlocks[index];
   if (!block) return;
-  const activeKey = state.apiKey || apiKeyInput.value.trim();
+  const { providerId, model: currentModel, key: activeKey } = getActiveProviderAndKey();
   if (!activeKey) {
-    alert('Please enter your Gemini API Key first.');
+    alert('Please enter and connect an AI API Key first.');
     return;
   }
 
@@ -2239,8 +2790,7 @@ async function condenseSingleBlock(index) {
   });
 
   try {
-    const currentModel = (modelSelect.value || 'gemini-2.5-flash').replace(/^models\//, '');
-    const result = await callGeminiBatchCondense([block], activeKey, 1, currentModel);
+    const result = await callAiBatchCondense([block], activeKey, 1, currentModel);
     if (result && result[0]) {
       state.translatedBlocks[index] = result[0];
       const activeTab = document.querySelector('.preview-tab.active')?.dataset?.tab || 'translated';
