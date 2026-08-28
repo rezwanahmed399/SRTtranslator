@@ -1,0 +1,1309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SRTtranslator — Free AI SRT Subtitle Translator Online (100% Timing Sync & Fast Pacing)</title>
+  <meta name="description" content="Free online AI subtitle translator for SRT files. Localize movie and video subtitles with 100% timecode sync, zero overlap, adaptive glance-speed pacing, and instant SRT export. 100% private client-side processing." />
+  <meta name="keywords" content="srt translator, translate srt, subtitle translator, ai subtitle translation, translate srt online, free srt translator, translate subtitles to bengali, movie subtitle translator, srt timecode sync, srt file translator, srt subtitle compressor" />
+  <meta name="author" content="SRTtranslator" />
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+  <meta name="google-site-verification" content="google56417e4931d45822" />
+  <meta name="google-site-verification" content="56417e4931d45822" />
+  <link rel="canonical" href="https://srttranslator.vercel.app/" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:url" content="https://srttranslator.vercel.app/" />
+  <meta property="og:site_name" content="SRTtranslator" />
+  <meta property="og:title" content="SRTtranslator — Free AI SRT Subtitle Translator Online" />
+  <meta property="og:description" content="Translate movie & video subtitles with 100% timecode sync, zero overlap, adaptive fast-reading pacing, and instant 1-click SRT export." />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:url" content="https://srttranslator.vercel.app/" />
+  <meta name="twitter:title" content="SRTtranslator — Free AI SRT Subtitle Translator Online" />
+  <meta name="twitter:description" content="Translate movie & video subtitles with 100% timecode sync, zero overlap, adaptive fast-reading pacing, and instant 1-click SRT export." />
+
+  <!-- JSON-LD Structured Data for Google Rich Snippets -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebApplication",
+        "@id": "https://srttranslator.vercel.app/#webapp",
+        "name": "SRTtranslator",
+        "url": "https://srttranslator.vercel.app/",
+        "description": "Free online AI subtitle translator that translates SRT files with 100% synchronized timecodes, zero overlaps, adaptive fast-reading pacing, and instant SRT export across 40+ languages.",
+        "applicationCategory": "MultimediaApplication",
+        "operatingSystem": "All",
+        "browserRequirements": "Requires JavaScript",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "featureList": [
+          "100% Synchronized SRT Timecodes",
+          "Adaptive Glance-Speed Subtitle Pacing",
+          "2nd-Pass AI Subtitle Condenser",
+          "Zero Timing Overlap Auto-Fixer",
+          "Client-Side Privacy (Local Key Storage)",
+          "40+ Supported Global Languages"
+        ]
+      },
+      {
+        "@type": "FAQPage",
+        "@id": "https://srttranslator.vercel.app/#faq",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Which languages are supported by SRTtranslator?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "SRTtranslator supports over 40 global languages including Bengali, English, Spanish, Hindi, Urdu, Arabic, French, German, Japanese, Korean, Chinese (Simplified), Portuguese, Russian, Italian, Turkish, Indonesian, Vietnamese, Thai, Tamil, Telugu, Marathi, Gujarati, Malayalam, Punjabi, Persian/Farsi, Dutch, Polish, Swedish, Norwegian, Danish, Finnish, Greek, Hebrew, Czech, Romanian, Hungarian, Ukrainian, Malay, and Filipino/Tagalog."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How do I translate an SRT subtitle file online for free?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Simply upload your .srt file to SRTtranslator, select your target language from the 40+ available options, choose your desired subtitle pacing preset (e.g. Glance Speed or Fast Reading), provide your free Google Gemini API key, and click 'Translate Subtitles Now'. Your localized SRT file will be ready and automatically downloaded within seconds."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Will the subtitle timestamps, timecodes, and formatting stay 100% synchronized?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes, completely. SRTtranslator isolates only the spoken dialogue text during translation while preserving every millisecond of the original start and end timecodes (00:00:00,000 --> 00:00:00,000), line sequence numbering, and HTML styling tags (like <i> and <b>). It also includes an automatic overlap collision resolver."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What is Glance-Speed Subtitle Pacing and the 2nd-Pass AI Condenser?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Glance-Speed pacing is an advanced subtitle optimization mode engineered for fast-paced movies, anime, and YouTube videos. It keeps dialogue lines down to 1-4 punchy words (~0.5-1s read time). The 2nd-pass AI Condenser allows you to re-evaluate already translated subtitles, eliminating conversational padding and wordy grammar so viewers can absorb the subtitles in the blink of an eye without missing any visual action on screen."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How does SRTtranslator ensure natural, cinema-grade dialogue across different languages?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Unlike standard machine translation tools that produce rigid or overly literal translations, SRTtranslator enforces contextual cinematic localization rules for each language. It preserves character emotion, dramatic tone, and natural conversational flow, ensuring subtitles feel like professionally produced dubs for movies, anime, TV series, and video content."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is my subtitle file, translated text, and Gemini API key secure?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "100% private and secure. SRTtranslator runs completely client-side in your web browser. Your subtitle scripts, translations, and Gemini API keys are never sent to or stored on any intermediary backend servers. Your API key remains saved only in your browser's private local storage."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is there any file size limit, subtitle line limit, or cost?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "SRTtranslator is completely free with no file size limits or line caps. By connecting your free Google Gemini API key (which includes a generous free tier from Google AI Studio), you can translate full-length feature films, multiple TV episodes, documentaries, and long YouTube videos seamlessly."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I edit individual subtitle cards or re-shorten specific lines?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. In the Subtitles Card View and Side-by-Side Comparison tabs, each subtitle card displays live reading speed metrics (word count and estimated reading seconds) and provides an instant 'Shorten' button to compress individual lines without needing to re-translate the entire file."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  
+  <link rel="stylesheet" href="style.css?v=3.9.0" />
+  <script>
+    (function() {
+      const savedTheme = localStorage.getItem('srt_theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    })();
+  </script>
+</head>
+<body>
+  <!-- Ambient background glow -->
+  <div class="glow-bg">
+    <div class="glow-orb orb-primary"></div>
+    <div class="glow-orb orb-cyan"></div>
+    <div class="glow-orb orb-violet"></div>
+    <div class="grid-overlay"></div>
+  </div>
+
+  <div class="app-shell">
+    <!-- Top Navigation / Header -->
+    <header class="top-nav">
+      <div class="brand-group">
+        <div class="logo-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 6h16M4 12h10M4 18h14"/>
+            <circle cx="19" cy="12" r="3" fill="currentColor" stroke="none" opacity="0.3"/>
+            <path d="M19 9v6M16 12h6"/>
+          </svg>
+        </div>
+        <div>
+          <div class="brand-title">
+            <span>SRTtranslator</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="nav-badges">
+        <button id="themeToggleBtn" class="theme-toggle-btn" type="button" title="Toggle Light / Dark Mode" aria-label="Toggle theme">
+          <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5"/>
+            <line x1="12" y1="1" x2="12" y2="3"/>
+            <line x1="12" y1="21" x2="12" y2="23"/>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+            <line x1="1" y1="12" x2="3" y2="12"/>
+            <line x1="21" y1="12" x2="23" y2="12"/>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+          </svg>
+          <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+          <span class="theme-label" id="themeLabelText">Light Mode</span>
+        </button>
+
+        <a href="#settingsSection" class="nav-link" id="quickSettingsBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+          Configure
+        </a>
+      </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="main-content">
+      
+      <!-- Multi-AI Provider Hub & Key Management -->
+      <section class="glass-card api-section" id="apiSection">
+        <div class="card-header">
+          <div class="title-with-icon">
+            <div class="icon-wrap key-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 2l-2 2m-1.5 1.5L14 9l-3-3 2.5-2.5a2.121 2.121 0 0 1 3 0l4.5 4.5z"/>
+                <path d="M9 15l-4.5 4.5A2.121 2.121 0 0 1 1.5 18V15h3v-3h3v-3l4.5-4.5"/>
+              </svg>
+            </div>
+            <div>
+              <h3>AI Providers &amp; API Keys</h3>
+              <p class="desc">Connect Gemini, Groq, OpenRouter, DeepSeek or OpenAI. Auto-failover seamlessly switches models if limits are reached.</p>
+            </div>
+          </div>
+          
+          <div class="failover-control-badge">
+            <label class="failover-toggle-label" title="Automatically switch to a configured backup AI model if primary model reaches rate limits or errors">
+              <input type="checkbox" id="autoFailoverToggle" checked />
+              <span class="failover-toggle-switch"></span>
+              <span class="failover-toggle-text">Auto-Failover</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Provider Tab Bar -->
+        <div class="provider-tabs-nav" id="providerTabsNav">
+          <button type="button" class="provider-tab-btn active" data-provider="gemini" id="tabBtn_gemini">
+            <span class="provider-tab-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+              </svg>
+            </span>
+            <span class="provider-tab-name">Google Gemini</span>
+            <span class="provider-status-dot dot-off" id="statusDot_gemini" title="Status"></span>
+          </button>
+
+          <button type="button" class="provider-tab-btn" data-provider="groq" id="tabBtn_groq">
+            <span class="provider-tab-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+              </svg>
+            </span>
+            <span class="provider-tab-name">Groq (Fast &amp; Free)</span>
+            <span class="provider-status-dot dot-off" id="statusDot_groq" title="Status"></span>
+          </button>
+
+          <button type="button" class="provider-tab-btn" data-provider="openrouter" id="tabBtn_openrouter">
+            <span class="provider-tab-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="18" cy="5" r="3"/>
+                <circle cx="6" cy="12" r="3"/>
+                <circle cx="18" cy="19" r="3"/>
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+              </svg>
+            </span>
+            <span class="provider-tab-name">OpenRouter</span>
+            <span class="provider-status-dot dot-off" id="statusDot_openrouter" title="Status"></span>
+          </button>
+
+          <button type="button" class="provider-tab-btn" data-provider="deepseek" id="tabBtn_deepseek">
+            <span class="provider-tab-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 8v8"/>
+                <path d="M8 12h8"/>
+              </svg>
+            </span>
+            <span class="provider-tab-name">DeepSeek</span>
+            <span class="provider-status-dot dot-off" id="statusDot_deepseek" title="Status"></span>
+          </button>
+
+          <button type="button" class="provider-tab-btn" data-provider="openai" id="tabBtn_openai">
+            <span class="provider-tab-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/>
+                <path d="M2 12h20"/>
+              </svg>
+            </span>
+            <span class="provider-tab-name">OpenAI</span>
+            <span class="provider-status-dot dot-off" id="statusDot_openai" title="Status"></span>
+          </button>
+        </div>
+
+        <!-- Provider Panel: Gemini -->
+        <div class="provider-panel active" id="panel_gemini">
+          <div class="api-form-row">
+            <div class="input-glow-wrapper">
+              <input
+                type="password"
+                id="apiKeyInput"
+                placeholder="Paste your Google Gemini API key (AIzaSy...)"
+                autocomplete="off"
+                spellcheck="false"
+              />
+              <button id="toggleApiKey" class="input-action-btn" title="Show or hide key" type="button">
+                <svg id="eyeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+              </button>
+            </div>
+            <button id="saveApiKey" class="btn btn-save" type="button">
+              <span>Connect Gemini</span>
+            </button>
+            <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener" class="provider-get-key-btn">
+              <span>Get Free Key</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                <polyline points="15 3 21 3 21 9"/>
+                <line x1="10" y1="14" x2="21" y2="3"/>
+              </svg>
+            </a>
+          </div>
+          <div class="api-feedback-row">
+            <div id="apiStatus" class="api-feedback"></div>
+          </div>
+        </div>
+
+        <!-- Provider Panel: Groq -->
+        <div class="provider-panel" id="panel_groq">
+          <div class="api-form-row">
+            <div class="input-glow-wrapper">
+              <input
+                type="password"
+                id="apiKeyInput_groq"
+                placeholder="Paste your Groq API key (gsk_...)"
+                autocomplete="off"
+                spellcheck="false"
+              />
+              <button id="toggleApiKey_groq" class="input-action-btn" title="Show or hide key" type="button">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+              </button>
+            </div>
+            <button id="saveApiKey_groq" class="btn btn-save" type="button">
+              <span>Connect Groq</span>
+            </button>
+            <a href="https://console.groq.com/keys" target="_blank" rel="noopener" class="provider-get-key-btn">
+              <span>Get Free Key</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                <polyline points="15 3 21 3 21 9"/>
+                <line x1="10" y1="14" x2="21" y2="3"/>
+              </svg>
+            </a>
+          </div>
+          <div class="api-feedback-row">
+            <div id="apiStatus_groq" class="api-feedback"></div>
+          </div>
+        </div>
+
+        <!-- Provider Panel: OpenRouter -->
+        <div class="provider-panel" id="panel_openrouter">
+          <div class="api-form-row">
+            <div class="input-glow-wrapper">
+              <input
+                type="password"
+                id="apiKeyInput_openrouter"
+                placeholder="Paste your OpenRouter API key (sk-or-...)"
+                autocomplete="off"
+                spellcheck="false"
+              />
+              <button id="toggleApiKey_openrouter" class="input-action-btn" title="Show or hide key" type="button">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+              </button>
+            </div>
+            <button id="saveApiKey_openrouter" class="btn btn-save" type="button">
+              <span>Connect OpenRouter</span>
+            </button>
+            <a href="https://openrouter.ai/keys" target="_blank" rel="noopener" class="provider-get-key-btn">
+              <span>Get Key</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                <polyline points="15 3 21 3 21 9"/>
+                <line x1="10" y1="14" x2="21" y2="3"/>
+              </svg>
+            </a>
+          </div>
+          <div class="api-feedback-row">
+            <div id="apiStatus_openrouter" class="api-feedback"></div>
+          </div>
+        </div>
+
+        <!-- Provider Panel: DeepSeek -->
+        <div class="provider-panel" id="panel_deepseek">
+          <div class="api-form-row">
+            <div class="input-glow-wrapper">
+              <input
+                type="password"
+                id="apiKeyInput_deepseek"
+                placeholder="Paste your DeepSeek API key (sk-...)"
+                autocomplete="off"
+                spellcheck="false"
+              />
+              <button id="toggleApiKey_deepseek" class="input-action-btn" title="Show or hide key" type="button">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+              </button>
+            </div>
+            <button id="saveApiKey_deepseek" class="btn btn-save" type="button">
+              <span>Connect DeepSeek</span>
+            </button>
+            <a href="https://platform.deepseek.com/api_keys" target="_blank" rel="noopener" class="provider-get-key-btn">
+              <span>Get Key</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                <polyline points="15 3 21 3 21 9"/>
+                <line x1="10" y1="14" x2="21" y2="3"/>
+              </svg>
+            </a>
+          </div>
+          <div class="api-feedback-row">
+            <div id="apiStatus_deepseek" class="api-feedback"></div>
+          </div>
+        </div>
+
+        <!-- Provider Panel: OpenAI -->
+        <div class="provider-panel" id="panel_openai">
+          <div class="api-form-row">
+            <div class="input-glow-wrapper">
+              <input
+                type="password"
+                id="apiKeyInput_openai"
+                placeholder="Paste your OpenAI API key (sk-...)"
+                autocomplete="off"
+                spellcheck="false"
+              />
+              <button id="toggleApiKey_openai" class="input-action-btn" title="Show or hide key" type="button">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+              </button>
+            </div>
+            <button id="saveApiKey_openai" class="btn btn-save" type="button">
+              <span>Connect OpenAI</span>
+            </button>
+            <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener" class="provider-get-key-btn">
+              <span>Get Key</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                <polyline points="15 3 21 3 21 9"/>
+                <line x1="10" y1="14" x2="21" y2="3"/>
+              </svg>
+            </a>
+          </div>
+          <div class="api-feedback-row">
+            <div id="apiStatus_openai" class="api-feedback"></div>
+          </div>
+        </div>
+
+        <!-- Active Providers Strip & Failover Summary -->
+        <div class="providers-summary-bar">
+          <div class="connected-providers-list" id="connectedProvidersList">
+            <span class="summary-label">Configured AI Providers:</span>
+            <span class="provider-chip" id="chip_gemini">Gemini: Not Configured</span>
+            <span class="provider-chip" id="chip_groq">Groq: Off</span>
+            <span class="provider-chip" id="chip_openrouter">OpenRouter: Off</span>
+            <span class="provider-chip" id="chip_deepseek">DeepSeek: Off</span>
+            <span class="provider-chip" id="chip_openai">OpenAI: Off</span>
+          </div>
+
+          <button id="toggleQuotaBtn" class="btn-toggle-quota" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="16" x2="12" y2="12"/>
+              <line x1="12" y1="8" x2="12.01" y2="8"/>
+            </svg>
+            <span id="toggleQuotaText">Live Model Specs &amp; Health</span>
+            <svg id="toggleQuotaChevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;transition:transform 0.2s;">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Live Google API Model Specs & Limits Drawer (Auto-hidden by default) -->
+        <div id="apiQuotaDashboard" class="quota-dashboard hidden">
+          <div class="quota-header">
+            <div class="quota-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;color:var(--brand-primary-light);">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                <line x1="8" y1="21" x2="16" y2="21"/>
+                <line x1="12" y1="17" x2="12" y2="21"/>
+              </svg>
+              <span>Live Google API Model Specifications</span>
+            </div>
+            <div class="quota-header-right">
+              <div class="api-health-pill health-warning" id="apiHealthPill" title="Real-time API &amp; Quota Status">
+                <span class="health-dot" id="healthDot"></span>
+                <span id="apiHealthText">Awaiting Valid API Key</span>
+              </div>
+              <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener" class="quota-ext-link">
+                <span>AI Studio Console</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                  <polyline points="15 3 21 3 21 9"/>
+                  <line x1="10" y1="14" x2="21" y2="3"/>
+                </svg>
+              </a>
+            </div>
+          </div>
+
+          <div class="quota-grid">
+            <div class="quota-item">
+              <div class="quota-label">Active Model</div>
+              <div class="quota-value highlight" id="quotaModelName">—</div>
+              <div class="quota-sub" id="quotaModelVersion">Awaiting Connection</div>
+            </div>
+
+            <div class="quota-item">
+              <div class="quota-label">Session API Requests</div>
+              <div class="quota-value highlight" id="quotaSessionCalls">0 Requests</div>
+              <div class="quota-sub" id="quotaSessionLatency">Last Latency: —</div>
+            </div>
+
+            <div class="quota-item">
+              <div class="quota-label">Input Context Window</div>
+              <div class="quota-value" id="quotaContext">—</div>
+              <div class="quota-sub">Direct from Google API</div>
+            </div>
+
+            <div class="quota-item">
+              <div class="quota-label">Max Output Tokens</div>
+              <div class="quota-value" id="quotaOutputTokens">—</div>
+              <div class="quota-sub">Per translation batch response</div>
+            </div>
+
+            <div class="quota-item">
+              <div class="quota-label">Google Speed Rate (RPM)</div>
+              <div class="quota-value" id="quotaRpm">—</div>
+              <div class="quota-sub">Requests / minute limit</div>
+            </div>
+
+            <div class="quota-item">
+              <div class="quota-label">Daily Request Quota (RPD)</div>
+              <div class="quota-value" id="quotaRpd">—</div>
+              <div class="quota-sub">Free Requests / day limit</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Settings Grid -->
+      <section class="glass-card settings-section" id="settingsSection">
+        <div class="card-header">
+          <div class="title-with-icon">
+            <div class="icon-wrap config-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="4" y1="21" x2="4" y2="14"/>
+                <line x1="4" y1="10" x2="4" y2="3"/>
+                <line x1="12" y1="21" x2="12" y2="12"/>
+                <line x1="12" y1="8" x2="12" y2="3"/>
+                <line x1="20" y1="21" x2="20" y2="16"/>
+                <line x1="20" y1="12" x2="20" y2="3"/>
+                <line x1="1" y1="14" x2="7" y2="14"/>
+                <line x1="9" y1="8" x2="15" y2="8"/>
+                <line x1="17" y1="16" x2="23" y2="16"/>
+              </svg>
+            </div>
+            <div>
+              <h3>Translation Engine Settings</h3>
+              <p class="desc">Target language, Gemini models (auto-loaded live), and pacing presets.</p>
+            </div>
+          </div>
+              <div class="settings-grid">
+          <!-- Target Language -->
+          <div class="field-item field-card">
+            <label for="targetLang">
+              <span class="field-label-group">
+                <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="2" y1="12" x2="22" y2="12"/>
+                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                </svg>
+                <span>Target Language</span>
+              </span>
+              <span class="hint-tag">40+ Global</span>
+            </label>
+            <div class="select-wrapper">
+              <select id="targetLang">
+                <optgroup label="Popular Languages">
+                  <option value="Bengali" selected>Bengali (বাংলা)</option>
+                  <option value="English">English</option>
+                  <option value="Spanish">Spanish (Español)</option>
+                  <option value="Hindi">Hindi (हिन्दी)</option>
+                  <option value="Urdu">Urdu (اردو)</option>
+                  <option value="Arabic">Arabic (العربية)</option>
+                  <option value="French">French (Français)</option>
+                  <option value="German">German (Deutsch)</option>
+                  <option value="Japanese">Japanese (日本語)</option>
+                  <option value="Korean">Korean (한국어)</option>
+                  <option value="Chinese (Simplified)">Chinese Simplified (简体中文)</option>
+                  <option value="Portuguese">Portuguese (Português)</option>
+                  <option value="Russian">Russian (Русский)</option>
+                  <option value="Turkish">Turkish (Türkçe)</option>
+                  <option value="Italian">Italian (Italiano)</option>
+                  <option value="Indonesian">Indonesian (Bahasa Indonesia)</option>
+                  <option value="Vietnamese">Vietnamese (Tiếng Việt)</option>
+                  <option value="Thai">Thai (ไทย)</option>
+                </optgroup>
+                <optgroup label="Regional & World Languages">
+                  <option value="Tamil">Tamil (தமிழ்)</option>
+                  <option value="Telugu">Telugu (తెలుగు)</option>
+                  <option value="Marathi">Marathi (मराठी)</option>
+                  <option value="Gujarati">Gujarati (ગુજરાતી)</option>
+                  <option value="Malayalam">Malayalam (മലയാളം)</option>
+                  <option value="Punjabi">Punjabi (ਪੰਜਾਬੀ)</option>
+                  <option value="Persian">Persian / Farsi (فارسی)</option>
+                  <option value="Dutch">Dutch (Nederlands)</option>
+                  <option value="Polish">Polish (Polski)</option>
+                  <option value="Swedish">Swedish (Svenska)</option>
+                  <option value="Norwegian">Norwegian (Norsk)</option>
+                  <option value="Danish">Danish (Dansk)</option>
+                  <option value="Finnish">Finnish (Suomi)</option>
+                  <option value="Greek">Greek (Ελληνικά)</option>
+                  <option value="Hebrew">Hebrew (עברית)</option>
+                  <option value="Czech">Czech (Čeština)</option>
+                  <option value="Romanian">Romanian (Română)</option>
+                  <option value="Hungarian">Hungarian (Magyar)</option>
+                  <option value="Ukrainian">Ukrainian (Українська)</option>
+                  <option value="Malay">Malay (Bahasa Melayu)</option>
+                  <option value="Filipino / Tagalog">Filipino / Tagalog</option>
+                </optgroup>
+              </select>
+            </div>
+            <div class="field-footer-info">
+              <span class="field-micro-hint">Preserves 100% spoken emotion &amp; context</span>
+            </div>
+          </div>
+
+          <!-- AI Model (Auto-fetched from API only) -->
+          <div class="field-item field-card">
+            <label for="modelSelect">
+              <span class="field-label-group">
+                <svg class="field-icon icon-ai" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                </svg>
+                <span>Google Gemini Model</span>
+              </span>
+              <span class="hint-tag active-tag" id="modelLiveBadge">Awaiting API Key</span>
+            </label>
+            <div class="select-wrapper">
+              <select id="modelSelect" disabled>
+                <option value="" disabled selected>Enter &amp; Save Gemini API key above to load models live...</option>
+              </select>
+            </div>
+            <div class="field-footer-info">
+              <span class="field-micro-hint">Ranked by version • Flash recommended for high speed</span>
+            </div>
+          </div>
+
+          <!-- Subtitle Pacing / Style Mode -->
+          <div class="field-item field-card">
+            <label for="styleMode">
+              <span class="field-label-group">
+                <svg class="field-icon icon-pacing" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <polyline points="12 6 12 12 16 14"/>
+                </svg>
+                <span>Subtitle Pacing Preset</span>
+              </span>
+              <span class="hint-tag speed-tag" id="pacingBadge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;display:inline-block;vertical-align:-1px;margin-right:3px;">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                </svg>
+                <span>Fast Reading</span>
+              </span>
+            </label>
+            <div class="select-wrapper">
+              <select id="styleMode">
+                <option value="micro">Ultra-Short / Glance Speed (1 to 4 words, 0.5-1s read)</option>
+                <option value="concise" selected>Fast Reading &amp; Concise (1-2 sec glance, recommended)</option>
+                <option value="balanced">Balanced &amp; Natural (Comfortable conversational speed)</option>
+                <option value="detailed">Detailed &amp; Complete (Literal word-for-word match)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Smart Batching Info Banner -->
+          <div class="field-item field-card">
+            <label>
+              <span class="field-label-group">
+                <svg class="field-icon icon-batch" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                </svg>
+                <span>Batch Processing</span>
+              </span>
+              <span class="hint-tag" style="background:rgba(16,185,129,0.12); color:#10b981;">Auto-Adaptive</span>
+            </label>
+            <div class="auto-batch-card">
+              <div class="auto-batch-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                </svg>
+              </div>
+              <div>
+                <div class="auto-batch-title">Adaptive Divide &amp; Conquer</div>
+                <div class="auto-batch-sub">Auto-splits batches on complex lines to eliminate skipped subtitles.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Context / Genre Description -->
+          <div class="field-item field-card full-width">
+            <label for="contextHint">
+              <span class="field-label-group">
+                <svg class="field-icon icon-hint" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
+                <span>Context &amp; Genre Tone (Optional)</span>
+              </span>
+              <span class="hint-muted">Helps AI localize slang, humor, anime drama &amp; character tone</span>
+            </label>
+            <div class="input-glow-wrapper">
+              <input
+                type="text"
+                id="contextHint"
+                placeholder="e.g., Action sci-fi movie with military jargon, medical drama, anime comedy, technical tutorial..."
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Upload Zone -->
+      <section class="glass-card upload-section" id="uploadCard">
+        <div class="drop-zone" id="dropZone">
+          <div class="drop-icon-anim">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+          </div>
+          <div class="drop-text-group">
+            <h4 class="drop-headline">Drop your SRT subtitle file here</h4>
+            <p class="drop-subline">or click to browse from your computer (.srt format supported)</p>
+          </div>
+          <input type="file" id="fileInput" accept=".srt" hidden />
+          <button class="btn btn-primary" id="browseBtn" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 5v14M5 12h14"/>
+            </svg>
+            Choose SRT File
+          </button>
+        </div>
+
+        <!-- File Meta & Preview (when loaded) -->
+        <div class="file-loaded-view hidden" id="fileInfo">
+          <div class="file-meta-bar">
+            <div class="file-icon-badge">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+                <polyline points="10 9 9 9 8 9"/>
+              </svg>
+            </div>
+            <div class="file-info-text">
+              <div class="file-title" id="fileName">sample.srt</div>
+              <div class="file-stats-pills" id="fileStats">
+                <span class="pill-metric" id="fileCountBadge">0 Subtitles</span>
+                <span class="pill-metric" id="fileSizeBadge">0 KB</span>
+                <span class="pill-metric" id="fileDurationBadge">00:00:00</span>
+                <span class="pill-metric" id="fileBatchBadge">Auto Chunks Ready</span>
+                <span class="pill-metric restored-tag hidden" id="fileRestoredBadge">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:11px;height:11px;display:inline-block;vertical-align:-1px;margin-right:3px;">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                  Session Restored
+                </span>
+              </div>
+            </div>
+            <button class="btn-icon btn-remove" id="removeFile" title="Remove file" type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          </div>
+
+          <div class="preview-box">
+            <div class="preview-header">
+              <span>Original Subtitle Snippets (First 5 blocks)</span>
+              <span class="timing-badge">Timecodes Verified</span>
+            </div>
+            <div class="preview-list" id="subtitlePreview"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Action Button Row -->
+      <div class="action-cta-wrap">
+        <button class="btn btn-hero" id="translateBtn" disabled type="button">
+          <span class="btn-content">
+            <svg class="hero-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M5 8l6 6M4 14l6-6 2-3M2 5h12M7 2h1M22 22l-5-10-5 10M14 18h6"/>
+            </svg>
+            <span class="btn-label">Translate Subtitles Now</span>
+          </span>
+          <span class="btn-spinner-state hidden">
+            <span class="modern-spinner"></span>
+            <span class="loading-label">Translating Subtitles...</span>
+          </span>
+        </button>
+        <p class="cta-hint" id="ctaHint">Upload an SRT file and enter your API key above to start.</p>
+      </div>
+
+      <!-- Live Progress Dashboard -->
+      <section class="glass-card progress-section hidden" id="progressCard">
+        <div class="progress-header-row">
+          <div class="progress-status-info">
+            <span class="live-activity-dot" id="liveActivityDot"></span>
+            <span class="progress-title" id="progressTitle">Initializing translation batches...</span>
+          </div>
+          <div class="progress-header-actions">
+            <button class="btn btn-progress-ctrl" id="pauseResumeBtn" type="button" title="Pause or Resume translation">
+              <svg class="ctrl-icon-pause" id="ctrlIconPause" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="6" y="4" width="4" height="16"/>
+                <rect x="14" y="4" width="4" height="16"/>
+              </svg>
+              <svg class="ctrl-icon-resume hidden" id="ctrlIconResume" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="5 3 19 12 5 21 5 3"/>
+              </svg>
+              <span id="pauseResumeLabel">Pause</span>
+            </button>
+            <button class="btn btn-progress-cancel" id="cancelTranslateBtn" type="button" title="Cancel and keep partial translations">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+              <span>Cancel</span>
+            </button>
+            <span class="progress-percentage" id="progressPct">0%</span>
+          </div>
+        </div>
+
+        <div class="progress-track">
+          <div class="progress-fill" id="progressBar"></div>
+        </div>
+
+        <div class="progress-stats-strip">
+          <div class="stat-cell">
+            <span class="stat-name">Processed</span>
+            <span class="stat-val" id="statProcessed">0 / 0</span>
+          </div>
+          <div class="stat-cell">
+            <span class="stat-name">Batches</span>
+            <span class="stat-val" id="statBatches">0 / 0</span>
+          </div>
+          <div class="stat-cell">
+            <span class="stat-name">Overlaps Auto-Fixed</span>
+            <span class="stat-val stat-good" id="statOverlaps">0</span>
+          </div>
+          <div class="stat-cell">
+            <span class="stat-name">Timing Integrity</span>
+            <span class="stat-val stat-good" id="statIntegrity">100%</span>
+          </div>
+        </div>
+
+        <!-- Terminal-style live log -->
+        <div class="terminal-log-wrapper">
+          <div class="terminal-bar">
+            <div class="terminal-dots">
+              <span></span><span></span><span></span>
+            </div>
+            <span class="terminal-label">Real-time Translation & Timing Log</span>
+          </div>
+          <div class="terminal-feed" id="progressLog"></div>
+        </div>
+      </section>
+
+      <!-- Results & Code Box Section -->
+      <section class="glass-card result-section hidden" id="resultCard">
+        <div class="result-top-banner">
+          <div class="result-success-title">
+            <div class="success-icon-badge">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            </div>
+            <div>
+              <h3>Translation Completed Perfectly!</h3>
+              <p class="result-sub-info" id="resultStats">SRT generated with 100% synchronized timecodes</p>
+            </div>
+          </div>
+
+          <div class="quick-action-buttons">
+            <button class="btn btn-condense-hero" id="condenseSrtBtn" type="button" title="2nd-Pass AI Condenser: Automatically trims unnecessary words and compacts phrasing into glance-speed subtitles">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+              </svg>
+              <span>AI Condense / Shorten</span>
+            </button>
+            <button class="btn btn-secondary-subtle hidden" id="restoreOriginalBtn" type="button" title="Revert back to original translation">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="1 4 1 10 7 10"/>
+                <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+              </svg>
+              <span>Restore Original</span>
+            </button>
+            <button class="btn btn-download-primary" id="downloadBtn" type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              <span>Download .SRT File</span>
+            </button>
+            <button class="btn btn-copy-hero" id="copySrtBtn" type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+              </svg>
+              <span>Copy Full SRT Code</span>
+            </button>
+          </div>
+        <!-- Incomplete Batch Warning Banner (Appears only when lines need retry) -->
+        <div class="incomplete-warning-banner hidden" id="incompleteWarningBanner">
+          <div class="warning-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+          </div>
+          <div class="warning-text-content">
+            <strong id="incompleteWarningTitle">Attention: Some subtitle lines could not be translated</strong>
+            <p id="incompleteWarningDesc">Due to temporary API rate limits or network issues, some subtitles were kept in English. Click below to retry only the incomplete lines without re-translating the entire file.</p>
+          </div>
+          <button class="btn btn-warning-retry" id="retryIncompleteBtn" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M1 4v6h6"/>
+              <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+            </svg>
+            <span>Retry Incomplete Batches</span>
+          </button>
+        </div>
+
+        <!-- Quality Metrics Summary -->
+        <div class="quality-badges-row" id="fixSummary"></div>
+
+        <!-- Tabs Navigation -->
+        <div class="preview-tabs-nav">
+          <button class="preview-tab active" id="tabCode" data-tab="code" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="16 18 22 12 16 6"/>
+              <polyline points="8 6 2 12 8 18"/>
+            </svg>
+            Raw SRT Code Box (1-Click Copy)
+          </button>
+          <button class="preview-tab" id="tabTranslated" data-tab="translated" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 6h16M4 12h16M4 18h10"/>
+            </svg>
+            Subtitles Card View
+          </button>
+          <button class="preview-tab" id="tabSide" data-tab="side" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <line x1="12" y1="3" x2="12" y2="21"/>
+            </svg>
+            Side-by-Side Comparison
+          </button>
+          <button class="preview-tab" id="tabOriginal" data-tab="original" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+            Original
+          </button>
+        </div>
+
+        <!-- Tab Content Container -->
+        <div class="tab-view-container" id="tabViewContainer"></div>
+
+        <!-- Bottom Action Bar -->
+        <div class="result-bottom-bar">
+          <div class="bottom-auto-status">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+            <span>Auto-downloaded automatically to your Downloads folder</span>
+          </div>
+          <button class="btn btn-secondary" id="retranslateBtn" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="1 4 1 10 7 10"/>
+              <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+            </svg>
+            Translate Again / Change Settings
+          </button>
+        </div>
+      </section>
+
+      <!-- Comprehensive Collapsible SEO Guide, Features & FAQ Container -->
+      <div class="seo-collapsible-wrapper" id="seoGuideWrapper">
+        <div class="seo-toggle-bar-card">
+          <button type="button" class="btn-seo-guide-toggle" id="toggleSeoGuideBtn" aria-expanded="false" aria-controls="seoGuideContent">
+            <div class="seo-guide-title-group">
+              <div class="seo-guide-icon-badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                </svg>
+              </div>
+              <div class="seo-guide-texts">
+                <div class="seo-guide-main-title">
+                  <span>Features, How It Works &amp; FAQ Guide</span>
+                  <span class="seo-guide-pill-badge">Documentation</span>
+                </div>
+                <p class="seo-guide-subtext">Click to explore architecture, 3-step workflow, supported languages, and FAQs</p>
+              </div>
+            </div>
+            <div class="seo-guide-action">
+              <span class="seo-guide-action-text" id="seoGuideActionLabel">Show Full Guide</span>
+              <div class="seo-guide-chevron-circle">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </div>
+            </div>
+          </button>
+        </div>
+
+        <div class="seo-guide-collapse-container" id="seoGuideContent">
+          <div class="seo-guide-collapse-inner">
+            <!-- SEO Feature Highlights Section -->
+            <section class="glass-card seo-features-section" id="featuresSection">
+              <div class="seo-section-header">
+                <span class="seo-badge">Cinematic AI Localization</span>
+                <h2 class="seo-h2">Why Movie &amp; Series Lovers Choose SRTtranslator</h2>
+                <p class="seo-sub">Engineered specifically for foreign movie &amp; series watchers, anime fans, and subtitlers needing exact timecode synchronization and natural dialogue flow.</p>
+              </div>
+
+              <div class="seo-features-grid">
+                <div class="seo-feature-card">
+                  <div class="feature-icon-box">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10"/>
+                      <polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                  </div>
+                  <h3>100% Timecode Synchronization</h3>
+                  <p>Every millisecond of your original timecodes remains completely untouched. Our engine isolates dialogue text, translates it, and verifies timing integrity with zero drift.</p>
+                </div>
+
+                <div class="seo-feature-card">
+                  <div class="feature-icon-box">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                    </svg>
+                  </div>
+                  <h3>Glance-Speed Pacing &amp; AI Condenser</h3>
+                  <p>Subtitles should never distract from the video. Choose from 4 adaptive pacing presets or run the 2nd-pass AI Condenser to trim dialogue down to split-second 1 to 4 word lines.</p>
+                </div>
+
+                <div class="seo-feature-card">
+                  <div class="feature-icon-box">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    </svg>
+                  </div>
+                  <h3>100% Private &amp; Client-Side</h3>
+                  <p>Your subtitle scripts and Google Gemini API keys are processed strictly in your local web browser. No files or keys are stored on our servers or shared with third parties.</p>
+                </div>
+
+                <div class="seo-feature-card">
+                  <div class="feature-icon-box">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                    </svg>
+                  </div>
+                  <h3>Intelligent Overlap Correction</h3>
+                  <p>Our post-processing algorithm automatically detects and resolves adjacent subtitle timecode collisions, guaranteeing clean subtitle playback in VLC, YouTube, and Premiere Pro.</p>
+                </div>
+              </div>
+            </section>
+
+            <!-- How It Works Section -->
+            <section class="glass-card seo-steps-section" id="howItWorksSection">
+              <div class="seo-section-header">
+                <span class="seo-badge">Quick Workflow</span>
+                <h2 class="seo-h2">How to Translate SRT Subtitles in 3 Simple Steps</h2>
+              </div>
+
+              <div class="seo-steps-grid">
+                <div class="seo-step-card">
+                  <div class="step-num">01</div>
+                  <h3>Upload .SRT File</h3>
+                  <p>Drag and drop your subtitle file or browse from your computer. Our parser verifies timecode validity instantly.</p>
+                </div>
+
+                <div class="seo-step-card">
+                  <div class="step-num">02</div>
+                  <h3>Select Language &amp; Pacing</h3>
+                  <p>Choose your target language (e.g. Bengali, Spanish, Japanese) and select your desired subtitle reading speed preset.</p>
+                </div>
+
+                <div class="seo-step-card">
+                  <div class="step-num">03</div>
+                  <h3>Translate &amp; Export</h3>
+                  <p>Watch real-time batch progress and download your perfectly formatted .srt file or copy the raw code with 1 click.</p>
+                </div>
+              </div>
+            </section>
+
+            <!-- FAQ Section (Matches JSON-LD FAQ Schema) -->
+            <section class="glass-card seo-faq-section" id="faqSection">
+              <div class="seo-section-header">
+                <span class="seo-badge">Frequently Asked Questions</span>
+                <h2 class="seo-h2">Everything You Need to Know About SRT Translation</h2>
+                <p class="seo-sub">Find quick answers to common questions about subtitle timing preservation, AI pacing modes, supported languages, and security.</p>
+              </div>
+
+              <div class="seo-faq-list" id="faqAccordion">
+                <div class="seo-faq-item is-open" id="faqItem1">
+                  <button type="button" class="faq-q-btn" aria-expanded="true" aria-controls="faqAns1">
+                    <span class="faq-q-text">Which languages are supported by SRTtranslator?</span>
+                    <span class="faq-toggle-icon">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                      </svg>
+                    </span>
+                  </button>
+                  <div class="faq-ans-collapse" id="faqAns1" role="region">
+                    <div class="faq-ans-inner">
+                      <p class="faq-a">SRTtranslator supports over 40 global languages including Bengali, English, Spanish, Hindi, Urdu, Arabic, French, German, Japanese, Korean, Chinese (Simplified), Portuguese, Russian, Italian, Turkish, Indonesian, Vietnamese, Thai, Tamil, Telugu, Marathi, Gujarati, Malayalam, Punjabi, Persian/Farsi, Dutch, Polish, Swedish, Norwegian, Danish, Finnish, Greek, Hebrew, Czech, Romanian, Hungarian, Ukrainian, Malay, and Filipino/Tagalog.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="seo-faq-item" id="faqItem2">
+                  <button type="button" class="faq-q-btn" aria-expanded="false" aria-controls="faqAns2">
+                    <span class="faq-q-text">How do I translate an SRT subtitle file online for free?</span>
+                    <span class="faq-toggle-icon">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                      </svg>
+                    </span>
+                  </button>
+                  <div class="faq-ans-collapse" id="faqAns2" role="region">
+                    <div class="faq-ans-inner">
+                      <p class="faq-a">Simply upload your .srt file to SRTtranslator, select your target language from the 40+ available options, choose your desired subtitle pacing preset (e.g. Glance Speed or Fast Reading), provide your free Google Gemini API key, and click 'Translate Subtitles Now'. Your localized SRT file will be ready and automatically downloaded within seconds.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="seo-faq-item" id="faqItem3">
+                  <button type="button" class="faq-q-btn" aria-expanded="false" aria-controls="faqAns3">
+                    <span class="faq-q-text">Will the subtitle timestamps, timecodes, and formatting stay 100% synchronized?</span>
+                    <span class="faq-toggle-icon">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                      </svg>
+                    </span>
+                  </button>
+                  <div class="faq-ans-collapse" id="faqAns3" role="region">
+                    <div class="faq-ans-inner">
+                      <p class="faq-a">Yes, completely. SRTtranslator isolates only the spoken dialogue text during translation while preserving every millisecond of the original start and end timecodes (<code>00:00:00,000 --&gt; 00:00:00,000</code>), line sequence numbering, and HTML styling tags (like <code>&lt;i&gt;</code> and <code>&lt;b&gt;</code>). It also includes an automatic overlap collision resolver.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="seo-faq-item" id="faqItem4">
+                  <button type="button" class="faq-q-btn" aria-expanded="false" aria-controls="faqAns4">
+                    <span class="faq-q-text">What is Glance-Speed Subtitle Pacing and the 2nd-Pass AI Condenser?</span>
+                    <span class="faq-toggle-icon">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                      </svg>
+                    </span>
+                  </button>
+                  <div class="faq-ans-collapse" id="faqAns4" role="region">
+                    <div class="faq-ans-inner">
+                      <p class="faq-a">Glance-Speed pacing is an advanced subtitle optimization mode engineered for fast-paced movies, anime, and YouTube videos. It keeps dialogue lines down to 1-4 punchy words (~0.5-1s read time). The 2nd-pass AI Condenser allows you to re-evaluate already translated subtitles, eliminating conversational padding and wordy grammar so viewers can absorb the subtitles in the blink of an eye without missing any visual action on screen.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="seo-faq-item" id="faqItem5">
+                  <button type="button" class="faq-q-btn" aria-expanded="false" aria-controls="faqAns5">
+                    <span class="faq-q-text">How does SRTtranslator ensure natural, cinema-grade dialogue across different languages?</span>
+                    <span class="faq-toggle-icon">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                      </svg>
+                    </span>
+                  </button>
+                  <div class="faq-ans-collapse" id="faqAns5" role="region">
+                    <div class="faq-ans-inner">
+                      <p class="faq-a">Unlike standard machine translation tools that produce rigid or overly literal translations, SRTtranslator enforces contextual cinematic localization rules for each language. It preserves character emotion, dramatic tone, and natural conversational flow, ensuring subtitles feel like professionally produced dubs for movies, anime, TV series, and video content.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="seo-faq-item" id="faqItem6">
+                  <button type="button" class="faq-q-btn" aria-expanded="false" aria-controls="faqAns6">
+                    <span class="faq-q-text">Is my subtitle file, translated text, and Gemini API key secure?</span>
+                    <span class="faq-toggle-icon">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                      </svg>
+                    </span>
+                  </button>
+                  <div class="faq-ans-collapse" id="faqAns6" role="region">
+                    <div class="faq-ans-inner">
+                      <p class="faq-a">100% private and secure. SRTtranslator runs completely client-side in your web browser. Your subtitle scripts, translations, and Gemini API keys are never sent to or stored on any intermediary backend servers. Your API key remains saved only in your browser's private local storage.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="seo-faq-item" id="faqItem7">
+                  <button type="button" class="faq-q-btn" aria-expanded="false" aria-controls="faqAns7">
+                    <span class="faq-q-text">Is there any file size limit, subtitle line limit, or cost?</span>
+                    <span class="faq-toggle-icon">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                      </svg>
+                    </span>
+                  </button>
+                  <div class="faq-ans-collapse" id="faqAns7" role="region">
+                    <div class="faq-ans-inner">
+                      <p class="faq-a">SRTtranslator is completely free with no file size limits or line caps. By connecting your free Google Gemini API key (which includes a generous free tier from Google AI Studio), you can translate full-length feature films, multiple TV episodes, documentaries, and long YouTube videos seamlessly.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="seo-faq-item" id="faqItem8">
+                  <button type="button" class="faq-q-btn" aria-expanded="false" aria-controls="faqAns8">
+                    <span class="faq-q-text">Can I edit individual subtitle cards or re-shorten specific lines?</span>
+                    <span class="faq-toggle-icon">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                      </svg>
+                    </span>
+                  </button>
+                  <div class="faq-ans-collapse" id="faqAns8" role="region">
+                    <div class="faq-ans-inner">
+                      <p class="faq-a">Yes. In the Subtitles Card View and Side-by-Side Comparison tabs, each subtitle card displays live reading speed metrics (word count and estimated reading seconds) and provides an instant 'Shorten' button to compress individual lines without needing to re-translate the entire file.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <footer class="site-footer">
+        <div class="footer-inner">
+          <div class="footer-brand">
+            <span>SRTtranslator</span> — Free AI Subtitle Localization &amp; Pacing Engine
+          </div>
+          <div class="footer-links">
+            <a href="#apiSection">API Setup</a>
+            <a href="#settingsSection">Settings</a>
+            <a href="#featuresSection">Features</a>
+            <a href="#faqSection">FAQ</a>
+            <a href="https://github.com/rezwanahmed399/SRTtranslator" target="_blank" rel="noopener">GitHub</a>
+          </div>
+        </div>
+        <p class="footer-copy">&copy; 2026 SRTtranslator. All rights reserved. Built for movie lovers, series binge-watchers, anime fans &amp; subtitlers worldwide.</p>
+      </footer>
+
+    </main>
+  </div>
+
+  <!-- Custom Modern Confirmation & Alert Modal Dialog -->
+  <div class="custom-modal-backdrop hidden" id="customModalBackdrop" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="custom-modal-box" id="customModalBox">
+      <div class="modal-top-accent"></div>
+      <div class="modal-icon-badge modal-icon-warning" id="modalIconBadge">
+        <svg id="modalIconSvgWarning" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+        <svg id="modalIconSvgInfo" class="hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="16" x2="12" y2="12"/>
+          <line x1="12" y1="8" x2="12.01" y2="8"/>
+        </svg>
+      </div>
+      <h3 class="modal-title" id="modalTitle">Cancel Translation?</h3>
+      <p class="modal-message" id="modalMessage">Ongoing translation will be stopped and all translated data will be discarded.</p>
+      <div class="modal-actions-row" id="modalActionsRow">
+        <button class="btn btn-modal-cancel" id="modalCancelBtn" type="button">Keep Translating</button>
+        <button class="btn btn-modal-confirm" id="modalConfirmBtn" type="button">Yes, Discard All</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js?v=3.9.0"></script>
+</body>
+</html>

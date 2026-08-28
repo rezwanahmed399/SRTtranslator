@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">SRTtranslator</string>
+    <string name="title_activity_main">SRTtranslator</string>
+    <string name="package_name">com.soptosur.srttranslator</string>
+    <string name="custom_url_scheme">com.soptosur.srttranslator</string>
+</resources>

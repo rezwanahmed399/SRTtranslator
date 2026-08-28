@@ -1,0 +1,15 @@
+{
+  "appId": "com.soptosur.srttranslator",
+  "appName": "SRTtranslator",
+  "webDir": "www",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "StatusBar": {
+      "style": "DARK",
+      "backgroundColor": "#070a13"
+    }
+  }
+}

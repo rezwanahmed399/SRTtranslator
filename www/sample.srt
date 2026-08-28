@@ -1,0 +1,11 @@
+1
+00:00:01,000 --> 00:00:03,500
+Hello everyone, welcome to the movie!
+
+2
+00:00:03,800 --> 00:00:06,200
+Are you ready to explore the new galaxy?
+
+3
+00:00:06,300 --> 00:00:08,900
+We need to hurry up before the engine overheats.

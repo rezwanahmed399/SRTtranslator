@@ -4,7 +4,10 @@
   "description": "AI-Powered Subtitle Translator with 100% Timing Preservation and Zero Overlaps",
   "main": "index.html",
   "scripts": {
-    "start": "npx serve ."
+    "start": "npx serve www",
+    "build": "node build-app.js",
+    "cap:sync": "node build-app.js && npx cap sync android",
+    "cap:open": "npx cap open android"
   },
   "keywords": [
     "subtitle",
@@ -16,5 +19,14 @@
     "verce-ready"
   ],
   "author": "SubSync AI",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "@capacitor/android": "^8.5.0",
+    "@capacitor/app": "^8.1.1",
+    "@capacitor/core": "^8.5.0",
+    "@capacitor/status-bar": "^8.0.3"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.5.0"
+  }
 }
