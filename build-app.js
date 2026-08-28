@@ -14,7 +14,10 @@ const filesToCopy = [
   'style.css',
   'app.js',
   'sample.srt',
-  'test_sample.srt'
+  'test_sample.srt',
+  'robots.txt',
+  'sitemap.xml',
+  'google56417e4931d45822.html'
 ];
 
 filesToCopy.forEach(file => {
