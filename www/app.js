@@ -1164,7 +1164,7 @@ function populateCombinedModelDropdown() {
       const opt = document.createElement('option');
       opt.value = m.id;
       const isTopPick = idx === 0;
-      opt.textContent = `[${pConf.name}] ${m.displayName || m.id}${isTopPick ? ' — Top Recommendation' : ''}`;
+      opt.textContent = `${m.displayName || m.id}${isTopPick ? ' (Recommended)' : ''}`;
       if (!firstModelValue) firstModelValue = m.id;
       optgroup.appendChild(opt);
     });
