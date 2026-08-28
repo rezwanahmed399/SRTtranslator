@@ -1381,20 +1381,35 @@ function setupEventListeners() {
   // Remove File
   if (removeFile) {
     removeFile.addEventListener('click', async () => {
+      const isProcessing = state.isTranslating || state.isCondensing;
+      const modalMessage = isProcessing
+        ? 'Translation is currently in progress. Removing this file will immediately stop and abort the translation process. Are you sure?'
+        : 'Are you sure you want to remove this file? Any existing translations and saved session data will be permanently cleared.';
+
       const confirmed = await showCustomConfirm({
-        title: 'Remove Subtitle File?',
-        message: 'Are you sure you want to remove this file? Any existing translations and saved session data will be permanently cleared.',
-        confirmText: 'Yes, Remove File',
-        cancelText: 'Keep File',
+        title: isProcessing ? 'Stop & Remove File?' : 'Remove Subtitle File?',
+        message: modalMessage,
+        confirmText: isProcessing ? 'Stop & Remove' : 'Yes, Remove File',
+        cancelText: isProcessing ? 'Keep Translating' : 'Keep File',
         type: 'danger'
       });
       if (!confirmed) return;
 
+      // 1. Immediately abort active background translation / condense loops
+      state.isCancelled = true;
+      state.isPaused = false;
+      state.isTranslating = false;
+      state.isCondensing = false;
+
+      // 2. Clear all subtitle data
       state.parsedBlocks = [];
       state.translatedBlocks = [];
       state.uncompressedBlocks = [];
       state.isCondensed = false;
       state.fileName = '';
+      state.fileSize = 0;
+
+      // 3. Reset UI cards
       if (fileInput) fileInput.value = '';
       if (fileInfo) fileInfo.classList.add('hidden');
       if (dropZone) dropZone.classList.remove('hidden');
@@ -1402,8 +1417,12 @@ function setupEventListeners() {
       if (resultCard) resultCard.classList.add('hidden');
       if (fileRestoredBadge) fileRestoredBadge.classList.add('hidden');
       if (incompleteWarningBanner) incompleteWarningBanner.classList.add('hidden');
+
+      // 4. Reset controls and session storage
       clearSavedSession();
+      resetTranslateButton();
       checkReadyToTranslate();
+      addTerminalLog('warn', 'Subtitle file removed. Ongoing translation was aborted.');
     });
   }
 
@@ -1595,7 +1614,7 @@ function calculateOptimalBatchSize(blocks) {
 // Robust SRT Parser (Preserves exact timing, handles edge cases & multiline subtitles)
 function parseSRT(raw) {
   const clean = raw.replace(/^\uFEFF/, '').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-  const rawChunks = clean.trim().split(/\n\s*\n/);
+  const rawChunks = clean.trim().split(/\n\s*\n+/);
   const blocks = [];
 
   for (let i = 0; i < rawChunks.length; i++) {
