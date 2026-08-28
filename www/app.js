@@ -494,6 +494,85 @@ function initNativeAppIntegrations() {
   }
 }
 
+// ── Screen WakeLock & Full-Power Background Execution Engine ──
+let wakeLock = null;
+let backgroundAudioCtx = null;
+let backgroundAudioOsc = null;
+
+async function acquireWakeLock() {
+  try {
+    if ('wakeLock' in navigator) {
+      wakeLock = await navigator.wakeLock.request('screen');
+      wakeLock.addEventListener('release', () => {
+        wakeLock = null;
+      });
+      console.log('⚡ Screen WakeLock active: Device will stay awake during translation.');
+    }
+  } catch (err) {
+    console.warn('Wake Lock request error:', err);
+  }
+}
+
+function releaseWakeLock() {
+  try {
+    if (wakeLock) {
+      wakeLock.release();
+      wakeLock = null;
+      console.log('💤 Screen WakeLock released.');
+    }
+  } catch (err) {}
+}
+
+function startBackgroundKeepAlive() {
+  // 1. Request Screen WakeLock
+  acquireWakeLock();
+
+  // 2. Start silent audio loop to signal Android Media Framework and prevent background CPU throttling
+  try {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (AudioContextClass) {
+      if (!backgroundAudioCtx) {
+        backgroundAudioCtx = new AudioContextClass();
+        const gainNode = backgroundAudioCtx.createGain();
+        gainNode.gain.value = 0.00001; // completely inaudible
+        gainNode.connect(backgroundAudioCtx.destination);
+
+        const osc = backgroundAudioCtx.createOscillator();
+        osc.frequency.value = 35; // subsonic inaudible frequency
+        osc.connect(gainNode);
+        osc.start();
+        backgroundAudioOsc = osc;
+      } else if (backgroundAudioCtx.state === 'suspended') {
+        backgroundAudioCtx.resume();
+      }
+    }
+  } catch (e) {
+    console.warn('Silent audio keep-alive setup:', e);
+  }
+}
+
+function stopBackgroundKeepAlive() {
+  releaseWakeLock();
+  try {
+    if (backgroundAudioOsc) {
+      backgroundAudioOsc.stop();
+      backgroundAudioOsc.disconnect();
+      backgroundAudioOsc = null;
+    }
+    if (backgroundAudioCtx) {
+      backgroundAudioCtx.close();
+      backgroundAudioCtx = null;
+    }
+  } catch (e) {}
+}
+
+// Re-acquire WakeLock on app resume if active
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && (state.isTranslating || state.isCondensing)) {
+    acquireWakeLock();
+  }
+});
+
 // ── Initialization ──
 window.addEventListener('DOMContentLoaded', () => {
   initTheme();
@@ -1998,6 +2077,9 @@ async function runTranslationPipeline() {
   state.isPaused = false;
   state.isCancelled = false;
 
+  // Activate high-performance keep-awake engine
+  startBackgroundKeepAlive();
+
   // Reset Pause UI
   if (ctrlIconPause) ctrlIconPause.classList.remove('hidden');
   if (ctrlIconResume) ctrlIconResume.classList.add('hidden');
@@ -2134,6 +2216,7 @@ async function runTranslationPipeline() {
       addTerminalLog('ok', 'Automatic SRT download triggered in browser.');
     }
   } finally {
+    stopBackgroundKeepAlive();
     state.isTranslating = false;
     state.isPaused = false;
     resetTranslateButton();
@@ -2622,6 +2705,8 @@ async function retryIncompleteBatchesPipeline() {
   state.isPaused = false;
   state.isCancelled = false;
 
+  startBackgroundKeepAlive();
+
   if (ctrlIconPause) ctrlIconPause.classList.remove('hidden');
   if (ctrlIconResume) ctrlIconResume.classList.add('hidden');
   if (pauseResumeLabel) pauseResumeLabel.textContent = 'Pause';
@@ -2719,6 +2804,7 @@ async function retryIncompleteBatchesPipeline() {
       addTerminalLog('warn', `${stillIncomplete} lines still remain untranslated. You can click retry again.`);
     }
   } finally {
+    stopBackgroundKeepAlive();
     state.isTranslating = false;
     state.isPaused = false;
     if (retryIncompleteBtn) {
@@ -2929,6 +3015,7 @@ async function runAiCondensePipeline() {
     downloadSRTFile(finalizedBlocks);
     addTerminalLog('ok', 'Condensed SRT auto-downloaded.');
   } finally {
+    stopBackgroundKeepAlive();
     state.isTranslating = false;
     state.isCondensing = false;
     state.isPaused = false;

@@ -1,0 +1,8 @@
+{
+  "latestVersion": "1.0.0",
+  "minRequiredVersion": "1.0.0",
+  "forceUpdate": false,
+  "updateTitle": "Critical Update Available",
+  "updateMessage": "A new version of SRTtranslator is available with critical performance improvements and new AI models. Please update to continue.",
+  "playStoreUrl": "https://play.google.com/store/apps/details?id=com.soptosur.srttranslator"
+}
