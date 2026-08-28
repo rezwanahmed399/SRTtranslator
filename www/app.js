@@ -621,17 +621,13 @@ function switchAppTab(tabId) {
 
 function hasAnyConnectedApiKey() {
   return Object.keys(AI_PROVIDERS).some(pid => {
-    const memKey = state.apiKeys[pid] ? state.apiKeys[pid].trim() : '';
-    const storedKey = (localStorage.getItem(AI_PROVIDERS[pid].storageKey) || '').trim();
-    return (memKey.length > 5) || (storedKey.length > 5) || (state.providerStatus[pid]?.connected);
+    return state.providerStatus[pid]?.connected === true && (state.apiKeys[pid] && state.apiKeys[pid].trim().length > 5);
   });
 }
 
 function getConnectedProviderNames() {
   const connected = Object.keys(AI_PROVIDERS).filter(pid => {
-    const memKey = state.apiKeys[pid] ? state.apiKeys[pid].trim() : '';
-    const storedKey = (localStorage.getItem(AI_PROVIDERS[pid].storageKey) || '').trim();
-    return state.providerStatus[pid]?.connected || (memKey.length > 5) || (storedKey.length > 5);
+    return state.providerStatus[pid]?.connected === true && (state.apiKeys[pid] && state.apiKeys[pid].length > 5);
   });
   return connected.map(pid => AI_PROVIDERS[pid]?.name || pid);
 }
@@ -660,10 +656,9 @@ function updateApiGuardAndHeaderStatus() {
     if (lockGuard) lockGuard.classList.add('hidden');
     if (viewTranslator) viewTranslator.classList.remove('has-api-lockout');
     const connectedNames = getConnectedProviderNames();
-    const primaryName = connectedNames[0] || 'AI';
     if (headerBadge) {
       headerBadge.className = 'header-ai-status-badge badge-on';
-      if (headerText) headerText.textContent = `${primaryName} Active`;
+      if (headerText) headerText.textContent = 'API Connected';
     }
     if (settingsNavDot) {
       settingsNavDot.className = 'settings-nav-dot dot-on';
@@ -748,14 +743,6 @@ async function handleSaveProviderKey(providerId) {
     showProviderFeedback(providerId, `Please enter a valid ${pConf.name} API Key.`, 'err');
     return;
   }
-
-  // Store in memory and storage immediately so UI reflects key entry instantly
-  state.apiKeys[providerId] = rawKey;
-  if (providerId === 'gemini') state.apiKey = rawKey;
-  localStorage.setItem(pConf.storageKey, rawKey);
-
-  updateApiGuardAndHeaderStatus();
-  checkReadyToTranslate();
 
   if (saveBtn) {
     saveBtn.disabled = true;
@@ -920,17 +907,29 @@ async function verifyAndLoadProvider(providerId, key) {
       state.apiKeys.groq = key;
       localStorage.setItem('groq_api_key', key);
     } else if (providerId === 'openrouter') {
-      // Real-time live OpenRouter models endpoint
-      const res = await fetch('https://openrouter.ai/api/v1/models', {
+      // 1. Strict OpenRouter Key Authentication (Endpoint returns 401 if invalid)
+      const authRes = await fetch('https://openrouter.ai/api/v1/auth/key', {
         headers: {
           'Authorization': `Bearer ${key}`
         }
       });
       probeMs = Math.round(performance.now() - startTime);
 
+      if (!authRes.ok) {
+        const errJson = await authRes.json().catch(() => ({}));
+        throw new Error(errJson?.error?.message || `HTTP ${authRes.status}: Invalid OpenRouter API Key.`);
+      }
+
+      // 2. Fetch models
+      const res = await fetch('https://openrouter.ai/api/v1/models', {
+        headers: {
+          'Authorization': `Bearer ${key}`
+        }
+      });
+
       if (!res.ok) {
         const errJson = await res.json().catch(() => ({}));
-        throw new Error(errJson?.error?.message || `HTTP ${res.status}: Invalid OpenRouter API Key.`);
+        throw new Error(errJson?.error?.message || `HTTP ${res.status}: Failed to retrieve models from OpenRouter.`);
       }
 
       const data = await res.json();
@@ -1073,6 +1072,9 @@ async function verifyAndLoadProvider(providerId, key) {
     checkReadyToTranslate();
   } catch (err) {
     console.warn(`Error verifying ${pConf.name}:`, err);
+    state.apiKeys[providerId] = '';
+    if (providerId === 'gemini') state.apiKey = '';
+    localStorage.removeItem(pConf.storageKey);
     state.providerStatus[providerId] = { connected: false, models: [], lastLatency: 0 };
     showProviderFeedback(providerId, `${pConf.name} Error: ${err.message}`, 'err');
     updateProviderStatusUI(providerId, false);
