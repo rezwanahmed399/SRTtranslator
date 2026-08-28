@@ -4046,6 +4046,10 @@ function buildCustomSelect(selectEl) {
     if (!isOpen) {
       container.classList.add('is-open');
       trigger.setAttribute('aria-expanded', 'true');
+      
+      const parentCard = container.closest('.glass-card, .provider-select-box, .api-section, .settings-section, section');
+      if (parentCard) parentCard.classList.add('has-open-dropdown');
+
       if (searchInput) {
         setTimeout(() => searchInput.focus(), 50);
       }
@@ -4079,6 +4083,9 @@ function closeAllCustomSelects() {
     c.classList.remove('is-open');
     const tr = c.querySelector('.custom-select-trigger');
     if (tr) tr.setAttribute('aria-expanded', 'false');
+  });
+  document.querySelectorAll('.has-open-dropdown').forEach(card => {
+    card.classList.remove('has-open-dropdown');
   });
 }
 

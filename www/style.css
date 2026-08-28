@@ -885,6 +885,29 @@ body {
   margin-bottom: 22px;
   box-shadow: var(--shadow-card);
   transition: border-color 0.25s, box-shadow 0.25s;
+  position: relative;
+  z-index: 1;
+}
+
+.glass-card.has-open-dropdown,
+.glass-card:has(.custom-select-container.is-open),
+.api-section.has-open-dropdown,
+.api-section:has(.custom-select-container.is-open),
+.settings-section.has-open-dropdown,
+.settings-section:has(.custom-select-container.is-open),
+.provider-select-box.has-open-dropdown,
+.provider-select-box:has(.custom-select-container.is-open) {
+  z-index: 999999 !important;
+}
+
+.api-section {
+  position: relative;
+  z-index: 20;
+}
+
+.settings-info-card {
+  position: relative;
+  z-index: 1;
 }
 
 .glass-card:hover {
