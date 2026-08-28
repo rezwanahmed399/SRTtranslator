@@ -20,7 +20,7 @@ const AI_PROVIDERS = {
   },
   groq: {
     id: 'groq',
-    name: 'Groq Cloud',
+    name: 'Groq',
     storageKey: 'groq_api_key',
     docLink: 'https://console.groq.com/keys',
     endpoint: 'https://api.groq.com/openai/v1/chat/completions',
@@ -50,7 +50,7 @@ const AI_PROVIDERS = {
   },
   deepseek: {
     id: 'deepseek',
-    name: 'DeepSeek Official',
+    name: 'DeepSeek',
     storageKey: 'deepseek_api_key',
     docLink: 'https://platform.deepseek.com/api_keys',
     endpoint: 'https://api.deepseek.com/chat/completions',
