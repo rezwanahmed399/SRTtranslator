@@ -2760,13 +2760,25 @@ async function runAiCondensePipeline() {
   progressLog.innerHTML = '';
 
   const totalWordsStart = countTotalWords(state.translatedBlocks);
-  updateProgressStats(0, 'Starting 2nd-Pass AI Condensation for ultra-fast reading...');
-  addTerminalLog('info', `[2nd-Pass Condenser] Analyzing ${state.translatedBlocks.length} subtitles (${totalWordsStart} total words)...`);
-
   const bs = 25;
   const batches = chunkArray(state.translatedBlocks, bs);
   const condensedResult = new Array(state.translatedBlocks.length);
   let processedCount = 0;
+
+  state.stats = {
+    total: state.translatedBlocks.length,
+    processed: 0,
+    overlapsFixed: 0,
+    emptyRecovered: 0,
+    retries: 0,
+    untranslated: 0
+  };
+
+  statProcessed.textContent = `0 / ${state.translatedBlocks.length}`;
+  statBatches.textContent = `0 / ${batches.length}`;
+
+  updateProgressStats(0, `Starting 2nd-Pass AI Condensation (${totalWordsStart} total words)...`);
+  addTerminalLog('info', `[2nd-Pass Condenser] Analyzing ${state.translatedBlocks.length} subtitles (${totalWordsStart} total words across ${batches.length} batches)...`);
 
   for (let bi = 0; bi < batches.length; bi++) {
     const currentBatch = batches[bi];
@@ -2774,7 +2786,7 @@ async function runAiCondensePipeline() {
     const batchPct = Math.round((processedCount / state.translatedBlocks.length) * 95);
 
     const { model: currentCondenseModel, key: currentCondenseKey } = getActiveProviderAndKey(state.selectedModel);
-    updateProgressStats(batchPct, `Condensing batch ${bi + 1} of ${batches.length}...`);
+    updateProgressStats(batchPct, `Condensing batch ${bi + 1} of ${batches.length} (#${currentBatch[0].num} – #${currentBatch[currentBatch.length - 1].num})...`);
 
     let batchResult = [];
 
@@ -2805,7 +2817,17 @@ async function runAiCondensePipeline() {
       condensedResult[startIndex + j] = batchResult[j];
     }
 
+    const batchOrigWords = countTotalWords(currentBatch);
+    const batchCondWords = countTotalWords(batchResult);
+    const batchPctSaved = batchOrigWords > 0 ? Math.max(0, Math.round(((batchOrigWords - batchCondWords) / batchOrigWords) * 100)) : 0;
+
     processedCount += currentBatch.length;
+    state.stats.processed = processedCount;
+    statProcessed.textContent = `${processedCount} / ${state.translatedBlocks.length}`;
+    statBatches.textContent = `${bi + 1} / ${batches.length}`;
+
+    addTerminalLog('ok', `Batch ${bi + 1}/${batches.length}: ${batchOrigWords}w -> ${batchCondWords}w (-${batchPctSaved}% concise).`);
+
     if (bi < batches.length - 1) {
       await sleep(1200);
     }
@@ -2819,13 +2841,14 @@ async function runAiCondensePipeline() {
 
   const totalWordsEnd = countTotalWords(finalizedBlocks);
   const totalPercentSaved = totalWordsStart > 0 ? Math.max(0, Math.round(((totalWordsStart - totalWordsEnd) / totalWordsStart) * 100)) : 0;
+  const wordsSaved = Math.max(0, totalWordsStart - totalWordsEnd);
 
-  updateProgressStats(100, `AI Condensation complete! Reduced words by ${totalPercentSaved}% for instant glance reading.`);
-  addTerminalLog('ok', `[Done] Original: ${totalWordsStart} words -> Condensed: ${totalWordsEnd} words (-${totalPercentSaved}% reading load).`);
+  updateProgressStats(100, `AI Condensation complete! Reduced from ${totalWordsStart} to ${totalWordsEnd} words (-${totalPercentSaved}% reading load).`);
+  addTerminalLog('ok', `✨ [Condensation 100% Done] Total: ${totalWordsStart} words -> ${totalWordsEnd} words (${wordsSaved} words saved, -${totalPercentSaved}% reading load)!`);
 
   await sleep(350);
 
-  showTranslationResults(finalizedBlocks, totalPercentSaved);
+  showTranslationResults(finalizedBlocks, totalPercentSaved, totalWordsStart, totalWordsEnd);
   saveCurrentSession();
 
   await sleep(300);
@@ -3081,13 +3104,21 @@ async function condenseSingleBlock(index) {
 }
 
 // ── Render Results View ──
-function showTranslationResults(blocks, percentSaved) {
+function showTranslationResults(blocks, percentSaved, origWords, condWords) {
   progressCard.classList.add('hidden');
   resultCard.classList.remove('hidden');
 
   const untranslatedCount = blocks.filter(b => b.isTranslated === false).length;
 
-  if (untranslatedCount > 0) {
+  if (state.isCondensed) {
+    const wStart = origWords || countTotalWords(state.uncompressedBlocks || []);
+    const wEnd = condWords || countTotalWords(blocks);
+    const wordInfo = (wStart > 0 && wEnd > 0) ? ` (${wStart} words -> ${wEnd} words • -${percentSaved || Math.round(((wStart - wEnd) / wStart) * 100)}% reading load)` : '';
+    resultStats.textContent = `${blocks.length} subtitles localized & condensed for instant glance reading${wordInfo} • 0 drift • 100% timecode integrity`;
+    if (incompleteWarningBanner) {
+      incompleteWarningBanner.classList.add('hidden');
+    }
+  } else if (untranslatedCount > 0) {
     resultStats.textContent = `${blocks.length - untranslatedCount} of ${blocks.length} subtitles translated to ${targetLang.value} (${untranslatedCount} in English) • 0 drift • 100% timecode integrity`;
     if (incompleteWarningBanner) {
       incompleteWarningBanner.classList.remove('hidden');
@@ -3118,8 +3149,13 @@ function showTranslationResults(blocks, percentSaved) {
   const badges = [];
 
   if (state.isCondensed) {
+    const wStart = origWords || countTotalWords(state.uncompressedBlocks || []);
+    const wEnd = condWords || countTotalWords(blocks);
+    const badgeText = (wStart > 0 && wEnd > 0)
+      ? `AI Condensed (${wStart}w -> ${wEnd}w • -${percentSaved || Math.round(((wStart - wEnd) / wStart) * 100)}%)`
+      : `AI Condensed (${percentSaved ? '-' + percentSaved + '% Words' : 'Glance-Speed'})`;
     badges.push({ 
-      text: `AI Condensed (${percentSaved ? '-' + percentSaved + '% Words' : 'Glance-Speed'})`, 
+      text: badgeText, 
       type: 'success' 
     });
   }
