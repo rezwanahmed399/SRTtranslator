@@ -581,10 +581,90 @@ window.addEventListener('DOMContentLoaded', () => {
   initSeoGuideToggle();
   initMultiProviderHub();
   setupEventListeners();
+  updateApiGuardAndHeaderStatus();
   checkReadyToTranslate();
   restoreSessionIfAvailable();
   initNativeAppIntegrations();
 });
+
+// ── 2-Tab Navigation Engine (Translator vs Settings) ──
+function switchAppTab(tabId) {
+  const tabBtnTranslator = $('tabBtnTranslator');
+  const tabBtnSettings = $('tabBtnSettings');
+  const viewTranslator = $('viewTranslator');
+  const viewSettings = $('viewSettings');
+
+  if (tabId === 'translator') {
+    if (tabBtnTranslator) {
+      tabBtnTranslator.classList.add('active');
+      tabBtnTranslator.setAttribute('aria-selected', 'true');
+    }
+    if (tabBtnSettings) {
+      tabBtnSettings.classList.remove('active');
+      tabBtnSettings.setAttribute('aria-selected', 'false');
+    }
+    if (viewTranslator) viewTranslator.classList.add('active');
+    if (viewSettings) viewSettings.classList.remove('active');
+  } else {
+    if (tabBtnTranslator) {
+      tabBtnTranslator.classList.remove('active');
+      tabBtnTranslator.setAttribute('aria-selected', 'false');
+    }
+    if (tabBtnSettings) {
+      tabBtnSettings.classList.add('active');
+      tabBtnSettings.setAttribute('aria-selected', 'true');
+    }
+    if (viewTranslator) viewTranslator.classList.remove('active');
+    if (viewSettings) viewSettings.classList.add('active');
+  }
+}
+
+function hasAnyConnectedApiKey() {
+  return Object.keys(AI_PROVIDERS).some(pid => {
+    return (state.apiKeys[pid] && state.apiKeys[pid].trim().length > 5) || (state.providerStatus[pid]?.connected);
+  });
+}
+
+function getConnectedProviderNames() {
+  const connected = Object.keys(AI_PROVIDERS).filter(pid => state.providerStatus[pid]?.connected || (state.apiKeys[pid] && state.apiKeys[pid].length > 5));
+  return connected.map(pid => AI_PROVIDERS[pid]?.name || pid);
+}
+
+function updateApiGuardAndHeaderStatus() {
+  const lockGuard = $('translatorLockGuard');
+  const viewTranslator = $('viewTranslator');
+  const headerBadge = $('headerAiBadge');
+  const headerText = $('headerAiStatusText');
+  const settingsNavDot = $('settingsNavDot');
+
+  const hasKey = hasAnyConnectedApiKey();
+
+  if (!hasKey) {
+    if (lockGuard) lockGuard.classList.remove('hidden');
+    if (viewTranslator) viewTranslator.classList.add('has-api-lockout');
+    if (headerBadge) {
+      headerBadge.className = 'header-ai-status-badge badge-off';
+      if (headerText) headerText.textContent = 'No API Key';
+    }
+    if (settingsNavDot) {
+      settingsNavDot.className = 'settings-nav-dot dot-off';
+      settingsNavDot.title = 'No API Key connected';
+    }
+  } else {
+    if (lockGuard) lockGuard.classList.add('hidden');
+    if (viewTranslator) viewTranslator.classList.remove('has-api-lockout');
+    const connectedNames = getConnectedProviderNames();
+    const primaryName = connectedNames[0] || 'AI';
+    if (headerBadge) {
+      headerBadge.className = 'header-ai-status-badge badge-on';
+      if (headerText) headerText.textContent = `${primaryName} Connected`;
+    }
+    if (settingsNavDot) {
+      settingsNavDot.className = 'settings-nav-dot dot-on';
+      settingsNavDot.title = `Connected (${connectedNames.join(', ')})`;
+    }
+  }
+}
 
 // ── Multi-AI Provider Engine & State Manager ──
 function switchProviderTab(providerId) {
@@ -1438,6 +1518,49 @@ function setupEventListeners() {
       closeCustomModal(false);
     }
   });
+
+  // 2-Tab Navigation Switcher
+  const tabBtnTranslator = $('tabBtnTranslator');
+  const tabBtnSettings = $('tabBtnSettings');
+  const lockGoToSettingsBtn = $('lockGoToSettingsBtn');
+  const resetSessionDataBtn = $('resetSessionDataBtn');
+
+  if (tabBtnTranslator) tabBtnTranslator.addEventListener('click', () => switchAppTab('translator'));
+  if (tabBtnSettings) tabBtnSettings.addEventListener('click', () => switchAppTab('settings'));
+  if (lockGoToSettingsBtn) lockGoToSettingsBtn.addEventListener('click', () => switchAppTab('settings'));
+
+  if (resetSessionDataBtn) {
+    resetSessionDataBtn.addEventListener('click', async () => {
+      const confirmed = await showCustomConfirm({
+        title: 'Clear Subtitle Session?',
+        message: 'This will reset all loaded subtitle files, translation history, and restore points.',
+        confirmText: 'Yes, Clear Session',
+        cancelText: 'Cancel',
+        type: 'warning'
+      });
+      if (!confirmed) return;
+
+      state.parsedBlocks = [];
+      state.translatedBlocks = [];
+      state.uncompressedBlocks = [];
+      state.isCondensed = false;
+      state.fileName = '';
+      state.fileSize = 0;
+
+      if (fileInput) fileInput.value = '';
+      if (fileInfo) fileInfo.classList.add('hidden');
+      if (dropZone) dropZone.classList.remove('hidden');
+      if (progressCard) progressCard.classList.add('hidden');
+      if (resultCard) resultCard.classList.add('hidden');
+      if (fileRestoredBadge) fileRestoredBadge.classList.add('hidden');
+      if (incompleteWarningBanner) incompleteWarningBanner.classList.add('hidden');
+
+      clearSavedSession();
+      resetTranslateButton();
+      checkReadyToTranslate();
+      showCustomAlert({ title: 'Session Cleared', message: 'Subtitle session data has been completely reset.', type: 'info' });
+    });
+  }
 
   // Theme Toggle
   if (themeToggleBtn) themeToggleBtn.addEventListener('click', toggleTheme);

@@ -17,6 +17,7 @@ const filesToCopy = [
   'test_sample.srt',
   'robots.txt',
   'sitemap.xml',
+  'version.json',
   'google56417e4931d45822.html'
 ];
 
