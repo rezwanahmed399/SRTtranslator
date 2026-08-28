@@ -1694,11 +1694,11 @@ async function translateBatchWithAdaptiveSplitting(batch, activeKey, modelToUse,
     const is429 = errMsg.includes('429') || errMsg.includes('quota') || errMsg.includes('resource has been exhausted') || errMsg.includes('rate limit');
     const is503 = errMsg.includes('503') || errMsg.includes('overloaded') || errMsg.includes('high demand') || errMsg.includes('service unavailable');
 
-    // ⚡ SMART AUTO-FAILOVER: Switch to another configured AI provider on rate limit / quota exhaustion
-    if (is429 && state.autoFailoverEnabled) {
+    // ⚡ SMART AUTO-FAILOVER: Switch to another configured AI provider on rate limit / server busy / quota exhaustion
+    if ((is429 || is503) && state.autoFailoverEnabled) {
       const backup = findFailoverBackup(currentPid);
       if (backup) {
-        addTerminalLog('warn', `⚡ [Smart Auto-Failover] Rate limit reached on ${AI_PROVIDERS[currentPid].name}. Automatically switching to [${backup.providerName}] (${backup.model}) to continue seamless translation!`);
+        addTerminalLog('warn', `⚡ [Smart Auto-Failover] ${AI_PROVIDERS[currentPid].name} is ${is503 ? 'overloaded/busy (503)' : 'rate limited (429)'}. Automatically switching to [${backup.providerName}] (${backup.model}) to continue seamless translation!`);
         state.selectedModel = backup.model;
         if (modelSelect) {
           modelSelect.value = backup.model;
