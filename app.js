@@ -959,13 +959,14 @@ function populateCombinedModelDropdown() {
 }
 
 function getActiveProviderAndKey(modelId) {
-  const cleanModel = (modelId || state.selectedModel || 'gemini-2.5-flash').replace(/^models\//, '').trim();
+  const targetModel = modelId || (modelSelect && modelSelect.value ? modelSelect.value : '') || state.selectedModel || 'gemini-2.0-flash';
+  const cleanModel = targetModel.replace(/^models\//, '').trim();
 
   // Explicit provider identification by model prefix/pattern
   if (cleanModel.startsWith('gemini')) {
     return { providerId: 'gemini', model: cleanModel, key: state.apiKeys.gemini };
   }
-  if (cleanModel.startsWith('llama-') || cleanModel.startsWith('deepseek-r1-distill') || cleanModel.startsWith('mixtral-')) {
+  if (cleanModel.startsWith('llama-') || cleanModel.startsWith('deepseek-r1-distill') || cleanModel.startsWith('mixtral-') || cleanModel.startsWith('gemma')) {
     return { providerId: 'groq', model: cleanModel, key: state.apiKeys.groq };
   }
   if (cleanModel.includes('/') || cleanModel.startsWith('anthropic/') || cleanModel.startsWith('meta-llama/')) {
@@ -982,13 +983,13 @@ function getActiveProviderAndKey(modelId) {
   }
 
   // Fallback to first available connected provider
-  for (const pid of ['gemini', 'groq', 'openrouter', 'deepseek', 'openai']) {
+  for (const pid of ['gemini', 'groq', 'deepseek', 'openrouter', 'openai']) {
     if (state.apiKeys[pid] && state.providerStatus[pid]?.connected) {
       return { providerId: pid, model: AI_PROVIDERS[pid].defaultModel, key: state.apiKeys[pid] };
     }
   }
 
-  return { providerId: 'gemini', model: 'gemini-2.5-flash', key: state.apiKeys.gemini || '' };
+  return { providerId: 'gemini', model: 'gemini-2.0-flash', key: state.apiKeys.gemini || '' };
 }
 
 function findFailoverBackup(currentProviderId, currentModelId) {
@@ -1038,7 +1039,7 @@ function findFailoverBackup(currentProviderId, currentModelId) {
 }
 
 function updateQuotaDashboardForActiveModel() {
-  const modelToInspect = (modelSelect ? modelSelect.value : state.selectedModel) || 'gemini-2.5-flash';
+  const modelToInspect = (modelSelect && modelSelect.value ? modelSelect.value : state.selectedModel) || 'gemini-2.0-flash';
   const { providerId, model } = getActiveProviderAndKey(modelToInspect);
   const pConf = AI_PROVIDERS[providerId];
   if (!pConf) return;
@@ -1673,8 +1674,17 @@ function parseAndRepairJson(rawText) {
     const direct = JSON.parse(clean);
     if (Array.isArray(direct)) return direct;
     if (direct && typeof direct === 'object') {
-      const arr = direct.subtitles || direct.items || direct.translations || direct.results || direct.data;
+      const arr = direct.subtitles || direct.items || direct.translations || direct.results || direct.data || direct.response || direct.dialogues || Object.values(direct).find(Array.isArray);
       if (Array.isArray(arr)) return arr;
+
+      const entries = Object.entries(direct);
+      if (entries.length > 0 && entries.every(([k]) => !isNaN(parseInt(k, 10)))) {
+        return entries.map(([k, v]) => {
+          if (typeof v === 'string') return { id: parseInt(k, 10), text: v };
+          if (v && typeof v === 'object') return { id: v.id !== undefined ? v.id : parseInt(k, 10), text: v.text || v.translation || Object.values(v)[0] };
+          return { id: parseInt(k, 10), text: String(v) };
+        });
+      }
     }
   } catch (e) {
     // Continue to repair strategies
@@ -1737,7 +1747,7 @@ function parseAndRepairJson(rawText) {
     const parsed = JSON.parse(sanitizedStr);
     if (Array.isArray(parsed)) return parsed;
     if (parsed && typeof parsed === 'object') {
-      const arr = parsed.subtitles || parsed.items || parsed.translations;
+      const arr = parsed.subtitles || parsed.items || parsed.translations || parsed.results || parsed.data || Object.values(parsed).find(Array.isArray);
       if (Array.isArray(arr)) return arr;
     }
   } catch (e) {
@@ -2037,7 +2047,7 @@ async function callGeminiBatchTranslate(batch, key, attemptNumber, overrideModel
   const pace = styleMode.value;
   const hint = contextHint.value.trim();
   
-  const rawModel = overrideModel || modelSelect.value || 'gemini-2.5-flash';
+  const rawModel = overrideModel || (modelSelect && modelSelect.value ? modelSelect.value : '') || state.selectedModel || 'gemini-2.0-flash';
   const selectedModel = rawModel.replace(/^models\//, '').trim();
 
   const inputData = batch.map((item, index) => ({
@@ -2311,8 +2321,8 @@ Task: Translate every single subtitle dialogue line accurately into ${lang}.
 
 MANDATORY RULES:
 1. Every subtitle text MUST be translated into ${lang}. Do NOT leave original untranslated text.
-2. Return ONLY a valid JSON array of objects conforming to Schema.
-   Schema: [{"id": 0, "text": "translated dialogue in ${lang}"}, {"id": 1, "text": "translated dialogue in ${lang}"}]
+2. Return a valid JSON array or object with "subtitles" array.
+   Schema: [{"id": 0, "text": "translated dialogue in ${lang}"}, {"id": 1, "text": "translated dialogue in ${lang}"}] OR {"subtitles": [{"id": 0, "text": "translated dialogue in ${lang}"}]}
 3. Preserve 100% of subtitle meaning, punchlines, drama, context, and emotion.
 4. ${pacingPrompt}
 5. Formatting & Tags:
@@ -2763,7 +2773,7 @@ async function runAiCondensePipeline() {
 // ── Gemini 2nd-Pass Condense API Call ──
 async function callGeminiBatchCondense(batch, key, attemptNumber, overrideModel) {
   const lang = targetLang.value || 'Bengali';
-  const rawModel = overrideModel || modelSelect.value || 'gemini-2.5-flash';
+  const rawModel = overrideModel || (modelSelect && modelSelect.value ? modelSelect.value : '') || state.selectedModel || 'gemini-2.0-flash';
   const selectedModel = rawModel.replace(/^models\//, '').trim();
 
   const inputData = batch.map((item, index) => ({
@@ -2915,8 +2925,8 @@ MANDATORY RULES:
 3. Strictly preserve 100% of the core emotion, punchline, dialogue intent, and context.
 4. Output strictly in natural everyday spoken ${lang} dialogue/script.
 5. Preserve HTML tags like <i>, </i>, <b>, </b> if present.
-6. Return ONLY a valid JSON array of objects conforming to Schema.
-Schema: [{"id": 0, "text": "concise dialogue in ${lang}"}, {"id": 1, "text": "concise dialogue in ${lang}"}]${condenseLangRule}`;
+6. Return a valid JSON array or object with "subtitles" array.
+Schema: [{"id": 0, "text": "concise dialogue in ${lang}"}, {"id": 1, "text": "concise dialogue in ${lang}"}] OR {"subtitles": [{"id": 0, "text": "concise dialogue in ${lang}"}]}${condenseLangRule}`;
 
   const userPrompt = `INPUT SUBTITLES (${batch.length} items):
 ${JSON.stringify(inputData, null, 2)}
