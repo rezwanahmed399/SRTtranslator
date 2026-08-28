@@ -132,6 +132,7 @@ const state = {
   durationStr: '00:00:00',
   optimalBatchSize: 30,
   isTranslating: false,
+  isCondensing: false,
   isPaused: false,
   isCancelled: false,
   apiMetrics: {
@@ -432,12 +433,14 @@ async function restoreSessionIfAvailable() {
   checkReadyToTranslate();
 }
 
-// ── Refresh / Leave Prevention ──
+// ── Refresh / Leave Prevention (Translation & Condensing) ──
 window.addEventListener('beforeunload', e => {
-  if (state.isTranslating && !state.isCancelled) {
+  const isBusy = (state.isTranslating || state.isCondensing) && !state.isCancelled;
+  if (isBusy) {
     e.preventDefault();
-    e.returnValue = 'Translation is currently in progress. If you refresh or leave, ongoing translation will stop. Are you sure?';
-    return e.returnValue;
+    const warningMsg = 'Subtitles are currently being processed. If you reload or leave, your ongoing progress will be lost. Are you sure?';
+    e.returnValue = warningMsg;
+    return warningMsg;
   }
 });
 
@@ -2749,6 +2752,7 @@ async function runAiCondensePipeline() {
   }
 
   state.isTranslating = true;
+  state.isCondensing = true;
   state.isPaused = false;
   state.isCancelled = false;
 
@@ -2856,6 +2860,7 @@ async function runAiCondensePipeline() {
     addTerminalLog('ok', 'Condensed SRT auto-downloaded.');
   } finally {
     state.isTranslating = false;
+    state.isCondensing = false;
     state.isPaused = false;
     if (condenseSrtBtn) {
       condenseSrtBtn.innerHTML = origBtnHtml;
