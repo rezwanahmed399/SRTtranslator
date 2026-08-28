@@ -77,6 +77,32 @@ const AI_PROVIDERS = {
   }
 };
 
+// ── Translation Quality & Auto-Switch Priority Hierarchy ──
+// Ranked by: Dialogue translation naturalness, nuance/slang retention, speed, and rate-limit resilience
+const TRANSLATION_MODEL_RANKING = [
+  // ── Tier 1: Flagship Quality + Ultra High-Throughput (Top Priority) ──
+  { providerId: 'gemini', modelId: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', tier: 'Tier 1 (Flagship)', desc: 'Best Nuance & 1M Context' },
+  { providerId: 'groq', modelId: 'llama-3.3-70b-versatile', name: 'Groq Llama 3.3 70B', tier: 'Tier 1 (Flagship)', desc: '14,400 RPD • 300 tok/s' },
+  { providerId: 'deepseek', modelId: 'deepseek-chat', name: 'DeepSeek V3 (Chat)', tier: 'Tier 1 (Flagship)', desc: 'Exceptional Dialogue Slang & Idioms' },
+  { providerId: 'openrouter', modelId: 'deepseek/deepseek-chat', name: 'DeepSeek V3 (OpenRouter)', tier: 'Tier 1 (Flagship)', desc: 'Natural Cinematic Dub' },
+  { providerId: 'openai', modelId: 'gpt-4o-mini', name: 'GPT-4o Mini', tier: 'Tier 1 (Flagship)', desc: 'Fast & Highly Precise' },
+  { providerId: 'gemini', modelId: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash', tier: 'Tier 1 (Flagship)', desc: 'Ultra-Fast Google Model' },
+
+  // ── Tier 2: High-Reasoning & Robust Multilingual Workhorses ──
+  { providerId: 'groq', modelId: 'deepseek-r1-distill-llama-70b', name: 'Groq DeepSeek R1 70B', tier: 'Tier 2 (High Reasoning)', desc: 'Complex Metaphor Understanding' },
+  { providerId: 'openrouter', modelId: 'meta-llama/llama-3.3-70b-instruct', name: 'Meta Llama 3.3 70B', tier: 'Tier 2 (High Reasoning)', desc: 'Superb Conversational Flow' },
+  { providerId: 'openai', modelId: 'gpt-4o', name: 'GPT-4o Flagship', tier: 'Tier 2 (High Reasoning)', desc: 'Maximum Linguistic Precision' },
+  { providerId: 'openrouter', modelId: 'anthropic/claude-3.5-haiku', name: 'Claude 3.5 Haiku', tier: 'Tier 2 (High Reasoning)', desc: 'Natural Spoken Dubbing' },
+  { providerId: 'gemini', modelId: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash', tier: 'Tier 2 (High Reasoning)', desc: 'Stable Google Workhorse' },
+
+  // ── Tier 3: Emergency Fallback & Specialized Deep Models ──
+  { providerId: 'groq', modelId: 'mixtral-8x7b-32768', name: 'Groq Mixtral 8x7B', tier: 'Tier 3 (Fallback)', desc: 'High Multilingual Throughput' },
+  { providerId: 'groq', modelId: 'llama-3.1-8b-instant', name: 'Groq Llama 3.1 8B', tier: 'Tier 3 (Fallback)', desc: 'Emergency Speed Fallback' },
+  { providerId: 'deepseek', modelId: 'deepseek-reasoner', name: 'DeepSeek R1 Reasoner', tier: 'Tier 3 (Fallback)', desc: 'Deep Reasoning Chain' },
+  { providerId: 'gemini', modelId: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro', tier: 'Tier 3 (Fallback)', desc: 'Pro Reasoning (2 RPM / 50 RPD)' },
+  { providerId: 'gemini', modelId: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro', tier: 'Tier 3 (Fallback)', desc: 'Pro Reasoning (2 RPM / 50 RPD)' }
+];
+
 // Global State
 const state = {
   apiKeys: {
@@ -753,20 +779,49 @@ function getActiveProviderAndKey(modelId) {
   return { providerId: 'gemini', model: 'gemini-2.5-flash', key: state.apiKeys.gemini || '' };
 }
 
-function findFailoverBackup(currentProviderId) {
+function findFailoverBackup(currentProviderId, currentModelId) {
   if (!state.autoFailoverEnabled) return null;
-  const candidateProviders = ['groq', 'gemini', 'openrouter', 'deepseek', 'openai'].filter(p => p !== currentProviderId);
 
-  for (const pid of candidateProviders) {
+  // 1. Primary Search: Top-ranked model from a different connected provider
+  for (const entry of TRANSLATION_MODEL_RANKING) {
+    const pid = entry.providerId;
+    const mid = entry.modelId;
+
+    if (pid === currentProviderId) continue;
+
     if (state.apiKeys[pid] && state.providerStatus[pid]?.connected) {
       return {
         providerId: pid,
         providerName: AI_PROVIDERS[pid].name,
-        model: AI_PROVIDERS[pid].defaultModel,
+        model: mid,
+        modelName: entry.name,
+        tier: entry.tier,
+        desc: entry.desc,
         key: state.apiKeys[pid]
       };
     }
   }
+
+  // 2. Secondary Fallback: Different model within the same connected provider
+  for (const entry of TRANSLATION_MODEL_RANKING) {
+    const pid = entry.providerId;
+    const mid = entry.modelId;
+
+    if (pid === currentProviderId && mid !== currentModelId) {
+      if (state.apiKeys[pid] && state.providerStatus[pid]?.connected) {
+        return {
+          providerId: pid,
+          providerName: AI_PROVIDERS[pid].name,
+          model: mid,
+          modelName: entry.name,
+          tier: entry.tier,
+          desc: entry.desc,
+          key: state.apiKeys[pid]
+        };
+      }
+    }
+  }
+
   return null;
 }
 
@@ -1696,9 +1751,9 @@ async function translateBatchWithAdaptiveSplitting(batch, activeKey, modelToUse,
 
     // ⚡ SMART AUTO-FAILOVER: Switch to another configured AI provider on rate limit / server busy / quota exhaustion
     if ((is429 || is503) && state.autoFailoverEnabled) {
-      const backup = findFailoverBackup(currentPid);
+      const backup = findFailoverBackup(currentPid, activeModel);
       if (backup) {
-        addTerminalLog('warn', `⚡ [Smart Auto-Failover] ${AI_PROVIDERS[currentPid].name} is ${is503 ? 'overloaded/busy (503)' : 'rate limited (429)'}. Automatically switching to [${backup.providerName}] (${backup.model}) to continue seamless translation!`);
+        addTerminalLog('warn', `⚡ [Auto-Failover • ${backup.tier}] ${AI_PROVIDERS[currentPid].name} is ${is503 ? 'overloaded/busy (503)' : 'rate limited (429)'}. Switching to [${backup.providerName}] ${backup.modelName} (${backup.desc}) to continue translation!`);
         state.selectedModel = backup.model;
         if (modelSelect) {
           modelSelect.value = backup.model;
