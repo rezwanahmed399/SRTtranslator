@@ -10,13 +10,12 @@ const AI_PROVIDERS = {
     storageKey: 'gemini_api_key',
     docLink: 'https://aistudio.google.com/app/apikey',
     type: 'gemini',
-    defaultModel: 'gemini-2.5-flash',
+    defaultModel: 'gemini-2.0-flash',
     models: [
-      { id: 'gemini-2.5-flash', displayName: 'Gemini 2.5 Flash', version: '2.5', inputTokens: 1048576, outputTokens: 8192, rpm: '15 RPM', rpd: '1,500 RPD', desc: 'Fastest & Recommended' },
-      { id: 'gemini-2.5-pro', displayName: 'Gemini 2.5 Pro', version: '2.5', inputTokens: 2097152, outputTokens: 8192, rpm: '2 RPM', rpd: '50 RPD', desc: 'Deep Reasoning & Context' },
-      { id: 'gemini-2.0-flash', displayName: 'Gemini 2.0 Flash', version: '2.0', inputTokens: 1048576, outputTokens: 8192, rpm: '15 RPM', rpd: '1,500 RPD', desc: 'Next-Gen Ultra Fast' },
-      { id: 'gemini-1.5-flash', displayName: 'Gemini 1.5 Flash', version: '1.5', inputTokens: 1048576, outputTokens: 8192, rpm: '15 RPM', rpd: '1,500 RPD', desc: 'High Volume Translation' },
-      { id: 'gemini-1.5-pro', displayName: 'Gemini 1.5 Pro', version: '1.5', inputTokens: 2097152, outputTokens: 8192, rpm: '2 RPM', rpd: '50 RPD', desc: 'Complex Nuances' }
+      { id: 'gemini-2.0-flash', displayName: 'Gemini 2.0 Flash', version: '2.0', inputTokens: 1048576, outputTokens: 8192, rpm: '15 RPM', rpd: '1,500 RPD', desc: 'Fastest & Recommended (Next-Gen)' },
+      { id: 'gemini-1.5-flash', displayName: 'Gemini 1.5 Flash', version: '1.5', inputTokens: 1048576, outputTokens: 8192, rpm: '15 RPM', rpd: '1,500 RPD', desc: 'Stable High-Volume Translation' },
+      { id: 'gemini-2.0-flash-lite', displayName: 'Gemini 2.0 Flash Lite', version: '2.0', inputTokens: 1048576, outputTokens: 8192, rpm: '30 RPM', rpd: '1,500 RPD', desc: 'Ultra-Fast Lightweight' },
+      { id: 'gemini-1.5-pro', displayName: 'Gemini 1.5 Pro', version: '1.5', inputTokens: 2097152, outputTokens: 8192, rpm: '2 RPM', rpd: '50 RPD', desc: 'Complex Nuances & Context' }
     ]
   },
   groq: {
@@ -45,7 +44,7 @@ const AI_PROVIDERS = {
     models: [
       { id: 'deepseek/deepseek-chat', displayName: 'DeepSeek V3 (Chat)', version: 'V3', inputTokens: 64000, outputTokens: 8192, rpm: 'Dynamic', rpd: 'Unlimited', desc: 'Top Multilingual Subtitles' },
       { id: 'meta-llama/llama-3.3-70b-instruct', displayName: 'Meta Llama 3.3 70B', version: '3.3', inputTokens: 128000, outputTokens: 8192, rpm: 'Dynamic', rpd: 'Unlimited', desc: 'Natural Dialogue Flow' },
-      { id: 'google/gemini-2.5-flash', displayName: 'Gemini 2.5 Flash', version: '2.5', inputTokens: 1048576, outputTokens: 8192, rpm: 'Dynamic', rpd: 'Unlimited', desc: 'Ultra Fast via OpenRouter' },
+      { id: 'google/gemini-2.0-flash-001', displayName: 'Gemini 2.0 Flash', version: '2.0', inputTokens: 1048576, outputTokens: 8192, rpm: 'Dynamic', rpd: 'Unlimited', desc: 'Ultra Fast via OpenRouter' },
       { id: 'anthropic/claude-3.5-haiku', displayName: 'Claude 3.5 Haiku', version: '3.5', inputTokens: 200000, outputTokens: 8192, rpm: 'Dynamic', rpd: 'Unlimited', desc: 'Natural Spoken Dubbing' }
     ]
   },
@@ -81,25 +80,24 @@ const AI_PROVIDERS = {
 // Ranked by: Dialogue translation naturalness, nuance/slang retention, speed, and rate-limit resilience
 const TRANSLATION_MODEL_RANKING = [
   // ── Tier 1: Flagship Quality + Ultra High-Throughput (Top Priority) ──
-  { providerId: 'gemini', modelId: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', tier: 'Tier 1 (Flagship)', desc: 'Best Nuance & 1M Context' },
+  { providerId: 'gemini', modelId: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash', tier: 'Tier 1 (Flagship)', desc: 'Next-Gen Ultra Fast & 1M Context' },
   { providerId: 'groq', modelId: 'llama-3.3-70b-versatile', name: 'Groq Llama 3.3 70B', tier: 'Tier 1 (Flagship)', desc: '14,400 RPD • 300 tok/s' },
   { providerId: 'deepseek', modelId: 'deepseek-chat', name: 'DeepSeek V3 (Chat)', tier: 'Tier 1 (Flagship)', desc: 'Exceptional Dialogue Slang & Idioms' },
   { providerId: 'openrouter', modelId: 'deepseek/deepseek-chat', name: 'DeepSeek V3 (OpenRouter)', tier: 'Tier 1 (Flagship)', desc: 'Natural Cinematic Dub' },
   { providerId: 'openai', modelId: 'gpt-4o-mini', name: 'GPT-4o Mini', tier: 'Tier 1 (Flagship)', desc: 'Fast & Highly Precise' },
-  { providerId: 'gemini', modelId: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash', tier: 'Tier 1 (Flagship)', desc: 'Ultra-Fast Google Model' },
+  { providerId: 'gemini', modelId: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash', tier: 'Tier 1 (Flagship)', desc: 'Stable Google High-Volume' },
 
   // ── Tier 2: High-Reasoning & Robust Multilingual Workhorses ──
+  { providerId: 'gemini', modelId: 'gemini-2.0-flash-lite', name: 'Gemini 2.0 Flash Lite', tier: 'Tier 2 (High Speed)', desc: '30 RPM Ultra-Lightweight' },
   { providerId: 'groq', modelId: 'deepseek-r1-distill-llama-70b', name: 'Groq DeepSeek R1 70B', tier: 'Tier 2 (High Reasoning)', desc: 'Complex Metaphor Understanding' },
   { providerId: 'openrouter', modelId: 'meta-llama/llama-3.3-70b-instruct', name: 'Meta Llama 3.3 70B', tier: 'Tier 2 (High Reasoning)', desc: 'Superb Conversational Flow' },
   { providerId: 'openai', modelId: 'gpt-4o', name: 'GPT-4o Flagship', tier: 'Tier 2 (High Reasoning)', desc: 'Maximum Linguistic Precision' },
   { providerId: 'openrouter', modelId: 'anthropic/claude-3.5-haiku', name: 'Claude 3.5 Haiku', tier: 'Tier 2 (High Reasoning)', desc: 'Natural Spoken Dubbing' },
-  { providerId: 'gemini', modelId: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash', tier: 'Tier 2 (High Reasoning)', desc: 'Stable Google Workhorse' },
 
   // ── Tier 3: Emergency Fallback & Specialized Deep Models ──
   { providerId: 'groq', modelId: 'mixtral-8x7b-32768', name: 'Groq Mixtral 8x7B', tier: 'Tier 3 (Fallback)', desc: 'High Multilingual Throughput' },
   { providerId: 'groq', modelId: 'llama-3.1-8b-instant', name: 'Groq Llama 3.1 8B', tier: 'Tier 3 (Fallback)', desc: 'Emergency Speed Fallback' },
   { providerId: 'deepseek', modelId: 'deepseek-reasoner', name: 'DeepSeek R1 Reasoner', tier: 'Tier 3 (Fallback)', desc: 'Deep Reasoning Chain' },
-  { providerId: 'gemini', modelId: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro', tier: 'Tier 3 (Fallback)', desc: 'Pro Reasoning (2 RPM / 50 RPD)' },
   { providerId: 'gemini', modelId: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro', tier: 'Tier 3 (Fallback)', desc: 'Pro Reasoning (2 RPM / 50 RPD)' }
 ];
 
@@ -123,7 +121,7 @@ const state = {
   },
   apiKey: '', // Backward compatibility
   availableModels: [],
-  selectedModel: 'gemini-2.5-flash',
+  selectedModel: 'gemini-2.0-flash',
   activeProvider: 'gemini',
   parsedBlocks: [],       // Array of { num, timeCode, lines: [] }
   translatedBlocks: [],   // Array of { num, timeCode, lines: [], translatedLines: [] }
@@ -566,7 +564,7 @@ async function verifyAndLoadProvider(providerId, key) {
         const id = m.name.replace(/^models\//, '').toLowerCase();
         const hasGenContent = Array.isArray(m.supportedGenerationMethods) && m.supportedGenerationMethods.includes('generateContent');
         if (!hasGenContent || !id.startsWith('gemini')) return false;
-        const nonText = ['tts', 'banana', 'nano', 'robotics', 'transcribe', 'clip', 'deep-research', 'embedding', 'embed', 'imagen', 'image', 'audio', 'realtime'];
+        const nonText = ['tts', 'banana', 'nano', 'robotics', 'transcribe', 'clip', 'deep-research', 'embedding', 'embed', 'imagen', 'image', 'audio', 'realtime', 'gemini-2.5', 'gemini-3.6'];
         return !nonText.some(t => id.includes(t));
       });
 
@@ -574,13 +572,26 @@ async function verifyAndLoadProvider(providerId, key) {
         throw new Error('No compatible translation models available for this Gemini API Key.');
       }
 
+      // Sort with gemini-2.0-flash and gemini-1.5-flash at top
+      textModels.sort((a, b) => {
+        const idA = a.name.replace(/^models\//, '').toLowerCase();
+        const idB = b.name.replace(/^models\//, '').toLowerCase();
+        if (idA === 'gemini-2.0-flash') return -1;
+        if (idB === 'gemini-2.0-flash') return 1;
+        if (idA === 'gemini-1.5-flash') return -1;
+        if (idB === 'gemini-1.5-flash') return 1;
+        if (idA === 'gemini-2.0-flash-lite') return -1;
+        if (idB === 'gemini-2.0-flash-lite') return 1;
+        return idA.localeCompare(idB);
+      });
+
       loadedModels = textModels.map(m => {
         const id = m.name.replace(/^models\//, '');
         const isPro = id.includes('pro');
         return {
           id,
           displayName: m.displayName || id,
-          version: m.version || (id.includes('2.5') ? '2.5' : id.includes('2.0') ? '2.0' : '1.5'),
+          version: m.version || (id.includes('2.0') ? '2.0' : '1.5'),
           inputTokens: m.inputTokenLimit || 1048576,
           outputTokens: m.outputTokenLimit || 8192,
           rpm: isPro ? '2 RPM' : '15 RPM',
@@ -594,6 +605,11 @@ async function verifyAndLoadProvider(providerId, key) {
       state.apiKeys.gemini = key;
       state.apiKey = key;
       localStorage.setItem('gemini_api_key', key);
+
+      // Auto-select the top live model if current selection is not in loaded models
+      if (!loadedModels.some(m => m.id === state.selectedModel)) {
+        state.selectedModel = loadedModels[0].id;
+      }
     } else if (providerId === 'groq') {
       // Real-time live Groq models endpoint
       const res = await fetch('https://api.groq.com/openai/v1/models', {
@@ -1944,12 +1960,13 @@ async function translateBatchWithAdaptiveSplitting(batch, activeKey, modelToUse,
     const errMsg = (err.message || '').toLowerCase();
     const is429 = errMsg.includes('429') || errMsg.includes('quota') || errMsg.includes('resource has been exhausted') || errMsg.includes('rate limit');
     const is503 = errMsg.includes('503') || errMsg.includes('overloaded') || errMsg.includes('high demand') || errMsg.includes('service unavailable');
+    const isModelUnavailable = errMsg.includes('no longer available') || errMsg.includes('not found') || errMsg.includes('is not supported') || errMsg.includes('deprecated') || errMsg.includes('404');
 
-    // ⚡ SMART AUTO-FAILOVER: Switch to another configured AI provider on rate limit / server busy / quota exhaustion
-    if ((is429 || is503) && state.autoFailoverEnabled) {
+    // ⚡ SMART AUTO-FAILOVER: Switch to another configured AI provider on rate limit / server busy / model unavailable / quota exhaustion
+    if ((is429 || is503 || isModelUnavailable) && state.autoFailoverEnabled) {
       const backup = findFailoverBackup(currentPid, activeModel);
       if (backup) {
-        addTerminalLog('warn', `⚡ [Auto-Failover • ${backup.tier}] ${AI_PROVIDERS[currentPid].name} is ${is503 ? 'overloaded/busy (503)' : 'rate limited (429)'}. Switching to [${backup.providerName}] ${backup.modelName} (${backup.desc}) to continue translation!`);
+        addTerminalLog('warn', `⚡ [Auto-Failover • ${backup.tier}] Model ${activeModel} is ${isModelUnavailable ? 'deprecated/unavailable' : is503 ? 'overloaded (503)' : 'rate limited (429)'}. Switching to [${backup.providerName}] ${backup.modelName} (${backup.desc}) to continue translation!`);
         state.selectedModel = backup.model;
         if (modelSelect) {
           modelSelect.value = backup.model;
