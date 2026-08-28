@@ -1726,8 +1726,9 @@ function parseAndRepairJson(rawText) {
     throw new Error('Empty text received from model.');
   }
 
-  // 1. Strip markdown fences and trailing noise
+  // 1. Strip reasoning thoughts (<think>...</think>), markdown fences, and trailing noise
   let clean = rawText
+    .replace(/<think>[\s\S]*?<\/think>/gi, '')
     .replace(/^```json\s*/im, '')
     .replace(/^```\s*/im, '')
     .replace(/```\s*$/m, '')
@@ -1840,6 +1841,76 @@ function parseAndRepairJson(rawText) {
   }
 
   throw new Error('Could not parse or repair valid JSON from model response.');
+}
+
+// ── Universal Translation-to-Batch Matcher (Prevents Subtitle Shifting or Misalignment) ──
+function matchTranslationsToBatch(batch, parsedArray) {
+  if (!Array.isArray(parsedArray) || parsedArray.length === 0) {
+    return batch.map(b => ({
+      ...b,
+      translatedLines: b.lines,
+      isTranslated: false
+    }));
+  }
+
+  // 1. Detect ID scheme used by the AI model
+  const hasZero = parsedArray.some(item => item && (item.id === 0 || item.id === '0'));
+  const hasOriginalNums = batch.length > 0 && parsedArray.some(item => item && (item.id === batch[0].num || item.id === String(batch[0].num)));
+  const isOneIndexed = !hasZero && !hasOriginalNums && parsedArray.some(item => item && (item.id === 1 || item.id === '1'));
+
+  return batch.map((originalBlock, idx) => {
+    let matched = null;
+
+    if (hasOriginalNums) {
+      matched = parsedArray.find(item => item && (item.id === originalBlock.num || item.id === String(originalBlock.num)));
+    } else if (isOneIndexed) {
+      matched = parsedArray.find(item => item && (item.id === idx + 1 || item.id === String(idx + 1)));
+    } else {
+      matched = parsedArray.find(item => item && (item.id === idx || item.id === String(idx)));
+    }
+
+    // Fallback if model output an array without id properties
+    if (!matched && parsedArray.length === batch.length && !parsedArray.some(it => it && it.id !== undefined)) {
+      matched = parsedArray[idx];
+    }
+
+    let transText = '';
+    if (typeof matched === 'string') {
+      transText = matched.trim();
+    } else if (matched && typeof matched === 'object') {
+      transText = (
+        matched.text ||
+        matched.translation ||
+        matched.translated_text ||
+        matched.bengali ||
+        matched.content ||
+        matched.translatedText ||
+        matched.translated ||
+        matched.dialogue ||
+        Object.values(matched).find(v => typeof v === 'string' && v.trim().length > 0 && v !== String(matched.id)) ||
+        ''
+      ).trim();
+    }
+
+    if (!transText) {
+      return {
+        ...originalBlock,
+        translatedLines: originalBlock.lines,
+        isTranslated: false
+      };
+    }
+
+    const lines = transText
+      .split('\n')
+      .map(l => l.trim())
+      .filter(l => l.length > 0);
+
+    return {
+      ...originalBlock,
+      translatedLines: lines.length > 0 ? lines : [transText],
+      isTranslated: true
+    };
+  });
 }
 
 // ── Translation Pipeline ──
@@ -2294,64 +2365,7 @@ OUTPUT (JSON Array):`;
   }
 
   const parsedArray = parseAndRepairJson(rawText);
-
-  if (!Array.isArray(parsedArray)) {
-    throw new Error('AI output was not a JSON array.');
-  }
-
-  return batch.map((originalBlock, idx) => {
-    let matched = null;
-    if (Array.isArray(parsedArray)) {
-      matched = parsedArray.find(item => item && (
-        item.id === idx || 
-        item.id === String(idx) || 
-        item.id === idx + 1 || 
-        item.id === String(idx + 1) ||
-        item.id === originalBlock.num
-      ));
-
-      if (!matched && idx < parsedArray.length) {
-        matched = parsedArray[idx];
-      }
-    }
-
-    let transText = '';
-    if (typeof matched === 'string') {
-      transText = matched.trim();
-    } else if (matched && typeof matched === 'object') {
-      transText = (
-        matched.text || 
-        matched.translation || 
-        matched.translated_text || 
-        matched.bengali || 
-        matched.content ||
-        matched.translatedText ||
-        matched.translated ||
-        matched.dialogue ||
-        Object.values(matched).find(v => typeof v === 'string' && v.trim().length > 0 && v !== String(matched.id)) ||
-        ''
-      ).trim();
-    }
-
-    if (!transText) {
-      return {
-        ...originalBlock,
-        translatedLines: originalBlock.lines,
-        isTranslated: false
-      };
-    }
-
-    const lines = transText
-      .split('\n')
-      .map(l => l.trim())
-      .filter(l => l.length > 0);
-
-    return {
-      ...originalBlock,
-      translatedLines: lines.length > 0 ? lines : [transText],
-      isTranslated: true
-    };
-  });
+  return matchTranslationsToBatch(batch, parsedArray);
 }
 
 // ── OpenAI-Compatible Translation Engine (Groq, OpenRouter, DeepSeek, OpenAI) ──
@@ -2461,7 +2475,7 @@ OUTPUT (JSON Array):`;
     temperature: 0.15
   };
 
-  if (providerId === 'groq' || providerId === 'openai' || providerId === 'deepseek') {
+  if (providerId === 'groq' || providerId === 'openai' || (providerId === 'deepseek' && modelId !== 'deepseek-reasoner')) {
     requestBody.response_format = { type: 'json_object' };
   }
 
@@ -2488,9 +2502,9 @@ OUTPUT (JSON Array):`;
   if (!response.ok) {
     const errorJson = await response.json().catch(() => ({}));
     const errMsg = errorJson?.error?.message || `HTTP ${response.status} ${response.statusText}`;
-    if (response.status === 429 || errMsg.toLowerCase().includes('quota') || errMsg.toLowerCase().includes('rate limit')) {
+    if (response.status === 429) {
       state.apiMetrics.rateLimitHits++;
-      updateApiHealthUI('cooldown', `[${pConf.name}] Rate Limit Hit`, duration);
+      updateApiHealthUI('cooldown', `[${pConf.name}] 429 Rate Limit`, duration);
     } else {
       updateApiHealthUI('warning', `[${pConf.name}] Error (${response.status})`, duration);
     }
@@ -2508,64 +2522,7 @@ OUTPUT (JSON Array):`;
   }
 
   const parsedArray = parseAndRepairJson(rawText);
-
-  if (!Array.isArray(parsedArray)) {
-    throw new Error(`${pConf.name} AI output was not a valid JSON array.`);
-  }
-
-  return batch.map((originalBlock, idx) => {
-    let matched = null;
-    if (Array.isArray(parsedArray)) {
-      matched = parsedArray.find(item => item && (
-        item.id === idx || 
-        item.id === String(idx) || 
-        item.id === idx + 1 || 
-        item.id === String(idx + 1) ||
-        item.id === originalBlock.num
-      ));
-
-      if (!matched && idx < parsedArray.length) {
-        matched = parsedArray[idx];
-      }
-    }
-
-    let transText = '';
-    if (typeof matched === 'string') {
-      transText = matched.trim();
-    } else if (matched && typeof matched === 'object') {
-      transText = (
-        matched.text || 
-        matched.translation || 
-        matched.translated_text || 
-        matched.bengali || 
-        matched.content ||
-        matched.translatedText ||
-        matched.translated ||
-        matched.dialogue ||
-        Object.values(matched).find(v => typeof v === 'string' && v.trim().length > 0 && v !== String(matched.id)) ||
-        ''
-      ).trim();
-    }
-
-    if (!transText) {
-      return {
-        ...originalBlock,
-        translatedLines: originalBlock.lines,
-        isTranslated: false
-      };
-    }
-
-    const lines = transText
-      .split('\n')
-      .map(l => l.trim())
-      .filter(l => l.length > 0);
-
-    return {
-      ...originalBlock,
-      translatedLines: lines.length > 0 ? lines : [transText],
-      isTranslated: true
-    };
-  });
+  return matchTranslationsToBatch(batch, parsedArray);
 }
 
 // ── Selective Retry Pipeline for Incomplete Batches ──
@@ -2638,7 +2595,9 @@ async function retryIncompleteBatchesPipeline() {
       addTerminalLog('info', `Retrying lines ${currentBatch.map(b => '#' + b.num).join(', ')}...`);
 
       try {
-        const res = await translateBatchWithAdaptiveSplitting(currentBatch, activeKey, state.selectedModel || currentModelToUse);
+        const activeModelId = state.selectedModel || currentModelToUse;
+        const { model: retryModel, key: retryKey } = getActiveProviderAndKey(activeModelId);
+        const res = await translateBatchWithAdaptiveSplitting(currentBatch, retryKey, retryModel);
         res.forEach((translatedBlock, i) => {
           const origIdx = currentBatch[i].originalIndex;
           if (translatedBlock.isTranslated) {
@@ -2965,44 +2924,7 @@ OUTPUT (JSON Array):`;
   if (!rawText.trim()) throw new Error('Received empty response from Gemini Condenser.');
 
   const parsedArray = parseAndRepairJson(rawText);
-
-  if (!Array.isArray(parsedArray)) throw new Error('AI condenser output was not a JSON array.');
-
-  return batch.map((originalBlock, idx) => {
-    let matched = parsedArray.find(item => item && (
-      item.id === idx || 
-      item.id === String(idx) || 
-      item.id === idx + 1 || 
-      item.id === String(idx + 1)
-    ));
-    if (!matched && idx < parsedArray.length) matched = parsedArray[idx];
-
-    let transText = '';
-    if (typeof matched === 'string') {
-      transText = matched.trim();
-    } else if (matched && typeof matched === 'object') {
-      transText = (
-        matched.text || 
-        matched.translation || 
-        matched.translated_text || 
-        matched.bengali || 
-        matched.content ||
-        matched.dialogue ||
-        Object.values(matched).find(v => typeof v === 'string' && v.trim().length > 0 && v !== String(matched.id)) ||
-        ''
-      ).trim();
-    }
-
-    if (!transText) {
-      return { ...originalBlock };
-    }
-
-    const lines = transText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-    return {
-      ...originalBlock,
-      translatedLines: lines.length > 0 ? lines : [transText]
-    };
-  });
+  return matchTranslationsToBatch(batch, parsedArray);
 }
 
 // ── OpenAI-Compatible 2nd-Pass Condense API Call ──
@@ -3058,7 +2980,7 @@ OUTPUT (JSON Array):`;
     temperature: 0.15
   };
 
-  if (providerId === 'groq' || providerId === 'openai' || providerId === 'deepseek') {
+  if (providerId === 'groq' || providerId === 'openai' || (providerId === 'deepseek' && modelId !== 'deepseek-reasoner')) {
     requestBody.response_format = { type: 'json_object' };
   }
 
@@ -3103,44 +3025,7 @@ OUTPUT (JSON Array):`;
   if (!rawText.trim()) throw new Error(`Received empty response from ${pConf.name} Condenser.`);
 
   const parsedArray = parseAndRepairJson(rawText);
-
-  if (!Array.isArray(parsedArray)) throw new Error('AI condenser output was not a JSON array.');
-
-  return batch.map((originalBlock, idx) => {
-    let matched = parsedArray.find(item => item && (
-      item.id === idx || 
-      item.id === String(idx) || 
-      item.id === idx + 1 || 
-      item.id === String(idx + 1)
-    ));
-    if (!matched && idx < parsedArray.length) matched = parsedArray[idx];
-
-    let transText = '';
-    if (typeof matched === 'string') {
-      transText = matched.trim();
-    } else if (matched && typeof matched === 'object') {
-      transText = (
-        matched.text || 
-        matched.translation || 
-        matched.translated_text || 
-        matched.bengali || 
-        matched.content ||
-        matched.dialogue ||
-        Object.values(matched).find(v => typeof v === 'string' && v.trim().length > 0 && v !== String(matched.id)) ||
-        ''
-      ).trim();
-    }
-
-    if (!transText) {
-      return { ...originalBlock };
-    }
-
-    const lines = transText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-    return {
-      ...originalBlock,
-      translatedLines: lines.length > 0 ? lines : [transText]
-    };
-  });
+  return matchTranslationsToBatch(batch, parsedArray);
 }
 
 // ── Restore Original 1st-Pass Translation ──
