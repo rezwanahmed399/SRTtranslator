@@ -545,17 +545,24 @@ async function verifyAndLoadProvider(providerId, key) {
   const startTime = performance.now();
 
   try {
+    let loadedModels = [];
+    let probeMs = 0;
+
     if (providerId === 'gemini') {
       const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
-      const probeMs = Math.round(performance.now() - startTime);
+      probeMs = Math.round(performance.now() - startTime);
 
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
-        throw new Error(errData?.error?.message || `HTTP ${res.status}: Invalid Gemini API Key.`);
+        throw new Error(errData?.error?.message || `HTTP ${res.status}: Invalid Gemini API Key or access denied.`);
       }
 
       const data = await res.json();
-      const textModels = (data.models || []).filter(m => {
+      if (!data || !Array.isArray(data.models) || data.models.length === 0) {
+        throw new Error('No active models returned by Google Gemini API.');
+      }
+
+      const textModels = data.models.filter(m => {
         const id = m.name.replace(/^models\//, '').toLowerCase();
         const hasGenContent = Array.isArray(m.supportedGenerationMethods) && m.supportedGenerationMethods.includes('generateContent');
         if (!hasGenContent || !id.startsWith('gemini')) return false;
@@ -563,74 +570,248 @@ async function verifyAndLoadProvider(providerId, key) {
         return !nonText.some(t => id.includes(t));
       });
 
+      if (textModels.length === 0) {
+        throw new Error('No compatible translation models available for this Gemini API Key.');
+      }
+
+      loadedModels = textModels.map(m => {
+        const id = m.name.replace(/^models\//, '');
+        const isPro = id.includes('pro');
+        return {
+          id,
+          displayName: m.displayName || id,
+          version: m.version || (id.includes('2.5') ? '2.5' : id.includes('2.0') ? '2.0' : '1.5'),
+          inputTokens: m.inputTokenLimit || 1048576,
+          outputTokens: m.outputTokenLimit || 8192,
+          rpm: isPro ? '2 RPM' : '15 RPM',
+          rpd: isPro ? '50 RPD' : '1,500 RPD',
+          desc: m.description || (isPro ? 'Pro Deep Reasoning' : 'Fast Production Model'),
+          providerId: 'gemini',
+          livePingMs: probeMs
+        };
+      });
+
       state.apiKeys.gemini = key;
       state.apiKey = key;
       localStorage.setItem('gemini_api_key', key);
-      
-      const loadedModels = textModels.length > 0 ? textModels.map(m => ({
-        id: m.name.replace(/^models\//, ''),
-        displayName: m.displayName || m.name.replace(/^models\//, ''),
-        version: m.version || '2.5',
-        inputTokens: m.inputTokenLimit || 1048576,
-        outputTokens: m.outputTokenLimit || 8192,
-        rpm: '15 RPM',
-        rpd: '1,500 RPD',
-        desc: m.description || ''
-      })) : pConf.models;
-
-      state.providerStatus.gemini = {
-        connected: true,
-        models: loadedModels,
-        lastLatency: probeMs
-      };
-
-      showProviderFeedback('gemini', `Connected! ${loadedModels.length} Google Gemini models active.`, 'ok');
-      updateProviderStatusUI('gemini', true, `${loadedModels.length} models`);
-    } else {
-      // OpenAI-compatible providers: Groq, OpenRouter, DeepSeek, OpenAI
-      let headers = {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${key}`
-      };
-      if (providerId === 'openrouter') {
-        headers['HTTP-Referer'] = window.location.origin || 'https://srttranslator.vercel.app';
-        headers['X-Title'] = 'SRTtranslator';
-      }
-
-      const testPayload = {
-        model: pConf.models[0].id,
-        messages: [{ role: 'user', content: 'test' }],
-        max_tokens: 1
-      };
-
-      const res = await fetch(pConf.endpoint, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify(testPayload)
+    } else if (providerId === 'groq') {
+      // Real-time live Groq models endpoint
+      const res = await fetch('https://api.groq.com/openai/v1/models', {
+        headers: {
+          'Authorization': `Bearer ${key}`
+        }
       });
-
-      const probeMs = Math.round(performance.now() - startTime);
+      probeMs = Math.round(performance.now() - startTime);
 
       if (!res.ok) {
         const errJson = await res.json().catch(() => ({}));
-        const errTxt = errJson?.error?.message || `HTTP ${res.status}: Verification failed`;
-        if (res.status === 401 || res.status === 403) {
-          throw new Error(errTxt);
-        }
+        throw new Error(errJson?.error?.message || `HTTP ${res.status}: Invalid Groq API Key.`);
       }
 
-      state.apiKeys[providerId] = key;
-      localStorage.setItem(pConf.storageKey, key);
+      const data = await res.json();
+      const rawList = Array.isArray(data?.data) ? data.data : [];
+      
+      // Filter active text/chat models and exclude whisper/audio/vision
+      const validGroq = rawList.filter(m => {
+        const id = (m.id || '').toLowerCase();
+        if (m.active === false) return false;
+        if (id.includes('whisper') || id.includes('audio') || id.includes('vision') || id.includes('guard') || id.includes('tts')) return false;
+        return true;
+      });
 
-      state.providerStatus[providerId] = {
-        connected: true,
-        models: pConf.models,
-        lastLatency: probeMs
-      };
+      if (validGroq.length === 0) {
+        throw new Error('No active chat models returned by Groq API.');
+      }
 
-      showProviderFeedback(providerId, `Connected! ${pConf.models.length} ${pConf.name} models active.`, 'ok');
-      updateProviderStatusUI(providerId, true, `${pConf.models.length} models`);
+      loadedModels = validGroq.map(m => {
+        const id = m.id;
+        const lower = id.toLowerCase();
+        let display = id;
+        let rpm = '30 RPM';
+        let rpd = '14,400 RPD';
+        let desc = 'Groq Cloud LPU Acceleration';
+
+        if (lower.includes('llama-3.3-70b')) {
+          display = 'Llama 3.3 70B (Versatile)';
+          desc = 'Top Flagship Translation • 300 tok/s';
+        } else if (lower.includes('deepseek-r1')) {
+          display = 'DeepSeek R1 Distill 70B';
+          desc = 'High Reasoning Subtitle Translation';
+        } else if (lower.includes('llama-3.1-8b')) {
+          display = 'Llama 3.1 8B Instant';
+          desc = 'Sub-second Ultra Speed';
+        } else if (lower.includes('mixtral')) {
+          display = 'Mixtral 8x7B (32k)';
+          desc = 'Multilingual MoE Throughput';
+        } else if (lower.includes('gemma')) {
+          display = `Gemma 2 (${id})`;
+          desc = 'Google Gemma on Groq';
+        }
+
+        return {
+          id,
+          displayName: display,
+          version: m.owned_by || 'Groq',
+          inputTokens: m.context_window || 128000,
+          outputTokens: 32768,
+          rpm,
+          rpd,
+          desc,
+          providerId: 'groq',
+          livePingMs: probeMs
+        };
+      });
+
+      state.apiKeys.groq = key;
+      localStorage.setItem('groq_api_key', key);
+    } else if (providerId === 'openrouter') {
+      // Real-time live OpenRouter models endpoint
+      const res = await fetch('https://openrouter.ai/api/v1/models', {
+        headers: {
+          'Authorization': `Bearer ${key}`
+        }
+      });
+      probeMs = Math.round(performance.now() - startTime);
+
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        throw new Error(errJson?.error?.message || `HTTP ${res.status}: Invalid OpenRouter API Key.`);
+      }
+
+      const data = await res.json();
+      const rawList = Array.isArray(data?.data) ? data.data : [];
+
+      // Filter for top translation-capable models on OpenRouter
+      const desiredPrefixes = ['deepseek/', 'meta-llama/', 'google/', 'anthropic/', 'qwen/', 'mistralai/'];
+      const candidateModels = rawList.filter(m => {
+        const id = (m.id || '').toLowerCase();
+        if (id.includes('free') && !id.includes(':free')) return true;
+        return desiredPrefixes.some(p => id.startsWith(p)) && !id.includes('embed') && !id.includes('vision') && !id.includes('image');
+      });
+
+      const selectedOpenRouter = candidateModels.slice(0, 12);
+      if (selectedOpenRouter.length === 0) {
+        throw new Error('Could not fetch models from OpenRouter.');
+      }
+
+      loadedModels = selectedOpenRouter.map(m => ({
+        id: m.id,
+        displayName: m.name || m.id,
+        version: 'OpenRouter',
+        inputTokens: m.context_length || 64000,
+        outputTokens: m.top_provider?.max_completion_tokens || 8192,
+        rpm: 'Dynamic',
+        rpd: 'Unlimited (Pay-As-You-Go/Free)',
+        desc: m.description ? m.description.slice(0, 60) + '...' : 'OpenRouter Multilingual Engine',
+        providerId: 'openrouter',
+        livePingMs: probeMs
+      }));
+
+      state.apiKeys.openrouter = key;
+      localStorage.setItem('openrouter_api_key', key);
+    } else if (providerId === 'deepseek') {
+      // Real-time live DeepSeek models endpoint
+      const res = await fetch('https://api.deepseek.com/models', {
+        headers: {
+          'Authorization': `Bearer ${key}`
+        }
+      });
+      probeMs = Math.round(performance.now() - startTime);
+
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        throw new Error(errJson?.error?.message || `HTTP ${res.status}: Invalid DeepSeek API Key.`);
+      }
+
+      const data = await res.json();
+      const rawList = Array.isArray(data?.data) ? data.data : [];
+
+      if (rawList.length === 0) {
+        throw new Error('No models found in DeepSeek API account.');
+      }
+
+      loadedModels = rawList.map(m => {
+        const id = m.id;
+        const isReasoner = id.includes('reasoner');
+        return {
+          id,
+          displayName: isReasoner ? 'DeepSeek Reasoner (R1)' : 'DeepSeek V3 (deepseek-chat)',
+          version: isReasoner ? 'R1' : 'V3',
+          inputTokens: 64000,
+          outputTokens: 8192,
+          rpm: '60 RPM',
+          rpd: 'Unlimited',
+          desc: isReasoner ? 'Deep Chain-of-Thought Reasoning' : 'Top Slang & Dialogue Translation',
+          providerId: 'deepseek',
+          livePingMs: probeMs
+        };
+      });
+
+      state.apiKeys.deepseek = key;
+      localStorage.setItem('deepseek_api_key', key);
+    } else if (providerId === 'openai') {
+      // Real-time live OpenAI models endpoint
+      const res = await fetch('https://api.openai.com/v1/models', {
+        headers: {
+          'Authorization': `Bearer ${key}`
+        }
+      });
+      probeMs = Math.round(performance.now() - startTime);
+
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        throw new Error(errJson?.error?.message || `HTTP ${res.status}: Invalid OpenAI API Key.`);
+      }
+
+      const data = await res.json();
+      const rawList = Array.isArray(data?.data) ? data.data : [];
+
+      // Filter for GPT-4o, GPT-4o-mini, GPT-4 chat models
+      const chatGptModels = rawList.filter(m => {
+        const id = (m.id || '').toLowerCase();
+        return id.startsWith('gpt-4o') || id.startsWith('gpt-4') || id.startsWith('gpt-3.5-turbo');
+      });
+
+      if (chatGptModels.length === 0) {
+        throw new Error('No chat completion models accessible for this OpenAI key.');
+      }
+
+      // Sort with gpt-4o-mini and gpt-4o first
+      chatGptModels.sort((a, b) => {
+        const idA = a.id.toLowerCase();
+        const idB = b.id.toLowerCase();
+        if (idA === 'gpt-4o-mini') return -1;
+        if (idB === 'gpt-4o-mini') return 1;
+        if (idA === 'gpt-4o') return -1;
+        if (idB === 'gpt-4o') return 1;
+        return idA.localeCompare(idB);
+      });
+
+      loadedModels = chatGptModels.slice(0, 6).map(m => ({
+        id: m.id,
+        displayName: m.id === 'gpt-4o-mini' ? 'GPT-4o Mini' : m.id === 'gpt-4o' ? 'GPT-4o Flagship' : m.id,
+        version: 'OpenAI',
+        inputTokens: 128000,
+        outputTokens: 16384,
+        rpm: '500 RPM',
+        rpd: 'Unlimited',
+        desc: m.id.includes('mini') ? 'Fast, Low-Cost & Highly Accurate' : 'Flagship Multilingual Standard',
+        providerId: 'openai',
+        livePingMs: probeMs
+      }));
+
+      state.apiKeys.openai = key;
+      localStorage.setItem('openai_api_key', key);
     }
+
+    state.providerStatus[providerId] = {
+      connected: true,
+      models: loadedModels,
+      lastLatency: probeMs
+    };
+
+    showProviderFeedback(providerId, `Connected! ${loadedModels.length} live models verified (Ping: ${probeMs}ms).`, 'ok');
+    updateProviderStatusUI(providerId, true, `${loadedModels.length} models, ${probeMs}ms`);
 
     populateCombinedModelDropdown();
     updateQuotaDashboardForActiveModel();
@@ -700,18 +881,33 @@ function populateCombinedModelDropdown() {
   let totalModelsCount = 0;
   let firstModelValue = null;
 
-  connectedProviders.forEach(pid => {
+  // Sort connected providers by tier recommendation (Gemini, Groq, DeepSeek, OpenRouter, OpenAI)
+  const providerOrder = ['gemini', 'groq', 'deepseek', 'openrouter', 'openai'];
+  const sortedConnectedProviders = connectedProviders.sort((a, b) => providerOrder.indexOf(a) - providerOrder.indexOf(b));
+
+  sortedConnectedProviders.forEach(pid => {
     const pConf = AI_PROVIDERS[pid];
-    const pModels = state.providerStatus[pid]?.models || pConf.models;
+    const pModels = [...(state.providerStatus[pid]?.models || [])];
     totalModelsCount += pModels.length;
 
+    // Dynamically sort models within each provider based on TRANSLATION_MODEL_RANKING
+    pModels.sort((a, b) => {
+      const idxA = TRANSLATION_MODEL_RANKING.findIndex(r => r.providerId === pid && (r.modelId === a.id || a.id.includes(r.modelId)));
+      const idxB = TRANSLATION_MODEL_RANKING.findIndex(r => r.providerId === pid && (r.modelId === b.id || b.id.includes(r.modelId)));
+      const rankA = idxA === -1 ? 999 : idxA;
+      const rankB = idxB === -1 ? 999 : idxB;
+      return rankA - rankB;
+    });
+
+    const ping = state.providerStatus[pid]?.lastLatency ? ` • ${state.providerStatus[pid].lastLatency}ms ping` : '';
     const optgroup = document.createElement('optgroup');
-    optgroup.label = `${pConf.name} (${pModels.length} models)`;
+    optgroup.label = `${pConf.name} (${pModels.length} live models${ping})`;
 
     pModels.forEach((m, idx) => {
       const opt = document.createElement('option');
       opt.value = m.id;
-      opt.textContent = `[${pConf.name}] ${m.displayName || m.id}${idx === 0 ? ' — Recommended' : ''}`;
+      const isTopPick = idx === 0;
+      opt.textContent = `[${pConf.name}] ${m.displayName || m.id}${isTopPick ? ' — Top Recommendation' : ''}`;
       if (!firstModelValue) firstModelValue = m.id;
       optgroup.appendChild(opt);
     });
@@ -736,7 +932,7 @@ function populateCombinedModelDropdown() {
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:11px;height:11px;display:inline-block;margin-right:4px;vertical-align:-1px;">
         <polyline points="20 6 9 17 4 12"/>
       </svg>
-      <span>${totalModelsCount} Live Models (${connectedProviders.length} Providers)</span>
+      <span>${totalModelsCount} Live Models Verified (${connectedProviders.length} Providers)</span>
     `;
     modelLiveBadge.className = 'hint-tag active-tag';
   }
