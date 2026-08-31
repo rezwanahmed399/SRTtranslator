@@ -2090,9 +2090,12 @@ function populateCombinedModelDropdown() {
 // Dynamic Model Failure & Cooldown Tracker
 const modelHealthTracker = {
   failures: new Map(),
+  sessionFailedModels: new Set(),
 
   recordFailure(providerId, modelId, isPermanent, error) {
-    const key = `${providerId}:${(modelId || '').replace(/^models\//, '')}`.toLowerCase();
+    const cleanId = (modelId || '').replace(/^models\//, '').trim().toLowerCase();
+    const key = `${providerId}:${cleanId}`;
+    this.sessionFailedModels.add(key);
     this.failures.set(key, {
       failedAt: Date.now(),
       isPermanent: !!isPermanent,
@@ -2101,20 +2104,27 @@ const modelHealthTracker = {
   },
 
   isAvailable(providerId, modelId) {
-    const key = `${providerId}:${(modelId || '').replace(/^models\//, '')}`.toLowerCase();
+    const cleanId = (modelId || '').replace(/^models\//, '').trim().toLowerCase();
+    const key = `${providerId}:${cleanId}`;
+    if (this.sessionFailedModels.has(key)) return false;
     const entry = this.failures.get(key);
     if (!entry) return true;
     if (entry.isPermanent) return false;
-    // 45-second cooldown for temporary 429 rate limit or 503 overload
-    if (Date.now() - entry.failedAt < 45000) {
+    // 10-minute cooldown for rate limit or server busy (prevents bouncing back to failed model mid-file)
+    if (Date.now() - entry.failedAt < 600000) {
       return false;
     }
     this.failures.delete(key);
     return true;
   },
 
+  resetSession() {
+    this.sessionFailedModels.clear();
+  },
+
   reset() {
     this.failures.clear();
+    this.sessionFailedModels.clear();
   }
 };
 
@@ -3913,6 +3923,7 @@ async function runTranslationPipeline() {
   addTerminalLog('info', `Initial AI: [${pName}] ${currentModelToUse} • Auto-Failover: ${state.autoFailoverEnabled ? 'Enabled' : 'Disabled'}`);
   addTerminalLog('info', `Pacing Preset: ${paceLabels[activePace] || activePace}`);
 
+  modelHealthTracker.resetSession();
   let processedCount = 0;
 
   try {
@@ -4977,6 +4988,13 @@ async function runAiCondensePipeline() {
   updateProgressStats(0, `Starting 2nd-Pass AI Condensation (${totalWordsStart} total words)...`);
   addTerminalLog('info', `[2nd-Pass Condenser] Analyzing ${state.translatedBlocks.length} subtitles (${totalWordsStart} total words across ${batches.length} batches)...`);
 
+  const initialCondenseModel = state.selectedModel || 'auto';
+  const { providerId: initPid, model: initModel } = getActiveProviderAndKey(initialCondenseModel);
+  const initPName = AI_PROVIDERS[initPid]?.name || 'AI';
+  addTerminalLog('info', `Initial Condenser AI: [${initPName}] ${initModel} • Auto-Failover: ${state.autoFailoverEnabled ? 'Enabled' : 'Disabled'}`);
+
+  modelHealthTracker.resetSession();
+
   try {
     for (let bi = 0; bi < batches.length; bi++) {
       while (state.isPaused && !state.isCancelled) {
@@ -4991,10 +5009,20 @@ async function runAiCondensePipeline() {
       const startIndex = bi * bs;
       const batchPct = Math.round((processedCount / state.translatedBlocks.length) * 95);
 
-      const { model: currentCondenseModel, key: currentCondenseKey } = getActiveProviderAndKey(state.selectedModel);
-      updateProgressStats(batchPct, `Condensing batch ${bi + 1} of ${batches.length} (#${currentBatch[0].num} – #${currentBatch[currentBatch.length - 1].num})...`);
+      const activeModelId = state.selectedModel || initialCondenseModel;
+      const { providerId: bPid, model: currentModel, key: batchKey } = getActiveProviderAndKey(activeModelId);
 
-      const batchResult = await condenseBatchWithAdaptiveSplitting(currentBatch, currentCondenseKey, currentCondenseModel);
+      updateProgressStats(batchPct, `Condensing batch ${bi + 1} of ${batches.length} (#${currentBatch[0].num} – #${currentBatch[currentBatch.length - 1].num})...`);
+      addTerminalLog('info', `Batch ${bi + 1}/${batches.length}: Condensing ${currentBatch.length} lines with [${AI_PROVIDERS[bPid]?.name || bPid}] ${currentModel}...`);
+
+      let batchResult = [];
+      try {
+        batchResult = await condenseBatchWithAdaptiveSplitting(currentBatch, batchKey, currentModel);
+      } catch (err) {
+        if (state.isCancelled) break;
+        addTerminalLog('warn', `Batch ${bi + 1} could not be condensed: ${err.message}. Keeping 1st-pass translation.`);
+        batchResult = currentBatch;
+      }
 
       for (let j = 0; j < batchResult.length; j++) {
         condensedResult[startIndex + j] = batchResult[j];
@@ -5088,62 +5116,88 @@ async function condenseBatchWithAdaptiveSplitting(batch, activeKey, modelToUse, 
     state.stats.retries++;
     const errMsg = (err.message || '').toLowerCase();
 
-    const isModelUnavailable = errMsg.includes('no longer available') ||
-      errMsg.includes('does not exist') ||
-      errMsg.includes('do not have access') ||
+    // Comprehensive Error Classification (Unified with Translation Pipeline)
+    const isBalanceOrAuth = errMsg.includes('401') ||
+      errMsg.includes('402') ||
+      errMsg.includes('403') ||
+      errMsg.includes('insufficient') ||
+      errMsg.includes('balance') ||
+      errMsg.includes('credit') ||
+      errMsg.includes('credits') ||
+      errMsg.includes('billing') ||
+      errMsg.includes('payment') ||
+      errMsg.includes('unauthorized') ||
+      errMsg.includes('invalid api key') ||
+      errMsg.includes('incorrect api key') ||
+      errMsg.includes('deactivated') ||
+      errMsg.includes('expired') ||
+      errMsg.includes('permission denied') ||
+      errMsg.includes('api_key_invalid');
+
+    const isModelBroken = errMsg.includes('404') ||
       errMsg.includes('not found') ||
-      errMsg.includes('is not supported') ||
+      errMsg.includes('does not exist') ||
       errMsg.includes('deprecated') ||
-      errMsg.includes('model_not_found') ||
+      errMsg.includes('no longer available') ||
       errMsg.includes('invalid_model') ||
       errMsg.includes('unrecognized model') ||
-      errMsg.includes('invalid model') ||
-      errMsg.includes('404');
+      errMsg.includes('model_not_found') ||
+      errMsg.includes('is not supported') ||
+      errMsg.includes('do not have access') ||
+      errMsg.includes('restricted') ||
+      errMsg.includes('permission_denied') ||
+      errMsg.includes('location') ||
+      errMsg.includes('not permitted') ||
+      errMsg.includes('not allowed') ||
+      errMsg.includes('preview only') ||
+      errMsg.includes('whitelist') ||
+      errMsg.includes('blocked');
 
-    const is429 = errMsg.includes('429') || errMsg.includes('quota') || errMsg.includes('resource has been exhausted') || errMsg.includes('rate limit');
-    const is503 = errMsg.includes('503') || errMsg.includes('overloaded') || errMsg.includes('high demand') || errMsg.includes('service unavailable');
-    const isAuthError = errMsg.includes('401') || errMsg.includes('unauthorized') || errMsg.includes('invalid api key') || errMsg.includes('incorrect api key');
+    const isRateLimitOrOverload = errMsg.includes('429') ||
+      errMsg.includes('503') ||
+      errMsg.includes('500') ||
+      errMsg.includes('502') ||
+      errMsg.includes('504') ||
+      errMsg.includes('quota') ||
+      errMsg.includes('rate limit') ||
+      errMsg.includes('overloaded') ||
+      errMsg.includes('resource has been exhausted') ||
+      errMsg.includes('too many requests') ||
+      errMsg.includes('high demand') ||
+      errMsg.includes('service unavailable');
 
-    // 1. Permanent Model / Auth Error: Instantly switch to failover backup
-    if (isModelUnavailable || isAuthError) {
-      modelHealthTracker.recordFailure(currentPid, activeModel, true, err.message);
-      if (state.autoFailoverEnabled) {
-        const backup = findFailoverBackup(currentPid, activeModel);
-        if (backup) {
-          addTerminalLog('warn', `⚡ [Auto-Failover] Condenser model "${activeModel}" is unavailable. Switching to [${backup.providerName}] ${backup.modelName}!`);
-          state.selectedModel = backup.model;
-          if (modelSelect) {
-            modelSelect.value = backup.model;
-            refreshCustomSelect('modelSelect');
-          }
-          updateQuotaDashboardForActiveModel();
-          await sleep(400);
-          return await condenseBatchWithAdaptiveSplitting(batch, backup.key, backup.model, 1);
-        }
-      }
-      addTerminalLog('info', `Batch #${batch[0]?.num || 1} condensed using high-quality 1st-pass translation.`);
-      return batch;
-    }
+    // 1. Instant Auto-Failover: If Auto-Failover is enabled, immediately switch to the best available backup model!
+    if (state.autoFailoverEnabled) {
+      const isPermanent = isBalanceOrAuth || isModelBroken;
+      modelHealthTracker.recordFailure(currentPid, activeModel, isPermanent, err.message);
 
-    // 2. Rate Limit / Overload: Auto-Failover immediately
-    if ((is429 || is503) && state.autoFailoverEnabled) {
-      modelHealthTracker.recordFailure(currentPid, activeModel, false, err.message);
       const backup = findFailoverBackup(currentPid, activeModel);
       if (backup) {
-        addTerminalLog('warn', `⚡ [Auto-Failover • ${backup.tier}] Condenser model ${activeModel} is busy (${is503 ? '503' : '429'}). Instantly switching to [${backup.providerName}] ${backup.modelName}!`);
+        let reason = 'Error encountered';
+        if (isBalanceOrAuth) reason = 'Insufficient Balance / Auth error';
+        else if (isRateLimitOrOverload) reason = 'Rate limit / Server busy';
+        else if (isModelBroken) reason = 'Model unavailable';
+        else if (errMsg.includes('timeout') || errMsg.includes('slow')) reason = 'Response timed out / Slow server';
+
+        addTerminalLog('warn', `⚡ [Auto-Failover] ${reason} on condenser [${AI_PROVIDERS[currentPid]?.name || currentPid}] "${activeModel}". Instantly switching to [${backup.providerName}] "${backup.modelName}" without delay!`);
+
+        // Dynamically update active model globally so subsequent batches stay on this backup model
         state.selectedModel = backup.model;
         if (modelSelect) {
           modelSelect.value = backup.model;
           refreshCustomSelect('modelSelect');
         }
         updateQuotaDashboardForActiveModel();
-        await sleep(400);
+        updateApiHealthUI('optimal', `Instantly switched condenser to [${backup.providerName}] ${backup.modelName}`);
+
+        // Immediate switch with minimal 100ms yield to UI loop
+        await sleep(100);
         return await condenseBatchWithAdaptiveSplitting(batch, backup.key, backup.model, 1);
       }
     }
 
-    // 3. Rate Limit cooldown if no backup exists
-    if (is429) {
+    // 2. Rate Limit & Overload Backoff (Only if no backup model exists)
+    if (isRateLimitOrOverload) {
       const waitTime = Math.min(3000 * attempt, 10000);
       updateApiHealthUI('cooldown', `429 Rate Limit Cooldown (${waitTime / 1000}s)...`);
       addTerminalLog('warn', `API rate limit reached on condenser. Pausing for ${waitTime / 1000}s before retry...`);
@@ -5152,14 +5206,9 @@ async function condenseBatchWithAdaptiveSplitting(batch, activeKey, modelToUse, 
       if (attempt <= 2 && !state.isCancelled) {
         return await condenseBatchWithAdaptiveSplitting(batch, effectiveKey, activeModel, attempt + 1);
       }
-    } else if (is503) {
-      await sleep(2000);
-      if (attempt <= 2 && !state.isCancelled) {
-        return await condenseBatchWithAdaptiveSplitting(batch, effectiveKey, activeModel, attempt + 1);
-      }
     }
 
-    // 4. Safe Single Split: Only split once if batch is large (>6 items) and attempt is 1
+    // 3. Safe Single Split: Only split once if batch is large (>6 items) and attempt is 1
     if (batch.length > 6 && attempt === 1 && !state.isCancelled) {
       const mid = Math.ceil(batch.length / 2);
       const subA = batch.slice(0, mid);
@@ -5171,7 +5220,7 @@ async function condenseBatchWithAdaptiveSplitting(batch, activeKey, modelToUse, 
       return [...resA, ...resB];
     }
 
-    // 5. Clean, elegant fallback: Preserve 1st-pass translation without freezing or throwing infinite errors
+    // 4. Clean, elegant fallback: Preserve 1st-pass translation without freezing or throwing infinite errors
     addTerminalLog('info', `Batch #${batch[0]?.num || 1} condensed using high-quality 1st-pass translation.`);
     return batch;
   }
