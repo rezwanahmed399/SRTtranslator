@@ -430,10 +430,17 @@
               </label>
               <div class="select-wrapper">
                 <select id="styleMode">
-                  <option value="micro">Ultra-Short / Glance Speed (Punchy &amp; Direct • Minimalist)</option>
-                  <option value="concise" selected>Fast Reading &amp; Concise (Recommended • Streamlined)</option>
-                  <option value="balanced">Balanced &amp; Natural (Standard Cinema Cadence)</option>
-                  <option value="detailed">Detailed &amp; Complete (Full Unabridged • Literal)</option>
+                  <optgroup label="Natural Flow (No Word Limits • Pure Linguistic Cadence)">
+                    <option value="micro">Ultra-Short / Glance Speed (Punchy &amp; Direct • Minimalist)</option>
+                    <option value="concise" selected>Fast Reading &amp; Concise (Recommended • Streamlined)</option>
+                    <option value="balanced">Balanced &amp; Natural (Standard Cinema Cadence)</option>
+                    <option value="detailed">Detailed &amp; Complete (Full Unabridged • Literal)</option>
+                  </optgroup>
+                  <optgroup label="Strict Word-Limit Modes (Fixed Word Count Limits)">
+                    <option value="micro_limit">Ultra-Short with Word Limit (Strict 1–4 Words Limit)</option>
+                    <option value="concise_limit">Concise with Word Limit (Strict 4–7 Words Limit)</option>
+                    <option value="balanced_limit">Balanced with Word Limit (Strict 7–12 Words Limit)</option>
+                  </optgroup>
                 </select>
               </div>
             </div>

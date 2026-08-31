@@ -3173,14 +3173,14 @@ function setupEventListeners() {
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;display:inline-block;vertical-align:-1px;margin-right:3px;">
             <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
           </svg>
-          <span>Glance Speed (Punchy)</span>
+          <span>Glance Speed (Natural)</span>
         `;
       } else if (val === 'concise') {
         pacingBadge.innerHTML = `
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;display:inline-block;vertical-align:-1px;margin-right:3px;">
             <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
           </svg>
-          <span>Fast Reading (Concise)</span>
+          <span>Fast Reading (Natural)</span>
         `;
       } else if (val === 'balanced') {
         pacingBadge.innerHTML = `
@@ -3190,13 +3190,37 @@ function setupEventListeners() {
           </svg>
           <span>Balanced (Natural Flow)</span>
         `;
-      } else {
+      } else if (val === 'detailed') {
         pacingBadge.innerHTML = `
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;display:inline-block;vertical-align:-1px;margin-right:3px;">
             <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
             <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
           </svg>
           <span>Detailed (Unabridged)</span>
+        `;
+      } else if (val === 'micro_limit') {
+        pacingBadge.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;display:inline-block;vertical-align:-1px;margin-right:3px;">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <path d="M9 9h6v6H9z"/>
+          </svg>
+          <span>1–4 Words Limit (Strict)</span>
+        `;
+      } else if (val === 'concise_limit') {
+        pacingBadge.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;display:inline-block;vertical-align:-1px;margin-right:3px;">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <path d="M9 9h6v6H9z"/>
+          </svg>
+          <span>4–7 Words Limit (Strict)</span>
+        `;
+      } else if (val === 'balanced_limit') {
+        pacingBadge.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;display:inline-block;vertical-align:-1px;margin-right:3px;">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <path d="M9 9h6v6H9z"/>
+          </svg>
+          <span>7–12 Words Limit (Strict)</span>
         `;
       }
     }
@@ -3942,10 +3966,13 @@ async function runTranslationPipeline() {
   const pName = AI_PROVIDERS[providerId]?.name || 'AI';
   const activePace = (styleMode && styleMode.value) ? styleMode.value : 'concise';
   const paceLabels = {
-    micro: 'Ultra-Short / Glance Speed (Punchy & Direct • 100% Meaning Preserved)',
+    micro: 'Ultra-Short / Glance Speed (Punchy & Direct • Minimalist)',
     concise: 'Fast Reading & Concise (Recommended • Streamlined)',
     balanced: 'Balanced & Natural (Standard Cinema Cadence)',
-    detailed: 'Detailed & Complete (Full Unabridged • Literal)'
+    detailed: 'Detailed & Complete (Full Unabridged • Literal)',
+    micro_limit: 'Ultra-Short with Word Limit (Strict 1–4 Words Limit)',
+    concise_limit: 'Concise with Word Limit (Strict 4–7 Words Limit)',
+    balanced_limit: 'Balanced with Word Limit (Strict 7–12 Words Limit)'
   };
   addTerminalLog('info', `Initial AI: [${pName}] ${currentModelToUse} • Auto-Failover: ${state.autoFailoverEnabled ? 'Enabled' : 'Disabled'}`);
   addTerminalLog('info', `Pacing Preset: ${paceLabels[activePace] || activePace}`);
@@ -4235,8 +4262,9 @@ async function callAiBatchTranslate(batch, key, attemptNumber, overrideModel) {
 function getSubtitlePacingPrompt(pace, lang = 'Bengali') {
   const isBn = (lang || '').toLowerCase().includes('bengali') || lang === 'Bengali';
 
+  // ── 1. NATURAL FLOW MODES (No Word Limits - Pure Linguistic Cadence) ──
   if (pace === 'micro' || pace === 'ultra_short' || pace === 'ultra_concise') {
-    return `SUBTITLE PACING PRESET: [ ULTRA-SHORT / GLANCE SPEED ] (MINIMALIST & PUNCHY PHRASING)
+    return `SUBTITLE PACING PRESET: [ ULTRA-SHORT / GLANCE SPEED (NO WORD LIMIT) ] (MINIMALIST & PUNCHY PHRASING)
 - CORE GOAL: Ultra-compact, punchy lines that viewers can read in a split-second glance without looking away from the action.
 - HOW TO TRANSLATE IN THIS MODE:
   * Cut all conversational filler words and padding (drop "আসলে", "সত্যি বলতে", "তোমাকে বলছি", "আমার মনে হয়", "এখন", "এখানে").
@@ -4254,7 +4282,7 @@ ${isBn ? `  * Side-by-Side Reference:
   }
 
   if (pace === 'concise') {
-    return `SUBTITLE PACING PRESET: [ FAST READING & CONCISE ] (STANDARD STREAMLINED)
+    return `SUBTITLE PACING PRESET: [ FAST READING & CONCISE (NO WORD LIMIT) ] (STANDARD STREAMLINED)
 - CORE GOAL: Fast, effortless reading with clean, standard short sentence structure (Subject + Object + Verb).
 - HOW TO TRANSLATE IN THIS MODE:
   * Keep short, crisp conversational sentences without rambling clauses or excessive adjectives.
@@ -4269,7 +4297,7 @@ ${isBn ? `  * Side-by-Side Reference:
   }
 
   if (pace === 'balanced') {
-    return `SUBTITLE PACING PRESET: [ BALANCED & NATURAL ] (CINEMATIC CADENCE)
+    return `SUBTITLE PACING PRESET: [ BALANCED & NATURAL (NO WORD LIMIT) ] (CINEMATIC CADENCE)
 - CORE GOAL: Full cinematic dubbing flow matching the natural voiceover cadence, natural tone markers, and emotional warmth.
 - HOW TO TRANSLATE IN THIS MODE:
   * Do NOT artificially compress dialogue. Translate with full natural spoken conversational flow (চলতি কথ্য ভাষা).
@@ -4279,9 +4307,70 @@ ${isBn ? `  * Side-by-Side Reference:
     - Input: "Are you sure you want to go inside that room?" -> Balanced: "তুমি কি সত্যিই নিশ্চিত যে তুমি ওই রুমটার ভেতরে যেতে চাও?"` : ''}`;
   }
 
-  // detailed
-  return `SUBTITLE PACING PRESET: [ DETAILED & COMPLETE ] (UNABRIDGED LITERAL)
+  if (pace === 'detailed') {
+    return `SUBTITLE PACING PRESET: [ DETAILED & COMPLETE (NO WORD LIMIT) ] (UNABRIDGED LITERAL)
 - CORE GOAL: 100% comprehensive literal translation capturing every descriptive adjective, honorific, sub-clause, qualifier, and narrative detail without omitting or summarizing anything.`;
+  }
+
+  // ── 2. STRICT WORD-LIMIT MODES (With Explicit Word Count Quotas & Conversion Charts) ──
+  if (pace === 'micro_limit') {
+    return `SUBTITLE PACING PRESET: [ ULTRA-SHORT (STRICT WORD LIMIT: 1 TO 4 WORDS MAX) ]
+- TARGET LENGTH: Strict 1 to 4 words max per subtitle line.
+- WORD LIMIT CONVERSION CHART:
+  * 1-2 words source -> 1-3 words target
+  * 3-6 words source -> 2-4 words target
+  * 7-12 words source -> 3-4 words target (distill to core punchline)
+- HOW TO TRANSLATE UNDER THIS WORD LIMIT:
+  * Drop all conversational filler words (drop "আসলে", "সত্যি বলতে", "তোমাকে বলছি", "আমার মনে হয়", "এখন").
+  * Drop redundant subject pronouns (drop "আমি", "তুমি", "সে") when verb indicates person.
+  * Turn questions into direct inflection with "?" without question words.
+${isBn ? `  * Side-by-Side Reference with Word Counts:
+    - Input: "What are you doing over there right now?" -> Ultra-Short: "কী করছ ওখানে?" (3 words) [NEVER write 5+ words]
+    - Input: "I really don't think we should be doing this at all." -> Ultra-Short: "এটা করা ঠিক না।" (4 words)
+    - Input: "Are you sure you want to go inside that room?" -> Ultra-Short: "ভিতরে যাবে নিশ্চিত?" (3 words)
+    - Input: "I'm telling you, he is not going to listen to anything you say." -> Ultra-Short: "ও শুনবে না।" (3 words)
+    - Input: "Let me know as soon as you find anything suspicious." -> Ultra-Short: "সন্দেহজনক কিছু পেলেই জানিও।" (4 words)` : ''}
+- STRICT NEGATIVE CONSTRAINT: DO NOT output more than 4 words per line for ordinary dialogue!`;
+  }
+
+  if (pace === 'concise_limit') {
+    return `SUBTITLE PACING PRESET: [ FAST READING & CONCISE (STRICT WORD LIMIT: 4 TO 7 WORDS) ]
+- TARGET LENGTH: Clean 4 to 7 words per line.
+- WORD LIMIT CONVERSION CHART:
+  * Short line -> 3-5 words
+  * Medium line -> 4-6 words
+  * Long compound dialogue -> 5-7 words max
+- HOW TO TRANSLATE UNDER THIS WORD LIMIT:
+  * Keep clean, standard short sentence structure (Subject + Object + Verb).
+  * Eliminate conversational disfluencies and rambling clauses.
+${isBn ? `  * Side-by-Side Reference with Word Counts:
+    - Input: "What are you doing over there right now?" -> Concise: "তুমি ওখানে এখন কী করছ?" (5 words)
+    - Input: "I really don't think we should be doing this at all." -> Concise: "আমাদের এটা করা ঠিক হবে না।" (6 words)
+    - Input: "Are you sure you want to go inside that room?" -> Concise: "তুমি কি নিশ্চিত ওই ঘরে যাবে?" (6 words)
+    - Input: "I'm telling you, he is not going to listen to anything you say." -> Concise: "তোমাকে বলছি, ও তোমার কথা শুনবে না।" (7 words)
+    - Input: "Wait a minute, where do you think you are going?" -> Concise: "একটু দাঁড়াও, তুমি কোথায় যাচ্ছ?" (6 words)` : ''}
+- STRICT NEGATIVE CONSTRAINT: Maintain comfortable reading pace strictly within 4 to 7 words per line.`;
+  }
+
+  if (pace === 'balanced_limit') {
+    return `SUBTITLE PACING PRESET: [ BALANCED & NATURAL (STRICT WORD LIMIT: 7 TO 12 WORDS) ]
+- TARGET LENGTH: Natural 7 to 12 words per line.
+- WORD LIMIT CONVERSION CHART:
+  * Short dialogue -> 5-8 words
+  * Medium dialogue -> 7-10 words
+  * Long compound dialogue -> 9-12 words max
+- HOW TO TRANSLATE UNDER THIS WORD LIMIT:
+  * Translate with full spoken conversational tone markers and nuance while keeping under 12 words.
+${isBn ? `  * Side-by-Side Reference with Word Counts:
+    - Input: "What are you doing over there right now?" -> Balanced: "তুমি এখন ওই দিকটাতে গিয়ে কী করছ বলো তো?" (9 words)
+    - Input: "I really don't think we should be doing this at all." -> Balanced: "আমার মনে হয় না আমাদের এখন এই কাজটা করা কোনোভাবেই ঠিক হবে।" (11 words)
+    - Input: "Are you sure you want to go inside that room?" -> Balanced: "তুমি কি সত্যিই নিশ্চিত যে তুমি ওই রুমটার ভেতরে যেতে চাও?" (11 words)` : ''}
+- STRICT NEGATIVE CONSTRAINT: Do not exceed 12 words per line.`;
+  }
+
+  // Fallback
+  return `SUBTITLE PACING PRESET: [ FAST READING & CONCISE ] (STANDARD STREAMLINED)
+- Keep translations crisp, natural, and comfortably readable within standard subtitle display time.`;
 }
 
 // ── Google Gemini Translation Engine ──
