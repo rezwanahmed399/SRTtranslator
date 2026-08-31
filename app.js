@@ -294,22 +294,13 @@ function showCustomConfirm({
     const backdrop = document.createElement('div');
     backdrop.className = 'custom-modal-backdrop';
 
-    const isDanger = type === 'danger';
+    const isDanger = type === 'danger' || type === 'stop';
     const isWarn = type === 'warning';
+    const isPause = type === 'pause';
     
     let accentGrad = 'linear-gradient(90deg, #6366f1, #38bdf8)';
     let iconClass = 'modal-icon-info';
     let btnConfirmStyle = 'background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);';
-
-    if (isDanger) {
-      accentGrad = 'linear-gradient(90deg, #ef4444, #dc2626)';
-      iconClass = 'modal-icon-danger';
-      btnConfirmStyle = 'background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); box-shadow: 0 4px 14px rgba(239, 68, 68, 0.4);';
-    } else if (isWarn) {
-      accentGrad = 'linear-gradient(90deg, #f59e0b, #eab308)';
-      iconClass = 'modal-icon-warning';
-      btnConfirmStyle = 'background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); box-shadow: 0 4px 14px rgba(245, 158, 11, 0.4);';
-    }
 
     let iconSvg = `
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -318,7 +309,11 @@ function showCustomConfirm({
         <line x1="12" y1="8" x2="12.01" y2="8"/>
       </svg>
     `;
+
     if (isDanger) {
+      accentGrad = 'linear-gradient(90deg, #ef4444, #dc2626)';
+      iconClass = 'modal-icon-danger';
+      btnConfirmStyle = 'background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); box-shadow: 0 4px 14px rgba(239, 68, 68, 0.4);';
       iconSvg = `
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <polyline points="3 6 5 6 21 6"/>
@@ -327,7 +322,20 @@ function showCustomConfirm({
           <line x1="14" y1="11" x2="14" y2="17"/>
         </svg>
       `;
+    } else if (isPause) {
+      accentGrad = 'linear-gradient(90deg, #f59e0b, #eab308)';
+      iconClass = 'modal-icon-warning';
+      btnConfirmStyle = 'background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); box-shadow: 0 4px 14px rgba(245, 158, 11, 0.4);';
+      iconSvg = `
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <rect x="6" y="4" width="4" height="16" rx="1"/>
+          <rect x="14" y="4" width="4" height="16" rx="1"/>
+        </svg>
+      `;
     } else if (isWarn) {
+      accentGrad = 'linear-gradient(90deg, #f59e0b, #eab308)';
+      iconClass = 'modal-icon-warning';
+      btnConfirmStyle = 'background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); box-shadow: 0 4px 14px rgba(245, 158, 11, 0.4);';
       iconSvg = `
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
@@ -633,7 +641,7 @@ function initNativeAppIntegrations() {
         state.uncompressedBlocks = [];
         if (progressCard) progressCard.classList.add('hidden');
         if (resultCard) resultCard.classList.add('hidden');
-        showToast('✓ Local subtitle session data cleared.');
+        showToast('Local subtitle session data cleared.');
       }
     });
   }
@@ -1892,9 +1900,9 @@ async function handleTestPingCustom() {
 
       if (modelNames.length > 0) {
         renderCustomDetectedModels(modelNames);
-        showProviderFeedback('custom', `✓ Endpoint reachable! Ping: ${latency}ms (${modelNames.length} models detected).`, 'ok');
+        showProviderFeedback('custom', `Endpoint reachable! Ping: ${latency}ms (${modelNames.length} models detected).`, 'ok');
       } else {
-        showProviderFeedback('custom', `✓ Endpoint reachable! Ping: ${latency}ms.`, 'ok');
+        showProviderFeedback('custom', `Endpoint reachable! Ping: ${latency}ms.`, 'ok');
       }
     } else {
       showProviderFeedback('custom', `Endpoint responded with HTTP ${res.status} (${latency}ms). Please check your URL & Key.`, 'err');
@@ -2689,7 +2697,7 @@ async function togglePauseTranslation() {
     updateApiHealthUI('cooldown', isCondense ? 'Condensation Paused' : 'Translation Paused');
 
     addTerminalLog('warn', isCondense ? 'AI Condensation paused.' : 'Translation paused.');
-    showToast(isCondense ? '⏸ Condensation paused.' : '⏸ Translation paused.');
+    showToast(isCondense ? 'Condensation paused.' : 'Translation paused.', 'pause');
   } else {
     state.isPaused = false;
     const isCondense = !!state.isCondensing;
@@ -3117,7 +3125,7 @@ function setupEventListeners() {
         settingsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
 
-      showToast('✓ Results reset. You can now adjust settings or click Translate Subtitles.');
+      showToast('Results reset. You can now adjust settings or click Translate Subtitles.');
     });
   }
 
@@ -4136,7 +4144,7 @@ async function translateBatchWithAdaptiveSplitting(batch, activeKey, modelToUse,
         else if (isModelBroken) reason = 'Model unavailable';
         else if (errMsg.includes('timeout') || errMsg.includes('slow')) reason = 'Response timed out / Slow server';
 
-        addTerminalLog('warn', `⚡ [Auto-Failover] ${reason} on [${AI_PROVIDERS[currentPid]?.name || currentPid}] "${activeModel}". Instantly switching to [${backup.providerName}] "${backup.modelName}" without delay!`);
+        addTerminalLog('warn', `[Auto-Failover] ${reason} on [${AI_PROVIDERS[currentPid]?.name || currentPid}] "${activeModel}". Instantly switching to [${backup.providerName}] "${backup.modelName}" without delay!`);
 
         // Dynamically update active model globally
         state.selectedModel = backup.model;
@@ -5064,7 +5072,7 @@ async function runAiCondensePipeline() {
     const wordsSaved = Math.max(0, totalWordsStart - totalWordsEnd);
 
     updateProgressStats(100, `AI Condensation complete! Reduced from ${totalWordsStart} to ${totalWordsEnd} words (-${totalPercentSaved}% reading load).`);
-    addTerminalLog('ok', `✨ [Condensation 100% Done] Total: ${totalWordsStart} words -> ${totalWordsEnd} words (${wordsSaved} words saved, -${totalPercentSaved}% reading load)!`);
+    addTerminalLog('ok', `[Condensation 100% Done] Total: ${totalWordsStart} words -> ${totalWordsEnd} words (${wordsSaved} words saved, -${totalPercentSaved}% reading load)!`);
 
     await sleep(350);
 
@@ -5179,7 +5187,7 @@ async function condenseBatchWithAdaptiveSplitting(batch, activeKey, modelToUse, 
         else if (isModelBroken) reason = 'Model unavailable';
         else if (errMsg.includes('timeout') || errMsg.includes('slow')) reason = 'Response timed out / Slow server';
 
-        addTerminalLog('warn', `⚡ [Auto-Failover] ${reason} on condenser [${AI_PROVIDERS[currentPid]?.name || currentPid}] "${activeModel}". Instantly switching to [${backup.providerName}] "${backup.modelName}" without delay!`);
+        addTerminalLog('warn', `[Auto-Failover] ${reason} on condenser [${AI_PROVIDERS[currentPid]?.name || currentPid}] "${activeModel}". Instantly switching to [${backup.providerName}] "${backup.modelName}" without delay!`);
 
         // Dynamically update active model globally so subsequent batches stay on this backup model
         state.selectedModel = backup.model;
@@ -5635,7 +5643,7 @@ function showTranslationResults(blocks, percentSaved, origWords, condWords) {
         fileSizeFormatted: sizeFormatted
       }).then(docId => {
         if (docId) {
-          showToast('✓ Saved to Cloud History (Kept for 7 days)');
+          showToast('Saved to Cloud History (Kept for 7 days)');
           if (typeof renderCloudHistoryUI === 'function') {
             renderCloudHistoryUI();
           }
@@ -5952,8 +5960,10 @@ function addTerminalLog(type, msg, customSvg) {
     }
   }
 
-  // Strip leading emojis from log messages
-  const cleanMsg = typeof msg === 'string' ? msg.replace(/^[☁️✨✓✔⚠️ℹ️]\s*/u, '').trim() : msg;
+  // Strip all emojis from log messages automatically
+  const cleanMsg = typeof msg === 'string'
+    ? msg.replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F1E0}-\u{1F1FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2300}-\u{23FF}⚡✨✓✔⚠️ℹ️⏸🛑☁️]\s*/gu, '').trim()
+    : msg;
 
   entry.innerHTML = `${iconSvg}<span>${escapeHtml(cleanMsg)}</span>`;
   progressLog.appendChild(entry);
@@ -6261,10 +6271,15 @@ function initSeoGuideToggle() {
 }
 
 // ── Universal Toast Notification Engine ──
-function showToast(message, isError = false) {
+function showToast(message, type = 'success') {
   if (!message) return;
-  // Strip duplicate leading icons/ticks from message if passed by caller
-  const cleanMsg = message.replace(/^[✓✔⚠️ℹ️]\s*/u, '').trim();
+  const isError = type === true || type === 'error' || type === 'danger';
+  const isPause = type === 'pause';
+  const isInfo = type === 'info';
+
+  const cleanMsg = typeof message === 'string'
+    ? message.replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F1E0}-\u{1F1FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2300}-\u{23FF}⚡✨✓✔⚠️ℹ️⏸🛑☁️]\s*/gu, '').trim()
+    : message;
 
   let container = document.getElementById('subsyncToastContainer');
   if (!container) {
@@ -6274,23 +6289,46 @@ function showToast(message, isError = false) {
     document.body.appendChild(container);
   }
 
+  let toastTypeClass = 'toast-success';
+  let iconSvg = `
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:14px;height:14px;">
+      <polyline points="20 6 9 17 4 12"/>
+    </svg>
+  `;
+
+  if (isError) {
+    toastTypeClass = 'toast-error';
+    iconSvg = `
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="width:14px;height:14px;">
+        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+        <line x1="12" y1="9" x2="12" y2="13"/>
+        <line x1="12" y1="17" x2="12.01" y2="17"/>
+      </svg>
+    `;
+  } else if (isPause) {
+    toastTypeClass = 'toast-warning';
+    iconSvg = `
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="width:14px;height:14px;">
+        <rect x="6" y="4" width="4" height="16" rx="1"/>
+        <rect x="14" y="4" width="4" height="16" rx="1"/>
+      </svg>
+    `;
+  } else if (isInfo) {
+    toastTypeClass = 'toast-info';
+    iconSvg = `
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="16" x2="12" y2="12"/>
+        <line x1="12" y1="8" x2="12.01" y2="8"/>
+      </svg>
+    `;
+  }
+
   const toast = document.createElement('div');
-  toast.className = `subsync-toast ${isError ? 'toast-error' : 'toast-success'}`;
+  toast.className = `subsync-toast ${toastTypeClass}`;
   toast.innerHTML = `
-    <span class="toast-icon">
-      ${isError ? `
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="width:14px;height:14px;">
-          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-          <line x1="12" y1="9" x2="12" y2="13"/>
-          <line x1="12" y1="17" x2="12.01" y2="17"/>
-        </svg>
-      ` : `
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:14px;height:14px;">
-          <polyline points="20 6 9 17 4 12"/>
-        </svg>
-      `}
-    </span>
-    <span class="toast-msg">${cleanMsg}</span>
+    <span class="toast-icon">${iconSvg}</span>
+    <span class="toast-msg">${escapeHtml(cleanMsg)}</span>
   `;
   container.appendChild(toast);
 
@@ -6483,7 +6521,7 @@ function initFirebaseAuthAndCloudSync() {
   // Handle Sign-Out with Warning Confirmation
   const onSignOutClick = async () => {
     if (state.isTranslating || state.isCondensing) {
-      showToast('⚠️ Translation is in progress. Please pause or wait for completion before signing out.', true);
+      showToast('Translation is in progress. Please pause or wait for completion before signing out.', 'error');
       return;
     }
 
@@ -6528,7 +6566,7 @@ function initFirebaseAuthAndCloudSync() {
       pacingPreset: styleMode ? styleMode.value : 'concise'
     });
     if (okKeys || okPrefs) {
-      showToast('✓ API Keys & Preferences safely backed up to Google Cloud!');
+      showToast('API Keys & Preferences safely backed up to Google Cloud!');
     } else {
       showToast('Failed to backup to cloud.', true);
     }
@@ -6615,7 +6653,7 @@ function initFirebaseAuthAndCloudSync() {
             populateCombinedModelDropdown();
             // Only toast if new keys were actually imported from another device/session
             if (newKeysImported > 0) {
-              showToast(`✓ Restored ${newKeysImported} API Key(s) from Google Cloud!`);
+              showToast(`Restored ${newKeysImported} API Key(s) from Google Cloud!`);
             }
           }
         } else {
@@ -6840,7 +6878,7 @@ function promptRenameCurrentFile() {
         resPill.setAttribute('title', cleanName);
       }
       saveCurrentSession();
-      showToast(`✓ Subtitle renamed to "${cleanName}"`);
+      showToast(`Subtitle renamed to "${cleanName}"`);
     }
   });
 }
@@ -6952,7 +6990,7 @@ function generateHistoryCardsHtml(items) {
               </div>
               <div class="history-progress-status-row">
                 <span id="historyCardProgressText">${processedCount} / ${totalCount} subtitles (${progressPct}%)</span>
-                <span class="cloud-running-tag">⚡ Running in Cloud Background</span>
+                <span class="cloud-running-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="width:12px;height:12px;display:inline-block;vertical-align:-1px;margin-right:4px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>Running in Cloud Background</span>
               </div>
             </div>
 
@@ -7185,7 +7223,7 @@ function wireHistoryActions(container, items, onListMutated, onCondenseChosen) {
       if (cloudJobBadge) cloudJobBadge.classList.add('hidden');
 
       renderCloudHistoryUI();
-      showToast('✓ Process cancelled and removed.');
+      showToast('Process cancelled and removed.');
     });
   }
 
@@ -7196,7 +7234,7 @@ function wireHistoryActions(container, items, onListMutated, onCondenseChosen) {
       const item = items.find(h => (h.docId || h.id) === docId);
       if (item && item.srtContent) {
         triggerDirectSrtDownload(item.fileName || 'translated_subtitle.srt', item.srtContent);
-        showToast(`✓ Downloaded ${item.fileName}`);
+        showToast(`Downloaded ${item.fileName}`);
       }
     });
   });
@@ -7240,7 +7278,7 @@ function wireHistoryActions(container, items, onListMutated, onCondenseChosen) {
         // Render loaded file info and transition to condensing
         displayLoadedFileInfo({ name: state.fileName, size: state.fileSize }, parsed);
         saveCurrentSession();
-        showToast(`✓ Loaded "${state.fileName}". Starting AI Condenser...`);
+        showToast(`Loaded "${state.fileName}". Starting AI Condenser...`);
 
         // Automatically kick off 2nd-pass condenser
         setTimeout(() => {
@@ -7269,7 +7307,7 @@ function wireHistoryActions(container, items, onListMutated, onCondenseChosen) {
             const ok = await window.FirebaseCloudSync.renameCloudTranslation(docId, cleanName);
             if (ok) {
               item.fileName = cleanName;
-              showToast(`✓ Renamed to "${cleanName}"`);
+              showToast(`Renamed to "${cleanName}"`);
               if (typeof onListMutated === 'function') onListMutated();
             } else {
               showToast('Failed to rename subtitle in cloud.', true);
@@ -7302,7 +7340,7 @@ function wireHistoryActions(container, items, onListMutated, onCondenseChosen) {
       btn.disabled = true;
       const ok = await window.FirebaseCloudSync.deleteCloudTranslation(docId);
       if (ok) {
-        showToast(`✓ "${fileName}" deleted from cloud.`);
+        showToast(`"${fileName}" deleted from cloud.`);
         if (typeof onListMutated === 'function') onListMutated();
       } else {
         showToast('Failed to delete from cloud.', true);
