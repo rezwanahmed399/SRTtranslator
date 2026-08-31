@@ -100,10 +100,11 @@ const AI_PROVIDERS = {
 // Ranked by: Dialogue translation naturalness, nuance/slang retention, speed, and rate-limit resilience
 // Priority: Google Gemini (Required) | OpenRouter (Required) | Groq | DeepSeek | OpenAI | Custom API
 const TRANSLATION_MODEL_RANKING = [
-  // ── Tier 1: Gemini 3+ Lite Models (Highest Priority) ──
-  { providerId: 'gemini', modelId: 'gemini-3.0-flash-lite', name: 'Gemini 3.0 Flash Lite', tier: 'Tier 1 (Gemini 3+ Lite)', desc: 'Gemini 3.0 Ultra-Fast Lite' },
-  { providerId: 'gemini', modelId: 'gemini-3.1-flash-lite', name: 'Gemini 3.1 Flash Lite', tier: 'Tier 1 (Gemini 3+ Lite)', desc: 'Gemini 3.1 Ultra-Fast Lite' },
-  { providerId: 'gemini', modelId: 'gemini-3.5-flash-lite', name: 'Gemini 3.5 Flash Lite', tier: 'Tier 1 (Gemini 3+ Lite)', desc: 'Gemini 3.5 Ultra-Fast Lite' },
+  // ── Tier 1: Gemini Lite Models (Highest Priority - Any Lite Variant) ──
+  { providerId: 'gemini', modelId: 'gemini-3.5-flash-lite', name: 'Gemini 3.5 Flash Lite', tier: 'Tier 1 (Gemini Lite)', desc: 'Gemini 3.5 Ultra-Fast Lite' },
+  { providerId: 'gemini', modelId: 'gemini-3.1-flash-lite', name: 'Gemini 3.1 Flash Lite', tier: 'Tier 1 (Gemini Lite)', desc: 'Gemini 3.1 Ultra-Fast Lite' },
+  { providerId: 'gemini', modelId: 'gemini-3.0-flash-lite', name: 'Gemini 3.0 Flash Lite', tier: 'Tier 1 (Gemini Lite)', desc: 'Gemini 3.0 Ultra-Fast Lite' },
+  { providerId: 'gemini', modelId: 'gemini-2.0-flash-lite', name: 'Gemini 2.0 Flash Lite', tier: 'Tier 1 (Gemini Lite)', desc: '30 RPM Ultra-Lightweight' },
 
   // ── Tier 2: OpenRouter & Groq Models (Cross-AI Switch) ──
   { providerId: 'openrouter', modelId: 'deepseek/deepseek-chat', name: 'DeepSeek V3 (OpenRouter)', tier: 'Tier 2 (OpenRouter)', desc: 'Top Cinematic Dialogue & Idioms' },
@@ -2094,16 +2095,10 @@ const modelHealthTracker = {
   }
 };
 
-function isGemini3PlusLite(providerId, modelId) {
+function isGeminiLite(providerId, modelId) {
   if (providerId !== 'gemini') return false;
   const mid = (modelId || '').toLowerCase().replace(/^models\//, '');
-  if (!mid.includes('lite')) return false;
-  const verMatch = mid.match(/gemini[^\d]*(\d+(?:\.\d+)?)/i);
-  if (verMatch) {
-    const verNum = parseFloat(verMatch[1]);
-    return verNum >= 3.0;
-  }
-  return false;
+  return mid.includes('lite');
 }
 
 function resolveRealTimeBestModel() {
@@ -2114,17 +2109,20 @@ function resolveRealTimeBestModel() {
     }
   }
 
-  // 1. Primary Rule: Check Gemini 3+ Lite models (e.g. 3.0, 3.1, 3.5 Flash Lite) FIRST if Gemini is connected & healthy
+  // 1. Primary Rule: Check ANY Gemini Lite model (3.5, 3.1, 3.0, 2.0 Flash-Lite / Lite) FIRST if Gemini is connected & healthy
   if (state.apiKeys.gemini && state.providerStatus.gemini?.connected !== false) {
-    const gemini3PlusLiteOrder = [
-      'gemini-3.0-flash-lite',
-      'gemini-3.1-flash-lite',
+    const geminiLiteOrder = [
       'gemini-3.5-flash-lite',
-      'gemini-3.0-lite',
+      'gemini-3.1-flash-lite',
+      'gemini-3.0-flash-lite',
+      'gemini-2.0-flash-lite',
+      'gemini-3.5-lite',
       'gemini-3.1-lite',
-      'gemini-3.5-lite'
+      'gemini-3.0-lite',
+      'gemini-2.0-lite',
+      'gemini-1.5-flash-lite'
     ];
-    for (const mId of gemini3PlusLiteOrder) {
+    for (const mId of geminiLiteOrder) {
       if (modelHealthTracker.isAvailable('gemini', mId)) {
         const mObj = AI_PROVIDERS.gemini.models.find(m => m.id === mId) || { displayName: mId };
         return {
@@ -2135,10 +2133,10 @@ function resolveRealTimeBestModel() {
         };
       }
     }
-    // Also check any live Gemini 3+ Lite models returned from Gemini API
+    // Also check any live Gemini Lite models returned dynamically from Gemini API
     const liveGemini = state.providerStatus.gemini?.models || [];
     for (const m of liveGemini) {
-      if (isGemini3PlusLite('gemini', m.id) && modelHealthTracker.isAvailable('gemini', m.id)) {
+      if (isGeminiLite('gemini', m.id) && modelHealthTracker.isAvailable('gemini', m.id)) {
         return {
           providerId: 'gemini',
           model: m.id,
@@ -2149,7 +2147,7 @@ function resolveRealTimeBestModel() {
     }
   }
 
-  // 2. Secondary Rule: If Gemini 3+ Lite is unavailable/failed, cascade directly to other connected AI providers
+  // 2. Secondary Rule: If Gemini Lite is unavailable/failed, cascade directly to other connected AI providers
   for (const entry of TRANSLATION_MODEL_RANKING) {
     const pid = entry.providerId;
     if (pid !== 'gemini' && state.apiKeys[pid] && state.providerStatus[pid]?.connected && modelHealthTracker.isAvailable(pid, entry.modelId)) {
@@ -2238,43 +2236,46 @@ function findFailoverBackup(currentProviderId, currentModelId) {
     return true;
   }
 
-  // ── RULE 1: Try healthy Gemini 3+ Lite models (e.g. 3.0, 3.1, 3.5 Flash Lite) FIRST upon failure ──
-  const gemini3PlusLiteCandidates = [
-    'gemini-3.0-flash-lite',
-    'gemini-3.1-flash-lite',
+  // ── RULE 1: Try ANY healthy Gemini Lite model (3.5, 3.1, 3.0, 2.0 Flash-Lite / Lite) FIRST upon failure ──
+  const geminiLiteCandidates = [
     'gemini-3.5-flash-lite',
-    'gemini-3.0-lite',
+    'gemini-3.1-flash-lite',
+    'gemini-3.0-flash-lite',
+    'gemini-2.0-flash-lite',
+    'gemini-3.5-lite',
     'gemini-3.1-lite',
-    'gemini-3.5-lite'
+    'gemini-3.0-lite',
+    'gemini-2.0-lite',
+    'gemini-1.5-flash-lite'
   ];
-  for (const mId of gemini3PlusLiteCandidates) {
+  for (const mId of geminiLiteCandidates) {
     if (isModelHealthy('gemini', mId)) {
       const pConf = AI_PROVIDERS.gemini;
-      const mObj = pConf.models.find(m => m.id === mId) || { displayName: mId, desc: 'Gemini 3+ Lite Engine' };
+      const mObj = pConf.models.find(m => m.id === mId) || { displayName: mId, desc: 'Gemini Lite Engine' };
       return {
         providerId: 'gemini',
         providerName: pConf.name,
         model: mId,
         modelName: mObj.displayName || mId,
-        tier: 'Tier 1 (Gemini 3+ Lite)',
+        tier: 'Tier 1 (Gemini Lite)',
         desc: mObj.desc || 'High-Speed Translation',
         key: state.apiKeys.gemini
       };
     }
   }
 
-  // Check any live Gemini 3+ Lite models returned from Gemini API
+  // Check any live Gemini Lite models returned dynamically from Gemini API
   if (state.providerStatus.gemini?.connected && state.apiKeys.gemini) {
     const liveGeminiModels = state.providerStatus.gemini?.models || [];
     for (const m of liveGeminiModels) {
-      if (isGemini3PlusLite('gemini', m.id) && isModelHealthy('gemini', m.id)) {
+      if (isGeminiLite('gemini', m.id) && isModelHealthy('gemini', m.id)) {
         return {
           providerId: 'gemini',
           providerName: AI_PROVIDERS.gemini.name,
           model: m.id,
           modelName: m.displayName || m.name || m.id,
-          tier: 'Tier 1 (Gemini 3+ Lite Live)',
-          desc: m.desc || 'Gemini 3+ Lite Engine',
+          tier: 'Tier 1 (Gemini Lite Live)',
+          desc: m.desc || 'Gemini Lite Engine',
           key: state.apiKeys.gemini
         };
       }
