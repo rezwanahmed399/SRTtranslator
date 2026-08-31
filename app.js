@@ -10,18 +10,18 @@ const AI_PROVIDERS = {
     storageKey: 'gemini_api_key',
     docLink: 'https://aistudio.google.com/app/apikey',
     type: 'gemini',
-    defaultModel: 'gemini-3.5-flash-lite',
+    defaultModel: 'gemini-2.5-pro',
     badge: 'Required',
     models: [
+      { id: 'gemini-2.5-pro', displayName: 'Gemini 2.5 Pro', version: '2.5', inputTokens: 2097152, outputTokens: 8192, rpm: '2 RPM', rpd: '50 RPD', desc: 'Top Nuance Reasoning & Context' },
+      { id: 'gemini-2.5-flash', displayName: 'Gemini 2.5 Flash', version: '2.5', inputTokens: 1048576, outputTokens: 8192, rpm: '15 RPM', rpd: '1,500 RPD', desc: 'Latest Ultra-Fast & High Quality (Google AI)' },
+      { id: 'gemini-2.0-flash', displayName: 'Gemini 2.0 Flash', version: '2.0', inputTokens: 1048576, outputTokens: 8192, rpm: '15 RPM', rpd: '1,500 RPD', desc: 'Fast Production Model (Google AI)' },
+      { id: 'gemini-1.5-pro', displayName: 'Gemini 1.5 Pro', version: '1.5', inputTokens: 2097152, outputTokens: 8192, rpm: '2 RPM', rpd: '50 RPD', desc: 'Complex Nuances & Context' },
+      { id: 'gemini-1.5-flash', displayName: 'Gemini 1.5 Flash', version: '1.5', inputTokens: 1048576, outputTokens: 8192, rpm: '15 RPM', rpd: '1,500 RPD', desc: 'Stable High-Volume Translation' },
       { id: 'gemini-3.5-flash-lite', displayName: 'Gemini 3.5 Flash Lite', version: '3.5', inputTokens: 1048576, outputTokens: 8192, rpm: '30 RPM', rpd: '1,500 RPD', desc: 'Gemini 3.5 Ultra-Fast Lightweight (Google AI)' },
       { id: 'gemini-3.1-flash-lite', displayName: 'Gemini 3.1 Flash Lite', version: '3.1', inputTokens: 1048576, outputTokens: 8192, rpm: '30 RPM', rpd: '1,500 RPD', desc: 'Gemini 3.1 Ultra-Fast Lightweight (Google AI)' },
       { id: 'gemini-3.0-flash-lite', displayName: 'Gemini 3.0 Flash Lite', version: '3.0', inputTokens: 1048576, outputTokens: 8192, rpm: '30 RPM', rpd: '1,500 RPD', desc: 'Gemini 3.0 Ultra-Fast Lightweight (Google AI)' },
-      { id: 'gemini-2.0-flash-lite', displayName: 'Gemini 2.0 Flash Lite', version: '2.0', inputTokens: 1048576, outputTokens: 8192, rpm: '30 RPM', rpd: '1,500 RPD', desc: 'Ultra-Fast Lightweight' },
-      { id: 'gemini-2.5-flash', displayName: 'Gemini 2.5 Flash', version: '2.5', inputTokens: 1048576, outputTokens: 8192, rpm: '15 RPM', rpd: '1,500 RPD', desc: 'Latest Ultra-Fast & High Quality (Google AI)' },
-      { id: 'gemini-2.0-flash', displayName: 'Gemini 2.0 Flash', version: '2.0', inputTokens: 1048576, outputTokens: 8192, rpm: '15 RPM', rpd: '1,500 RPD', desc: 'Fast Production Model (Google AI)' },
-      { id: 'gemini-1.5-flash', displayName: 'Gemini 1.5 Flash', version: '1.5', inputTokens: 1048576, outputTokens: 8192, rpm: '15 RPM', rpd: '1,500 Rpd', desc: 'Stable High-Volume Translation' },
-      { id: 'gemini-2.5-pro', displayName: 'Gemini 2.5 Pro', version: '2.5', inputTokens: 2097152, outputTokens: 8192, rpm: '2 RPM', rpd: '50 RPD', desc: 'Deep Nuance Reasoning' },
-      { id: 'gemini-1.5-pro', displayName: 'Gemini 1.5 Pro', version: '1.5', inputTokens: 2097152, outputTokens: 8192, rpm: '2 RPM', rpd: '50 RPD', desc: 'Complex Nuances & Context' }
+      { id: 'gemini-2.0-flash-lite', displayName: 'Gemini 2.0 Flash Lite', version: '2.0', inputTokens: 1048576, outputTokens: 8192, rpm: '30 RPM', rpd: '1,500 RPD', desc: 'Ultra-Fast Lightweight' }
     ]
   },
   openrouter: {
@@ -98,13 +98,19 @@ const AI_PROVIDERS = {
 
 // ── Translation Quality & Auto-Switch Priority Hierarchy ──
 // Ranked by: Dialogue translation naturalness, nuance/slang retention, speed, and rate-limit resilience
-// Priority: Google Gemini (Required) | OpenRouter (Required) | Groq | DeepSeek | OpenAI | Custom API
 const TRANSLATION_MODEL_RANKING = [
-  // ── Tier 1: Gemini Lite Models (Highest Priority - Any Lite Variant) ──
-  { providerId: 'gemini', modelId: 'gemini-3.5-flash-lite', name: 'Gemini 3.5 Flash Lite', tier: 'Tier 1 (Gemini Lite)', desc: 'Gemini 3.5 Ultra-Fast Lite' },
-  { providerId: 'gemini', modelId: 'gemini-3.1-flash-lite', name: 'Gemini 3.1 Flash Lite', tier: 'Tier 1 (Gemini Lite)', desc: 'Gemini 3.1 Ultra-Fast Lite' },
-  { providerId: 'gemini', modelId: 'gemini-3.0-flash-lite', name: 'Gemini 3.0 Flash Lite', tier: 'Tier 1 (Gemini Lite)', desc: 'Gemini 3.0 Ultra-Fast Lite' },
-  { providerId: 'gemini', modelId: 'gemini-2.0-flash-lite', name: 'Gemini 2.0 Flash Lite', tier: 'Tier 1 (Gemini Lite)', desc: '30 RPM Ultra-Lightweight' },
+  // ── Tier 1A: Gemini Latest Pro & Flash Models (Top Initial Priority) ──
+  { providerId: 'gemini', modelId: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro', tier: 'Tier 1A (Gemini Latest Pro)', desc: 'Top Nuance Reasoning & Context' },
+  { providerId: 'gemini', modelId: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', tier: 'Tier 1A (Gemini Latest Flash)', desc: 'Next-Gen Ultra Fast & Nuanced' },
+  { providerId: 'gemini', modelId: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash', tier: 'Tier 1A (Gemini Flash)', desc: 'Ultra Fast Production Model' },
+  { providerId: 'gemini', modelId: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro', tier: 'Tier 1A (Gemini Pro)', desc: 'Deep Context Nuance' },
+  { providerId: 'gemini', modelId: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash', tier: 'Tier 1A (Gemini Flash)', desc: 'Stable Google High-Volume' },
+
+  // ── Tier 1B: Gemini Lite Models (Newest to Oldest) ──
+  { providerId: 'gemini', modelId: 'gemini-3.5-flash-lite', name: 'Gemini 3.5 Flash Lite', tier: 'Tier 1B (Gemini Lite)', desc: 'Gemini 3.5 Ultra-Fast Lite' },
+  { providerId: 'gemini', modelId: 'gemini-3.1-flash-lite', name: 'Gemini 3.1 Flash Lite', tier: 'Tier 1B (Gemini Lite)', desc: 'Gemini 3.1 Ultra-Fast Lite' },
+  { providerId: 'gemini', modelId: 'gemini-3.0-flash-lite', name: 'Gemini 3.0 Flash Lite', tier: 'Tier 1B (Gemini Lite)', desc: 'Gemini 3.0 Ultra-Fast Lite' },
+  { providerId: 'gemini', modelId: 'gemini-2.0-flash-lite', name: 'Gemini 2.0 Flash Lite', tier: 'Tier 1B (Gemini Lite)', desc: '30 RPM Ultra-Lightweight' },
 
   // ── Tier 2: OpenRouter & Groq Models (Cross-AI Switch) ──
   { providerId: 'openrouter', modelId: 'deepseek/deepseek-chat', name: 'DeepSeek V3 (OpenRouter)', tier: 'Tier 2 (OpenRouter)', desc: 'Top Cinematic Dialogue & Idioms' },
@@ -2100,6 +2106,13 @@ function getGeminiVersionNumber(id) {
   return m ? parseFloat(m[1]) : 0;
 }
 
+function isGeminiProOrFlash(providerId, modelId) {
+  if (providerId !== 'gemini') return false;
+  const mid = (modelId || '').toLowerCase().replace(/^models\//, '');
+  if (mid.includes('lite')) return false;
+  return mid.includes('pro') || mid.includes('flash');
+}
+
 function isGeminiLite(providerId, modelId) {
   if (providerId !== 'gemini') return false;
   const mid = (modelId || '').toLowerCase().replace(/^models\//, '');
@@ -2114,8 +2127,42 @@ function resolveRealTimeBestModel() {
     }
   }
 
-  // 1. Primary Rule: Check ANY Gemini Lite model starting from the MOST LATEST (3.5 -> 3.1 -> 3.0 -> 2.0 Flash-Lite / Lite)
+  // 1. Phase 1: Try Gemini Latest Pro & Flash versions FIRST if Gemini is connected & healthy
   if (state.apiKeys.gemini && state.providerStatus.gemini?.connected !== false) {
+    const geminiProFlashOrder = [
+      'gemini-2.5-pro',
+      'gemini-2.5-flash',
+      'gemini-2.0-flash',
+      'gemini-1.5-pro',
+      'gemini-1.5-flash'
+    ];
+    for (const mId of geminiProFlashOrder) {
+      if (modelHealthTracker.isAvailable('gemini', mId)) {
+        const mObj = AI_PROVIDERS.gemini.models.find(m => m.id === mId) || { displayName: mId };
+        return {
+          providerId: 'gemini',
+          model: mId,
+          key: state.apiKeys.gemini,
+          displayName: mObj.displayName || mId
+        };
+      }
+    }
+    // Check live dynamic Pro/Flash models from Gemini API sorted newest first
+    const liveProFlash = (state.providerStatus.gemini?.models || [])
+      .filter(m => isGeminiProOrFlash('gemini', m.id))
+      .sort((a, b) => getGeminiVersionNumber(b.id) - getGeminiVersionNumber(a.id));
+    for (const m of liveProFlash) {
+      if (modelHealthTracker.isAvailable('gemini', m.id)) {
+        return {
+          providerId: 'gemini',
+          model: m.id,
+          key: state.apiKeys.gemini,
+          displayName: m.displayName || m.id
+        };
+      }
+    }
+
+    // 2. Phase 2: If Pro & Flash fail/exhausted, try Gemini Lite models (Newest to Oldest)
     const geminiLiteOrder = [
       'gemini-3.5-flash-lite',
       'gemini-3.1-flash-lite',
@@ -2138,11 +2185,11 @@ function resolveRealTimeBestModel() {
         };
       }
     }
-    // Also check any live dynamic Gemini Lite models from API sorted newest/highest version first
-    const liveGemini = (state.providerStatus.gemini?.models || [])
+    // Check live dynamic Lite models from Gemini API sorted newest first
+    const liveLite = (state.providerStatus.gemini?.models || [])
       .filter(m => isGeminiLite('gemini', m.id))
       .sort((a, b) => getGeminiVersionNumber(b.id) - getGeminiVersionNumber(a.id));
-    for (const m of liveGemini) {
+    for (const m of liveLite) {
       if (modelHealthTracker.isAvailable('gemini', m.id)) {
         return {
           providerId: 'gemini',
@@ -2154,7 +2201,7 @@ function resolveRealTimeBestModel() {
     }
   }
 
-  // 2. Secondary Rule: If all Gemini Lite models are unavailable/failed, cascade directly to other connected AI providers
+  // 3. Phase 3: If all Gemini models fail/exhausted, cascade directly to other connected AI providers
   for (const entry of TRANSLATION_MODEL_RANKING) {
     const pid = entry.providerId;
     if (pid !== 'gemini' && state.apiKeys[pid] && state.providerStatus[pid]?.connected && modelHealthTracker.isAvailable(pid, entry.modelId)) {
@@ -2167,7 +2214,7 @@ function resolveRealTimeBestModel() {
     }
   }
 
-  // 3. Fallback to other connected providers (non-Gemini or default)
+  // 4. Fallback to other connected providers (non-Gemini or default)
   for (const pid of ['openrouter', 'groq', 'deepseek', 'openai', 'custom']) {
     if (state.apiKeys[pid] && state.providerStatus[pid]?.connected) {
       return {
@@ -2179,7 +2226,7 @@ function resolveRealTimeBestModel() {
     }
   }
 
-  return { providerId: 'gemini', model: 'gemini-3.5-flash-lite', key: state.apiKeys.gemini || '', displayName: 'Gemini 3.5 Flash Lite' };
+  return { providerId: 'gemini', model: 'gemini-2.5-pro', key: state.apiKeys.gemini || '', displayName: 'Gemini 2.5 Pro' };
 }
 
 function getActiveProviderAndKey(modelId) {
@@ -2227,7 +2274,7 @@ function getActiveProviderAndKey(modelId) {
     }
   }
 
-  return { providerId: 'gemini', model: 'gemini-3.5-flash-lite', key: state.apiKeys.gemini || '' };
+  return { providerId: 'gemini', model: 'gemini-2.5-pro', key: state.apiKeys.gemini || '' };
 }
 
 function findFailoverBackup(currentProviderId, currentModelId) {
@@ -2243,7 +2290,51 @@ function findFailoverBackup(currentProviderId, currentModelId) {
     return true;
   }
 
-  // ── RULE 1: Try ANY healthy Gemini Lite model (3.5, 3.1, 3.0, 2.0 Flash-Lite / Lite) FIRST upon failure ──
+  // ── RULE 1: Try healthy Gemini Latest Pro & Flash models FIRST upon failure ──
+  const geminiProFlashCandidates = [
+    'gemini-2.5-pro',
+    'gemini-2.5-flash',
+    'gemini-2.0-flash',
+    'gemini-1.5-pro',
+    'gemini-1.5-flash'
+  ];
+  for (const mId of geminiProFlashCandidates) {
+    if (isModelHealthy('gemini', mId)) {
+      const pConf = AI_PROVIDERS.gemini;
+      const mObj = pConf.models.find(m => m.id === mId) || { displayName: mId, desc: 'Gemini Pro/Flash Engine' };
+      return {
+        providerId: 'gemini',
+        providerName: pConf.name,
+        model: mId,
+        modelName: mObj.displayName || mId,
+        tier: 'Tier 1A (Gemini Pro/Flash)',
+        desc: mObj.desc || 'High-Precision Translation',
+        key: state.apiKeys.gemini
+      };
+    }
+  }
+
+  // Check live dynamic Gemini Pro/Flash models from API sorted newest first
+  if (state.providerStatus.gemini?.connected && state.apiKeys.gemini) {
+    const liveProFlash = (state.providerStatus.gemini?.models || [])
+      .filter(m => isGeminiProOrFlash('gemini', m.id))
+      .sort((a, b) => getGeminiVersionNumber(b.id) - getGeminiVersionNumber(a.id));
+    for (const m of liveProFlash) {
+      if (isModelHealthy('gemini', m.id)) {
+        return {
+          providerId: 'gemini',
+          providerName: AI_PROVIDERS.gemini.name,
+          model: m.id,
+          modelName: m.displayName || m.name || m.id,
+          tier: 'Tier 1A (Gemini Pro/Flash Live)',
+          desc: m.desc || 'Gemini Engine',
+          key: state.apiKeys.gemini
+        };
+      }
+    }
+  }
+
+  // ── RULE 2: If Pro & Flash fail/exhausted, try Gemini Lite models (Newest to Oldest) ──
   const geminiLiteCandidates = [
     'gemini-3.5-flash-lite',
     'gemini-3.1-flash-lite',
@@ -2264,26 +2355,26 @@ function findFailoverBackup(currentProviderId, currentModelId) {
         providerName: pConf.name,
         model: mId,
         modelName: mObj.displayName || mId,
-        tier: 'Tier 1 (Gemini Lite)',
+        tier: 'Tier 1B (Gemini Lite)',
         desc: mObj.desc || 'High-Speed Translation',
         key: state.apiKeys.gemini
       };
     }
   }
 
-  // Check any live Gemini Lite models returned dynamically from Gemini API sorted newest first
+  // Check live dynamic Gemini Lite models from API sorted newest first
   if (state.providerStatus.gemini?.connected && state.apiKeys.gemini) {
-    const liveGeminiModels = (state.providerStatus.gemini?.models || [])
+    const liveLite = (state.providerStatus.gemini?.models || [])
       .filter(m => isGeminiLite('gemini', m.id))
       .sort((a, b) => getGeminiVersionNumber(b.id) - getGeminiVersionNumber(a.id));
-    for (const m of liveGeminiModels) {
+    for (const m of liveLite) {
       if (isModelHealthy('gemini', m.id)) {
         return {
           providerId: 'gemini',
           providerName: AI_PROVIDERS.gemini.name,
           model: m.id,
           modelName: m.displayName || m.name || m.id,
-          tier: 'Tier 1 (Gemini Lite Live)',
+          tier: 'Tier 1B (Gemini Lite Live)',
           desc: m.desc || 'Gemini Lite Engine',
           key: state.apiKeys.gemini
         };
@@ -2291,7 +2382,7 @@ function findFailoverBackup(currentProviderId, currentModelId) {
     }
   }
 
-  // ── RULE 2: If Gemini 3+ Lite models fail/unavailable, switch directly to other AI providers in hierarchy ──
+  // ── RULE 3: If all Gemini models fail/exhausted, switch directly to other AI providers ──
   for (const entry of TRANSLATION_MODEL_RANKING) {
     if (entry.providerId !== 'gemini' && isModelHealthy(entry.providerId, entry.modelId)) {
       return {
@@ -2306,7 +2397,7 @@ function findFailoverBackup(currentProviderId, currentModelId) {
     }
   }
 
-  // ── RULE 3: Check any other live verified model across other connected providers ──
+  // ── RULE 4: Check any other live verified model across other connected providers ──
   for (const pid of ['openrouter', 'groq', 'deepseek', 'openai', 'custom']) {
     if (!state.apiKeys[pid] || !state.providerStatus[pid]?.connected) continue;
     const liveModels = state.providerStatus[pid]?.models || AI_PROVIDERS[pid]?.models || [];
@@ -2325,8 +2416,8 @@ function findFailoverBackup(currentProviderId, currentModelId) {
     }
   }
 
-  // ── RULE 4: Emergency Cooldown Reset (If all other models cooled down, unblock best available) ──
-  for (const pid of ['openrouter', 'groq', 'deepseek', 'openai', 'gemini']) {
+  // ── RULE 5: Emergency Cooldown Reset (If all models cooled down, unblock best available) ──
+  for (const pid of ['gemini', 'openrouter', 'groq', 'deepseek', 'openai']) {
     if (!state.apiKeys[pid] || !state.providerStatus[pid]?.connected) continue;
     const models = state.providerStatus[pid]?.models || AI_PROVIDERS[pid]?.models || [];
     for (const m of models) {
