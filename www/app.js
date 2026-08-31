@@ -10,16 +10,16 @@ const AI_PROVIDERS = {
     storageKey: 'gemini_api_key',
     docLink: 'https://aistudio.google.com/app/apikey',
     type: 'gemini',
-    defaultModel: 'gemini-3.0-flash-lite',
+    defaultModel: 'gemini-3.5-flash-lite',
     badge: 'Required',
     models: [
-      { id: 'gemini-3.0-flash-lite', displayName: 'Gemini 3.0 Flash Lite', version: '3.0', inputTokens: 1048576, outputTokens: 8192, rpm: '30 RPM', rpd: '1,500 RPD', desc: 'Gemini 3.0 Ultra-Fast Lightweight (Google AI)' },
-      { id: 'gemini-3.1-flash-lite', displayName: 'Gemini 3.1 Flash Lite', version: '3.1', inputTokens: 1048576, outputTokens: 8192, rpm: '30 RPM', rpd: '1,500 RPD', desc: 'Gemini 3.1 Ultra-Fast Lightweight (Google AI)' },
       { id: 'gemini-3.5-flash-lite', displayName: 'Gemini 3.5 Flash Lite', version: '3.5', inputTokens: 1048576, outputTokens: 8192, rpm: '30 RPM', rpd: '1,500 RPD', desc: 'Gemini 3.5 Ultra-Fast Lightweight (Google AI)' },
+      { id: 'gemini-3.1-flash-lite', displayName: 'Gemini 3.1 Flash Lite', version: '3.1', inputTokens: 1048576, outputTokens: 8192, rpm: '30 RPM', rpd: '1,500 RPD', desc: 'Gemini 3.1 Ultra-Fast Lightweight (Google AI)' },
+      { id: 'gemini-3.0-flash-lite', displayName: 'Gemini 3.0 Flash Lite', version: '3.0', inputTokens: 1048576, outputTokens: 8192, rpm: '30 RPM', rpd: '1,500 RPD', desc: 'Gemini 3.0 Ultra-Fast Lightweight (Google AI)' },
+      { id: 'gemini-2.0-flash-lite', displayName: 'Gemini 2.0 Flash Lite', version: '2.0', inputTokens: 1048576, outputTokens: 8192, rpm: '30 RPM', rpd: '1,500 RPD', desc: 'Ultra-Fast Lightweight' },
       { id: 'gemini-2.5-flash', displayName: 'Gemini 2.5 Flash', version: '2.5', inputTokens: 1048576, outputTokens: 8192, rpm: '15 RPM', rpd: '1,500 RPD', desc: 'Latest Ultra-Fast & High Quality (Google AI)' },
       { id: 'gemini-2.0-flash', displayName: 'Gemini 2.0 Flash', version: '2.0', inputTokens: 1048576, outputTokens: 8192, rpm: '15 RPM', rpd: '1,500 RPD', desc: 'Fast Production Model (Google AI)' },
-      { id: 'gemini-2.0-flash-lite', displayName: 'Gemini 2.0 Flash Lite', version: '2.0', inputTokens: 1048576, outputTokens: 8192, rpm: '30 RPM', rpd: '1,500 RPD', desc: 'Ultra-Fast Lightweight' },
-      { id: 'gemini-1.5-flash', displayName: 'Gemini 1.5 Flash', version: '1.5', inputTokens: 1048576, outputTokens: 8192, rpm: '15 RPM', rpd: '1,500 RPD', desc: 'Stable High-Volume Translation' },
+      { id: 'gemini-1.5-flash', displayName: 'Gemini 1.5 Flash', version: '1.5', inputTokens: 1048576, outputTokens: 8192, rpm: '15 RPM', rpd: '1,500 Rpd', desc: 'Stable High-Volume Translation' },
       { id: 'gemini-2.5-pro', displayName: 'Gemini 2.5 Pro', version: '2.5', inputTokens: 2097152, outputTokens: 8192, rpm: '2 RPM', rpd: '50 RPD', desc: 'Deep Nuance Reasoning' },
       { id: 'gemini-1.5-pro', displayName: 'Gemini 1.5 Pro', version: '1.5', inputTokens: 2097152, outputTokens: 8192, rpm: '2 RPM', rpd: '50 RPD', desc: 'Complex Nuances & Context' }
     ]
@@ -2095,6 +2095,11 @@ const modelHealthTracker = {
   }
 };
 
+function getGeminiVersionNumber(id) {
+  const m = (id || '').match(/gemini[^\d]*(\d+(?:\.\d+)?)/i);
+  return m ? parseFloat(m[1]) : 0;
+}
+
 function isGeminiLite(providerId, modelId) {
   if (providerId !== 'gemini') return false;
   const mid = (modelId || '').toLowerCase().replace(/^models\//, '');
@@ -2109,7 +2114,7 @@ function resolveRealTimeBestModel() {
     }
   }
 
-  // 1. Primary Rule: Check ANY Gemini Lite model (3.5, 3.1, 3.0, 2.0 Flash-Lite / Lite) FIRST if Gemini is connected & healthy
+  // 1. Primary Rule: Check ANY Gemini Lite model starting from the MOST LATEST (3.5 -> 3.1 -> 3.0 -> 2.0 Flash-Lite / Lite)
   if (state.apiKeys.gemini && state.providerStatus.gemini?.connected !== false) {
     const geminiLiteOrder = [
       'gemini-3.5-flash-lite',
@@ -2133,10 +2138,12 @@ function resolveRealTimeBestModel() {
         };
       }
     }
-    // Also check any live Gemini Lite models returned dynamically from Gemini API
-    const liveGemini = state.providerStatus.gemini?.models || [];
+    // Also check any live dynamic Gemini Lite models from API sorted newest/highest version first
+    const liveGemini = (state.providerStatus.gemini?.models || [])
+      .filter(m => isGeminiLite('gemini', m.id))
+      .sort((a, b) => getGeminiVersionNumber(b.id) - getGeminiVersionNumber(a.id));
     for (const m of liveGemini) {
-      if (isGeminiLite('gemini', m.id) && modelHealthTracker.isAvailable('gemini', m.id)) {
+      if (modelHealthTracker.isAvailable('gemini', m.id)) {
         return {
           providerId: 'gemini',
           model: m.id,
@@ -2147,7 +2154,7 @@ function resolveRealTimeBestModel() {
     }
   }
 
-  // 2. Secondary Rule: If Gemini Lite is unavailable/failed, cascade directly to other connected AI providers
+  // 2. Secondary Rule: If all Gemini Lite models are unavailable/failed, cascade directly to other connected AI providers
   for (const entry of TRANSLATION_MODEL_RANKING) {
     const pid = entry.providerId;
     if (pid !== 'gemini' && state.apiKeys[pid] && state.providerStatus[pid]?.connected && modelHealthTracker.isAvailable(pid, entry.modelId)) {
@@ -2172,7 +2179,7 @@ function resolveRealTimeBestModel() {
     }
   }
 
-  return { providerId: 'gemini', model: 'gemini-3.0-flash-lite', key: state.apiKeys.gemini || '', displayName: 'Gemini 3.0 Flash Lite' };
+  return { providerId: 'gemini', model: 'gemini-3.5-flash-lite', key: state.apiKeys.gemini || '', displayName: 'Gemini 3.5 Flash Lite' };
 }
 
 function getActiveProviderAndKey(modelId) {
@@ -2220,7 +2227,7 @@ function getActiveProviderAndKey(modelId) {
     }
   }
 
-  return { providerId: 'gemini', model: 'gemini-3.0-flash-lite', key: state.apiKeys.gemini || '' };
+  return { providerId: 'gemini', model: 'gemini-3.5-flash-lite', key: state.apiKeys.gemini || '' };
 }
 
 function findFailoverBackup(currentProviderId, currentModelId) {
@@ -2264,11 +2271,13 @@ function findFailoverBackup(currentProviderId, currentModelId) {
     }
   }
 
-  // Check any live Gemini Lite models returned dynamically from Gemini API
+  // Check any live Gemini Lite models returned dynamically from Gemini API sorted newest first
   if (state.providerStatus.gemini?.connected && state.apiKeys.gemini) {
-    const liveGeminiModels = state.providerStatus.gemini?.models || [];
+    const liveGeminiModels = (state.providerStatus.gemini?.models || [])
+      .filter(m => isGeminiLite('gemini', m.id))
+      .sort((a, b) => getGeminiVersionNumber(b.id) - getGeminiVersionNumber(a.id));
     for (const m of liveGeminiModels) {
-      if (isGeminiLite('gemini', m.id) && isModelHealthy('gemini', m.id)) {
+      if (isModelHealthy('gemini', m.id)) {
         return {
           providerId: 'gemini',
           providerName: AI_PROVIDERS.gemini.name,
