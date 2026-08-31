@@ -3204,7 +3204,7 @@ function setupEventListeners() {
             <rect x="3" y="3" width="18" height="18" rx="2"/>
             <path d="M9 9h6v6H9z"/>
           </svg>
-          <span>1–4 Words Limit (Strict)</span>
+          <span>1–4 Words (Max 5)</span>
         `;
       } else if (val === 'concise_limit') {
         pacingBadge.innerHTML = `
@@ -3970,7 +3970,7 @@ async function runTranslationPipeline() {
     concise: 'Fast Reading & Concise (Recommended • Streamlined)',
     balanced: 'Balanced & Natural (Standard Cinema Cadence)',
     detailed: 'Detailed & Complete (Full Unabridged • Literal)',
-    micro_limit: 'Ultra-Short with Word Limit (Strict 1–4 Words Limit)',
+    micro_limit: 'Ultra-Short with Word Limit (Strict 1–4 Words, Max 5 if essential)',
     concise_limit: 'Concise with Word Limit (Strict 4–7 Words Limit)',
     balanced_limit: 'Balanced with Word Limit (Strict 7–12 Words Limit)'
   };
@@ -4314,23 +4314,24 @@ ${isBn ? `  * Side-by-Side Reference:
 
   // ── 2. STRICT WORD-LIMIT MODES (With Explicit Word Count Quotas & Conversion Charts) ──
   if (pace === 'micro_limit') {
-    return `SUBTITLE PACING PRESET: [ ULTRA-SHORT (STRICT WORD LIMIT: 1 TO 4 WORDS MAX) ]
-- TARGET LENGTH: Strict 1 to 4 words max per subtitle line.
+    return `SUBTITLE PACING PRESET: [ ULTRA-SHORT (STRICT WORD LIMIT: 1 TO 4 WORDS, MAX 5 ONLY IF ESSENTIAL) ]
+- TARGET LENGTH: Strict 1 to 4 words max per subtitle line (up to 5 words permitted ONLY when absolutely necessary for essential meaning/plot).
 - WORD LIMIT CONVERSION CHART:
   * 1-2 words source -> 1-3 words target
   * 3-6 words source -> 2-4 words target
-  * 7-12 words source -> 3-4 words target (distill to core punchline)
+  * 7-12 words source -> 3-4 words target (distill to core punchline; maximum 5 words if crucial)
 - HOW TO TRANSLATE UNDER THIS WORD LIMIT:
   * Drop all conversational filler words (drop "আসলে", "সত্যি বলতে", "তোমাকে বলছি", "আমার মনে হয়", "এখন").
   * Drop redundant subject pronouns (drop "আমি", "তুমি", "সে") when verb indicates person.
   * Turn questions into direct inflection with "?" without question words.
+  * Keep strictly within 1-4 words; allow a 5th word only when omitting it would break crucial meaning.
 ${isBn ? `  * Side-by-Side Reference with Word Counts:
-    - Input: "What are you doing over there right now?" -> Ultra-Short: "কী করছ ওখানে?" (3 words) [NEVER write 5+ words]
+    - Input: "What are you doing over there right now?" -> Ultra-Short: "কী করছ ওখানে?" (3 words) [NEVER write 6+ words]
     - Input: "I really don't think we should be doing this at all." -> Ultra-Short: "এটা করা ঠিক না।" (4 words)
     - Input: "Are you sure you want to go inside that room?" -> Ultra-Short: "ভিতরে যাবে নিশ্চিত?" (3 words)
     - Input: "I'm telling you, he is not going to listen to anything you say." -> Ultra-Short: "ও শুনবে না।" (3 words)
     - Input: "Let me know as soon as you find anything suspicious." -> Ultra-Short: "সন্দেহজনক কিছু পেলেই জানিও।" (4 words)` : ''}
-- STRICT NEGATIVE CONSTRAINT: DO NOT output more than 4 words per line for ordinary dialogue!`;
+- STRICT NEGATIVE CONSTRAINT: Keep strictly within 1-4 words (absolute ceiling of 5 words ONLY if meaning demands it). DO NOT output 6+ words under any circumstances!`;
   }
 
   if (pace === 'concise_limit') {
@@ -5381,7 +5382,7 @@ async function callGeminiBatchCondense(batch, key, attemptNumber, overrideModel)
 Task: Condense and shorten the given ${lang} subtitle translations so they are readable in a split second glance.
 
 MANDATORY RULES:
-1. Make every subtitle line ULTRA-SHORT, punchy, and concise (ideal 1-4 words for short lines, or minimum possible concise words).
+1. Make every subtitle line ULTRA-SHORT, punchy, and concise (ideal 1-4 words for short lines; max 5 words only if absolutely essential to preserve meaning).
 2. PRESERVE SHORT LINES & SOUND EFFECTS: If an input subtitle is already very short (1-3 words, e.g. "হ্যাঁ", "না", "ধন্যবাদ") or a bracketed sound effect (e.g. "[গান বাজছে]"), return it unchanged.
 3. Cut away conversational padding, redundant particles, extra formal suffixes, and repetitive words so viewers can read instantaneously.
 4. Strictly preserve 100% of the core emotion, punchline, dialogue intent, and context.
@@ -5478,7 +5479,7 @@ async function callOpenAiCompatibleBatchCondense(batch, providerId, modelId, key
 Task: Condense and shorten the given ${lang} subtitle translations so they are readable in a split second glance.
 
 MANDATORY RULES:
-1. Make every subtitle line ULTRA-SHORT and punchy (ideal 1-4 words for short lines, or minimum possible concise words).
+1. Make every subtitle line ULTRA-SHORT and punchy (ideal 1-4 words for short lines; max 5 words only if absolutely essential to preserve meaning).
 2. PRESERVE SHORT LINES & SOUND EFFECTS: If an input subtitle is already very short (1-3 words) or a sound effect, return it unchanged.
 3. Cut away conversational padding, redundant particles, extra formal suffixes, and repetitive words so viewers can read instantaneously.
 4. Strictly preserve 100% of the core emotion, punchline, dialogue intent, and context.
