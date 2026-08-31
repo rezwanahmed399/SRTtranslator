@@ -31,15 +31,15 @@ const AI_PROVIDERS = {
     docLink: 'https://openrouter.ai/keys',
     endpoint: 'https://openrouter.ai/api/v1/chat/completions',
     type: 'openai_compatible',
-    defaultModel: 'google/gemini-2.5-pro',
+    defaultModel: 'anthropic/claude-3.7-sonnet',
     badge: 'Required',
     models: [
-      { id: 'google/gemini-2.5-pro', displayName: 'Gemini 2.5 Pro (OpenRouter)', version: '2.5', inputTokens: 2097152, outputTokens: 8192, rpm: 'Dynamic', rpd: 'Unlimited', desc: 'Top Nuance Reasoning via OpenRouter' },
-      { id: 'google/gemini-2.5-flash', displayName: 'Gemini 2.5 Flash (OpenRouter)', version: '2.5', inputTokens: 1048576, outputTokens: 8192, rpm: 'Dynamic', rpd: 'Unlimited', desc: 'Ultra-Fast High Quality via OpenRouter' },
-      { id: 'google/gemini-2.0-flash-001', displayName: 'Gemini 2.0 Flash (OpenRouter)', version: '2.0', inputTokens: 1048576, outputTokens: 8192, rpm: 'Dynamic', rpd: 'Unlimited', desc: 'Ultra Fast via OpenRouter' },
-      { id: 'google/gemini-2.0-flash-lite-001', displayName: 'Gemini 2.0 Flash Lite (OpenRouter)', version: '2.0', inputTokens: 1048576, outputTokens: 8192, rpm: 'Dynamic', rpd: 'Unlimited', desc: 'Ultra-Light via OpenRouter' },
-      { id: 'google/gemini-flash-1.5', displayName: 'Gemini 1.5 Flash (OpenRouter)', version: '1.5', inputTokens: 1048576, outputTokens: 8192, rpm: 'Dynamic', rpd: 'Unlimited', desc: 'High-Volume Translation' },
-      { id: 'google/gemini-pro-1.5', displayName: 'Gemini 1.5 Pro (OpenRouter)', version: '1.5', inputTokens: 2097152, outputTokens: 8192, rpm: 'Dynamic', rpd: 'Unlimited', desc: 'Deep Nuance Reasoning' },
+      { id: 'google/gemini-3.5-pro', displayName: 'Gemini 3.5 Pro (OpenRouter)', version: '3.5', inputTokens: 2097152, outputTokens: 8192, rpm: 'Dynamic', rpd: 'Unlimited', desc: 'Top Nuance Reasoning via OpenRouter' },
+      { id: 'google/gemini-3.5-flash', displayName: 'Gemini 3.5 Flash (OpenRouter)', version: '3.5', inputTokens: 1048576, outputTokens: 8192, rpm: 'Dynamic', rpd: 'Unlimited', desc: 'Ultra-Fast High Quality via OpenRouter' },
+      { id: 'google/gemini-3.0-flash', displayName: 'Gemini 3.0 Flash (OpenRouter)', version: '3.0', inputTokens: 1048576, outputTokens: 8192, rpm: 'Dynamic', rpd: 'Unlimited', desc: 'Ultra-Fast via OpenRouter' },
+      { id: 'google/gemini-3.0-flash-lite', displayName: 'Gemini 3.0 Flash Lite (OpenRouter)', version: '3.0', inputTokens: 1048576, outputTokens: 8192, rpm: 'Dynamic', rpd: 'Unlimited', desc: 'Ultra-Light via OpenRouter' },
+      { id: 'anthropic/claude-3.7-sonnet', displayName: 'Claude 3.7 Sonnet', version: '3.7', inputTokens: 200000, outputTokens: 8192, rpm: 'Dynamic', rpd: 'Unlimited', desc: 'Flagship Cinematic Subtitles' },
+      { id: 'anthropic/claude-3.5-sonnet', displayName: 'Claude 3.5 Sonnet', version: '3.5', inputTokens: 200000, outputTokens: 8192, rpm: 'Dynamic', rpd: 'Unlimited', desc: 'Top Dialogue Flow' },
       { id: 'deepseek/deepseek-chat', displayName: 'DeepSeek V3 (Chat)', version: 'V3', inputTokens: 64000, outputTokens: 8192, rpm: 'Dynamic', rpd: 'Unlimited', desc: 'Top Multilingual Subtitles' },
       { id: 'meta-llama/llama-3.3-70b-instruct', displayName: 'Meta Llama 3.3 70B', version: '3.3', inputTokens: 128000, outputTokens: 8192, rpm: 'Dynamic', rpd: 'Unlimited', desc: 'Natural Dialogue Flow' },
       { id: 'anthropic/claude-3.5-haiku', displayName: 'Claude 3.5 Haiku', version: '3.5', inputTokens: 200000, outputTokens: 8192, rpm: 'Dynamic', rpd: 'Unlimited', desc: 'Natural Spoken Dubbing' },
@@ -2287,7 +2287,7 @@ function resolveRealTimeBestModel() {
     }
   }
 
-  return { providerId: 'gemini', model: 'gemini-2.5-pro', key: state.apiKeys.gemini || '', displayName: 'Gemini 2.5 Pro' };
+  return { providerId: 'gemini', model: 'gemini-3.5-pro', key: state.apiKeys.gemini || '', displayName: 'Gemini 3.5 Pro' };
 }
 
 function getActiveProviderAndKey(modelId) {
@@ -2335,7 +2335,7 @@ function getActiveProviderAndKey(modelId) {
     }
   }
 
-  return { providerId: 'gemini', model: 'gemini-2.5-pro', key: state.apiKeys.gemini || '' };
+  return { providerId: 'gemini', model: 'gemini-3.5-pro', key: state.apiKeys.gemini || '' };
 }
 
 function findFailoverBackup(currentProviderId, currentModelId) {
@@ -5254,7 +5254,7 @@ async function callAiBatchCondense(batch, key, attemptNumber, overrideModel) {
 // ── Gemini 2nd-Pass Condense API Call ──
 async function callGeminiBatchCondense(batch, key, attemptNumber, overrideModel) {
   const lang = targetLang.value || 'Bengali';
-  const rawModel = overrideModel || (modelSelect && modelSelect.value ? modelSelect.value : '') || state.selectedModel || 'gemini-2.0-flash';
+  const rawModel = overrideModel || (modelSelect && modelSelect.value ? modelSelect.value : '') || state.selectedModel || 'gemini-3.5-pro';
   const selectedModel = rawModel.replace(/^models\//, '').trim();
 
   const inputData = batch.map((item, index) => ({
