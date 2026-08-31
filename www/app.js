@@ -243,19 +243,19 @@ const incompleteWarningBanner = $('incompleteWarningBanner');
 const incompleteWarningTitle  = $('incompleteWarningTitle');
 const incompleteWarningDesc   = $('incompleteWarningDesc');
 
-// ── Custom Modern Dialog System (UI Warnings & Alerts) ──
-const customModalBackdrop  = $('customModalBackdrop');
-const customModalBox       = $('customModalBox');
-const modalIconBadge       = $('modalIconBadge');
-const modalIconSvgWarning  = $('modalIconSvgWarning');
-const modalIconSvgInfo     = $('modalIconSvgInfo');
-const modalTitle           = $('modalTitle');
-const modalMessage         = $('modalMessage');
-const modalCancelBtn       = $('modalCancelBtn');
-const modalConfirmBtn      = $('modalConfirmBtn');
+let activeCloudJobListenerUnsub = null;
 
-let activeModalResolver = null;
+function escapeHtml(str) {
+  if (typeof str !== 'string') return '';
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
 
+// ── Universal Modal Dialog System (Confirmations, Alerts & Prompts) ──
 function showCustomConfirm({ 
   title = 'Confirm Action', 
   message = 'Are you sure you want to proceed?', 
@@ -263,34 +263,87 @@ function showCustomConfirm({
   cancelText = 'Cancel', 
   type = 'warning' 
 } = {}) {
-  return new Promise(resolve => {
-    if (!customModalBackdrop) {
-      resolve(window.confirm(message));
-      return;
+  return new Promise((resolve) => {
+    const existing = document.querySelector('.custom-modal-backdrop');
+    if (existing) existing.remove();
+
+    const backdrop = document.createElement('div');
+    backdrop.className = 'custom-modal-backdrop';
+
+    const isDanger = type === 'danger';
+    const isWarn = type === 'warning';
+    
+    let accentGrad = 'linear-gradient(90deg, #6366f1, #38bdf8)';
+    let iconClass = 'modal-icon-info';
+    let btnConfirmStyle = 'background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);';
+
+    if (isDanger) {
+      accentGrad = 'linear-gradient(90deg, #ef4444, #dc2626)';
+      iconClass = 'modal-icon-danger';
+      btnConfirmStyle = 'background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); box-shadow: 0 4px 14px rgba(239, 68, 68, 0.4);';
+    } else if (isWarn) {
+      accentGrad = 'linear-gradient(90deg, #f59e0b, #eab308)';
+      iconClass = 'modal-icon-warning';
+      btnConfirmStyle = 'background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); box-shadow: 0 4px 14px rgba(245, 158, 11, 0.4);';
     }
 
-    activeModalResolver = resolve;
-
-    if (modalTitle) modalTitle.textContent = title;
-    if (modalMessage) modalMessage.textContent = message;
-    if (modalCancelBtn) {
-      modalCancelBtn.textContent = cancelText;
-      modalCancelBtn.classList.remove('hidden');
+    let iconSvg = `
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="16" x2="12" y2="12"/>
+        <line x1="12" y1="8" x2="12.01" y2="8"/>
+      </svg>
+    `;
+    if (isDanger) {
+      iconSvg = `
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+          <line x1="10" y1="11" x2="10" y2="17"/>
+          <line x1="14" y1="11" x2="14" y2="17"/>
+        </svg>
+      `;
+    } else if (isWarn) {
+      iconSvg = `
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+      `;
     }
-    if (modalConfirmBtn) {
-      modalConfirmBtn.textContent = confirmText;
-      modalConfirmBtn.className = `btn btn-modal-confirm ${type === 'info' ? 'btn-info' : (type === 'warning' ? 'btn-warning' : '')}`;
+
+    backdrop.innerHTML = `
+      <div class="custom-modal-box" role="dialog" aria-modal="true">
+        <div class="modal-top-accent" style="background:${accentGrad};"></div>
+        <div class="modal-icon-badge ${iconClass}">
+          ${iconSvg}
+        </div>
+        <h3 class="modal-title">${escapeHtml(title)}</h3>
+        <p class="modal-message">${escapeHtml(message)}</p>
+        <div class="modal-actions-row">
+          <button class="btn-modal-cancel" type="button" id="modalCancelBtn">${escapeHtml(cancelText)}</button>
+          <button class="btn-modal-confirm" type="button" id="modalConfirmBtn" style="${btnConfirmStyle}">${escapeHtml(confirmText)}</button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(backdrop);
+
+    const close = (result) => {
+      backdrop.style.opacity = '0';
+      setTimeout(() => backdrop.remove(), 150);
+      resolve(result);
+    };
+
+    const cancelBtnEl = backdrop.querySelector('#modalCancelBtn');
+    const confirmBtnEl = backdrop.querySelector('#modalConfirmBtn');
+    if (cancelBtnEl) cancelBtnEl.addEventListener('click', () => close(false));
+    if (confirmBtnEl) {
+      confirmBtnEl.addEventListener('click', () => close(true));
+      confirmBtnEl.focus();
     }
-
-    if (customModalBox) {
-      customModalBox.className = `custom-modal-box modal-type-${type}`;
-    }
-
-    if (modalIconSvgWarning) modalIconSvgWarning.classList.toggle('hidden', type === 'info');
-    if (modalIconSvgInfo) modalIconSvgInfo.classList.toggle('hidden', type !== 'info');
-
-    customModalBackdrop.classList.remove('hidden');
-    if (modalConfirmBtn) modalConfirmBtn.focus();
+    backdrop.addEventListener('click', (e) => { if (e.target === backdrop) close(false); });
   });
 }
 
@@ -300,44 +353,54 @@ function showCustomAlert({
   buttonText = 'Got it', 
   type = 'info' 
 } = {}) {
-  return new Promise(resolve => {
-    if (!customModalBackdrop) {
-      window.alert(message);
+  return new Promise((resolve) => {
+    const existing = document.querySelector('.custom-modal-backdrop');
+    if (existing) existing.remove();
+
+    const backdrop = document.createElement('div');
+    backdrop.className = 'custom-modal-backdrop';
+
+    const isWarn = type === 'warning';
+    const isDanger = type === 'danger';
+    const accentGrad = isDanger ? 'linear-gradient(90deg, #ef4444, #dc2626)' : (isWarn ? 'linear-gradient(90deg, #f59e0b, #eab308)' : 'linear-gradient(90deg, #6366f1, #38bdf8)');
+    const iconClass = isDanger ? 'modal-icon-danger' : (isWarn ? 'modal-icon-warning' : 'modal-icon-info');
+    const btnConfirmStyle = isDanger
+      ? 'background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);'
+      : (isWarn ? 'background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);' : 'background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);');
+
+    backdrop.innerHTML = `
+      <div class="custom-modal-box" role="dialog" aria-modal="true">
+        <div class="modal-top-accent" style="background:${accentGrad};"></div>
+        <div class="modal-icon-badge ${iconClass}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="16" x2="12" y2="12"/>
+            <line x1="12" y1="8" x2="12.01" y2="8"/>
+          </svg>
+        </div>
+        <h3 class="modal-title">${escapeHtml(title)}</h3>
+        <p class="modal-message">${escapeHtml(message)}</p>
+        <div class="modal-actions-row">
+          <button class="btn-modal-confirm" type="button" id="modalConfirmBtn" style="${btnConfirmStyle}; width:100%;">${escapeHtml(buttonText)}</button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(backdrop);
+
+    const close = () => {
+      backdrop.style.opacity = '0';
+      setTimeout(() => backdrop.remove(), 150);
       resolve(true);
-      return;
+    };
+
+    const confirmBtnEl = backdrop.querySelector('#modalConfirmBtn');
+    if (confirmBtnEl) {
+      confirmBtnEl.addEventListener('click', close);
+      confirmBtnEl.focus();
     }
-
-    activeModalResolver = resolve;
-
-    if (modalTitle) modalTitle.textContent = title;
-    if (modalMessage) modalMessage.textContent = message;
-    if (modalCancelBtn) modalCancelBtn.classList.add('hidden');
-    if (modalConfirmBtn) {
-      modalConfirmBtn.textContent = buttonText;
-      modalConfirmBtn.className = `btn btn-modal-confirm ${type === 'info' ? 'btn-info' : (type === 'warning' ? 'btn-warning' : '')}`;
-    }
-
-    if (customModalBox) {
-      customModalBox.className = `custom-modal-box modal-type-${type}`;
-    }
-
-    if (modalIconSvgWarning) modalIconSvgWarning.classList.toggle('hidden', type === 'info');
-    if (modalIconSvgInfo) modalIconSvgInfo.classList.toggle('hidden', type !== 'info');
-
-    customModalBackdrop.classList.remove('hidden');
-    if (modalConfirmBtn) modalConfirmBtn.focus();
+    backdrop.addEventListener('click', (e) => { if (e.target === backdrop) close(); });
   });
-}
-
-function closeCustomModal(result = false) {
-  if (customModalBackdrop) {
-    customModalBackdrop.classList.add('hidden');
-  }
-  if (activeModalResolver) {
-    const fn = activeModalResolver;
-    activeModalResolver = null;
-    fn(result);
-  }
 }
 
 // ── IndexedDB Session Storage Engine ──
@@ -2773,14 +2836,17 @@ function setupEventListeners() {
       state.isCondensed = false;
       state.fileName = '';
       state.fileSize = 0;
+      state.durationStr = '';
+      state.translationTimeTaken = 0;
 
       // 3. Purge session from IndexedDB & LocalStorage
       await clearSavedSession();
 
-      // 4. Reset UI cards
+      // 4. Reset UI cards & clear preview DOM
       if (fileInput) fileInput.value = '';
       if (fileInfo) fileInfo.classList.add('hidden');
       if (dropZone) dropZone.classList.remove('hidden');
+      if (subtitlePreview) subtitlePreview.innerHTML = '';
       if (progressCard) progressCard.classList.add('hidden');
       if (resultCard) resultCard.classList.add('hidden');
       if (fileRestoredBadge) fileRestoredBadge.classList.add('hidden');
@@ -2797,7 +2863,8 @@ function setupEventListeners() {
       // 5. Reset controls
       resetTranslateButton();
       checkReadyToTranslate();
-      addTerminalLog('warn', 'Subtitle file removed and session cleared.');
+      addTerminalLog('warn', 'Subtitle file removed and workspace reset.');
+      showToast('File removed.');
     });
   }
 
@@ -6394,62 +6461,7 @@ function generateUserAvatarSvg(name, email) {
   return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
 }
 
-// ── Universal Modal Dialog System (Confirmations & Prompts) ──
-function showCustomConfirm({ title, message, confirmText = 'Confirm', cancelText = 'Cancel', type = 'info' }) {
-  return new Promise((resolve) => {
-    const existing = document.querySelector('.custom-modal-backdrop');
-    if (existing) existing.remove();
 
-    const backdrop = document.createElement('div');
-    backdrop.className = 'custom-modal-backdrop';
-
-    const isWarn = type === 'warning';
-    const accentGrad = isWarn ? 'linear-gradient(90deg, #f59e0b, #ef4444)' : 'linear-gradient(90deg, #6366f1, #38bdf8)';
-    const iconClass = isWarn ? 'modal-icon-warning' : 'modal-icon-info';
-    const btnConfirmStyle = isWarn
-      ? 'background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);'
-      : 'background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);';
-
-    backdrop.innerHTML = `
-      <div class="custom-modal-box" role="dialog" aria-modal="true">
-        <div class="modal-top-accent" style="background:${accentGrad};"></div>
-        <div class="modal-icon-badge ${iconClass}">
-          ${isWarn ? `
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-              <line x1="12" y1="9" x2="12" y2="13"/>
-              <line x1="12" y1="17" x2="12.01" y2="17"/>
-            </svg>
-          ` : `
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10"/>
-              <line x1="12" y1="16" x2="12" y2="12"/>
-              <line x1="12" y1="8" x2="12.01" y2="8"/>
-            </svg>
-          `}
-        </div>
-        <h3 class="modal-title">${escapeHtml(title)}</h3>
-        <p class="modal-message">${escapeHtml(message)}</p>
-        <div class="modal-actions-row">
-          <button class="btn-modal-cancel" type="button" id="modalCancelBtn">${escapeHtml(cancelText)}</button>
-          <button class="btn-modal-confirm" type="button" id="modalConfirmBtn" style="${btnConfirmStyle}">${escapeHtml(confirmText)}</button>
-        </div>
-      </div>
-    `;
-
-    document.body.appendChild(backdrop);
-
-    const close = (result) => {
-      backdrop.style.opacity = '0';
-      setTimeout(() => backdrop.remove(), 150);
-      resolve(result);
-    };
-
-    backdrop.querySelector('#modalCancelBtn').addEventListener('click', () => close(false));
-    backdrop.querySelector('#modalConfirmBtn').addEventListener('click', () => close(true));
-    backdrop.addEventListener('click', (e) => { if (e.target === backdrop) close(false); });
-  });
-}
 
 function showPromptModal({ title, message, defaultValue = '', placeholder = 'Enter file name...', confirmText = 'Rename', maxLength = 60, onConfirm }) {
   const existing = document.querySelector('.custom-modal-backdrop');
@@ -7291,3 +7303,14 @@ function triggerDirectSrtDownload(fileName, srtContent) {
   document.body.removeChild(a);
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
+
+// ── Refresh & Page Exit Confirmation Guard ──
+window.addEventListener('beforeunload', (e) => {
+  const isBusy = (state.isTranslating || state.isCondensing) && !state.isCancelled;
+  const hasFile = state.parsedBlocks && state.parsedBlocks.length > 0;
+  if (isBusy || hasFile) {
+    e.preventDefault();
+    e.returnValue = '';
+    return '';
+  }
+});

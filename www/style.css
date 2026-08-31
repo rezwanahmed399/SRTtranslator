@@ -7949,3 +7949,200 @@ button:active:not(:disabled),
   0% { left: 0%; width: 30%; }
   100% { left: 70%; width: 30%; }
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   MODERN UNIVERSAL MODAL DIALOGS (Confirmations, Alerts & Renaming Prompts)
+   ══════════════════════════════════════════════════════════════════════════ */
+.custom-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000000;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 1;
+  transition: opacity 0.18s ease;
+  animation: modalBackdropFadeIn 0.2s ease;
+}
+
+@keyframes modalBackdropFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.custom-modal-box {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  background: var(--surface-card, #0c1222);
+  border: 1px solid var(--border-medium, rgba(255, 255, 255, 0.14));
+  border-radius: 20px;
+  padding: 28px 24px 22px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65), 0 0 1px rgba(255, 255, 255, 0.2) inset;
+  overflow: hidden;
+  animation: modalBoxPopIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalBoxPopIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.modal-top-accent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+}
+
+.modal-icon-badge {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  margin: 0 auto 16px;
+  display: grid;
+  place-items: center;
+}
+
+.modal-icon-badge svg {
+  width: 26px;
+  height: 26px;
+}
+
+.modal-icon-danger {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.2);
+}
+
+.modal-icon-warning {
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  color: #f59e0b;
+  box-shadow: 0 0 20px rgba(245, 158, 11, 0.2);
+}
+
+.modal-icon-info {
+  background: rgba(99, 102, 241, 0.15);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  color: #6366f1;
+  box-shadow: 0 0 20px rgba(99, 102, 241, 0.2);
+}
+
+.modal-title {
+  font-size: 1.22rem;
+  font-weight: 700;
+  color: var(--text-main, #ffffff);
+  text-align: center;
+  margin: 0 0 8px 0;
+  letter-spacing: -0.01em;
+}
+
+.modal-message {
+  font-size: 0.92rem;
+  color: var(--text-muted, #94a3b8);
+  text-align: center;
+  line-height: 1.55;
+  margin: 0 0 20px 0;
+}
+
+.modal-actions-row {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 6px;
+}
+
+.btn-modal-cancel {
+  flex: 1;
+  padding: 11px 16px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--text-muted, #94a3b8);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: center;
+}
+
+.btn-modal-cancel:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--text-main, #ffffff);
+}
+
+.btn-modal-cancel:active {
+  transform: scale(0.97);
+}
+
+.btn-modal-confirm {
+  flex: 1;
+  padding: 11px 16px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: center;
+}
+
+.btn-modal-confirm:hover {
+  filter: brightness(1.08);
+}
+
+.btn-modal-confirm:active {
+  transform: scale(0.97);
+}
+
+/* Prompt Modal Input Styles */
+.modal-input-wrap {
+  margin-bottom: 18px;
+}
+
+.modal-input-field {
+  width: 100%;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(99, 102, 241, 0.35);
+  border-radius: 12px;
+  padding: 11px 14px;
+  font-size: 0.95rem;
+  color: #ffffff;
+  outline: none;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+.modal-input-field:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+}
+
+.modal-char-counter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 6px;
+  font-size: 0.78rem;
+  color: var(--text-muted, #64748b);
+}
+
+.char-limit-tag {
+  color: #ef4444;
+  font-weight: 600;
+}
+
