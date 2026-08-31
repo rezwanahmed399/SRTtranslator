@@ -3155,14 +3155,14 @@ function setupEventListeners() {
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;display:inline-block;vertical-align:-1px;margin-right:3px;">
             <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
           </svg>
-          <span>Glance Speed (1-3 words)</span>
+          <span>Glance Speed (Punchy)</span>
         `;
       } else if (val === 'concise') {
         pacingBadge.innerHTML = `
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;display:inline-block;vertical-align:-1px;margin-right:3px;">
             <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
           </svg>
-          <span>Fast Reading (4-7 words)</span>
+          <span>Fast Reading (Concise)</span>
         `;
       } else if (val === 'balanced') {
         pacingBadge.innerHTML = `
@@ -3170,7 +3170,7 @@ function setupEventListeners() {
             <circle cx="12" cy="12" r="10"/>
             <polyline points="12 6 12 12 16 14"/>
           </svg>
-          <span>Balanced (6-12 words)</span>
+          <span>Balanced (Natural Flow)</span>
         `;
       } else {
         pacingBadge.innerHTML = `
@@ -3905,9 +3905,9 @@ async function runTranslationPipeline() {
   const pName = AI_PROVIDERS[providerId]?.name || 'AI';
   const activePace = (styleMode && styleMode.value) ? styleMode.value : 'concise';
   const paceLabels = {
-    micro: 'Ultra-Short / Glance Speed (1-3 words max • Minimalist)',
-    concise: 'Fast Reading & Concise (4-7 words • Streamlined)',
-    balanced: 'Balanced & Natural (6-12 words • Cinema Cadence)',
+    micro: 'Ultra-Short / Glance Speed (Punchy & Direct • 100% Meaning Preserved)',
+    concise: 'Fast Reading & Concise (Recommended • Streamlined)',
+    balanced: 'Balanced & Natural (Standard Cinema Cadence)',
     detailed: 'Detailed & Complete (Full Unabridged • Literal)'
   };
   addTerminalLog('info', `Initial AI: [${pName}] ${currentModelToUse} • Auto-Failover: ${state.autoFailoverEnabled ? 'Enabled' : 'Disabled'}`);
@@ -4198,55 +4198,53 @@ function getSubtitlePacingPrompt(pace, lang = 'Bengali') {
   const isBn = (lang || '').toLowerCase().includes('bengali') || lang === 'Bengali';
 
   if (pace === 'micro' || pace === 'ultra_short' || pace === 'ultra_concise') {
-    return `SUBTITLE PACING: [ ULTRA-SHORT & GLANCE SPEED ] (MANDATORY STRICT COMPRESSION)
-- CORE OBJECTIVE: Ultra-minimalist subtitles readable in a 0.3 to 0.7 second quick glance so the viewer's eyes remain 100% focused on video visuals.
-- STRICT WORD LIMIT: Strictly 1 to 3 words per subtitle line (Absolute maximum 4 words for long complex compound sentences).
-- AGGRESSIVE CONDENSATION RULES:
-  * Drop implied pronouns & subjects (Drop "আমি", "তুমি", "সে", "আমরা" when the verb makes it clear).
-  * Eliminate question particles and question markers (Do NOT use "কি", "নাকি", "কিনা" — express questions purely via the question mark "?").
-  * Cut all conversational filler words and padding (Drop "আসলে", "সত্যি বলতে", "এখন", "এখানে", "তাহলে", "তোমাকে বলছি", "আমার মনে হয়").
-  * Convert full narrative sentences into telegraphic, punchy spoken action verbs and core keywords.
-${isBn ? `  * Side-by-Side Bengali Transformation Examples:
-    - Input: "What are you doing over there?" -> Ultra-Short: "কী করছ?" (2 words) [NEVER write: "তুমি ওখানে কী করছ?"]
-    - Input: "I really don't think we should be doing this at all." -> Ultra-Short: "এটা করা ঠিক না।" (4 words) / "না করাই ভালো।" (3 words)
-    - Input: "Are you sure you want to go inside that room?" -> Ultra-Short: "ভিতরে যাবে?" (2 words) [NEVER write: "তুমি কি নিশ্চিত ভেতরে যাবে?"]
-    - Input: "I'm telling you, he is not going to listen to anything you say." -> Ultra-Short: "ও শুনবে না।" (3 words)
-    - Input: "Wait a minute, where do you think you are going?" -> Ultra-Short: "দাঁড়াও, কোথায় যাচ্ছ?" (3 words)
-    - Input: "Let me know as soon as you find anything suspicious." -> Ultra-Short: "পেলেই জানিও।" (2 words)
-    - Input: "Thank you so much, I really appreciate your help." -> Ultra-Short: "অনেক ধন্যবাদ।" (2 words)` : ''}
-- STRICT NEGATIVE CONSTRAINT: NEVER output full-length multi-clause sentences. If your line exceeds 4 words, aggressively compress it to the core 1-3 punchy words!`;
+    return `SUBTITLE PACING: [ ULTRA-SHORT & GLANCE SPEED ] (PUNCHY, DIRECT & MINIMALIST PHRASING)
+- GOLDEN RULE: 100% of the dialogue's true meaning, context, factual accuracy, names, and dramatic emotion MUST be preserved. NEVER omit critical plot facts or distort meaning.
+- CORE OBJECTIVE: Deliver the complete meaning in the most direct, punchy, and minimal spoken phrasing possible so viewers can read it in a split-second glance (০.৩–০.৭ সেকেন্ড) while keeping their eyes on the video visuals.
+- CONDENSATION TECHNIQUE (Smart Phrasing over Mechanical Cuts):
+  * Strip conversational padding, repetitive filler phrases, and polite hedges (e.g. drop "আসলে", "সত্যি বলতে", "তোমাকে বলছি", "আমার মনে হয়", "এখন", "এখানে").
+  * Drop implied pronouns & subjects when the spoken verb already makes the subject clear.
+  * Express questions directly and punchily (use natural spoken voice inflection with "?" rather than bulky formal question clauses).
+  * Use active, direct spoken verbs instead of passive or prolonged multi-clause phrasing.
+${isBn ? `  * Side-by-Side Bengali Examples (100% Meaning Preserved with Punchy Direct Brevity):
+    - Input: "What are you doing over there?" -> Ultra-Short: "কী করছ ওখানে?" / "কী করছ?" (Direct & Punchy)
+    - Input: "I really don't think we should be doing this at all." -> Ultra-Short: "এটা করা ঠিক না।" / "না করাই ভালো।"
+    - Input: "Are you sure you want to go inside that room?" -> Ultra-Short: "ভিতরে যাবে নিশ্চিত?" / "ভিতরে যাবে?"
+    - Input: "I'm telling you, he is not going to listen to anything you say." -> Ultra-Short: "ও কোনো কথাই শুনবে না।" / "ও শুনবে না।"
+    - Input: "Wait a minute, where do you think you are going?" -> Ultra-Short: "দাঁড়াও, কোথায় যাচ্ছ?"
+    - Input: "Let me know as soon as you find anything suspicious." -> Ultra-Short: "সন্দেহজনক কিছু পেলেই জানিও।"
+    - Input: "The generator on floor 4 exploded and fire is spreading." -> Ultra-Short: "৪ তলার জেনারেটর বিস্ফোরণে আগুন ছড়াচ্ছে।" (All facts & meaning 100% intact)` : ''}`;
   }
 
   if (pace === 'concise') {
-    return `SUBTITLE PACING: [ FAST READING & CONCISE ] (STANDARD STREAMLINED)
-- CORE OBJECTIVE: Fast, crisp, clean reading (ideal 4 to 7 words per line) without visual clutter.
-- Streamline long-winded sentences by trimming redundant clauses and repetitive speech disfluencies.
-- Keep standard short sentence structure (Subject + Verb + Object) while keeping dialogue clean, brisk, and natural.
-${isBn ? `  * Side-by-Side Bengali Transformation Examples:
-    - Input: "What are you doing over there?" -> Concise: "তুমি ওখানে কী করছ?" (4 words)
-    - Input: "I really don't think we should be doing this at all." -> Concise: "আমাদের এটা করা ঠিক হবে না।" (6 words)
-    - Input: "Are you sure you want to go inside that room?" -> Concise: "তুমি কি নিশ্চিত ওই ঘরে যাবে?" (6 words)
-    - Input: "I'm telling you, he is not going to listen to anything you say." -> Concise: "তোমাকে বলছি, ও আমাদের কথা শুনবে না।" (7 words)
-    - Input: "Wait a minute, where do you think you are going?" -> Concise: "একটু দাঁড়াও, তুমি কোথায় যাচ্ছ?" (5 words)` : ''}
-- Keep translations crisp, natural, and easily readable within standard subtitle duration.`;
+    return `SUBTITLE PACING: [ FAST READING & CONCISE ] (RECOMMENDED STREAMLINED)
+- GOLDEN RULE: 100% meaning, emotion, and dramatic tone preserved with clean, brisk readability.
+- CORE OBJECTIVE: Fast, clean, effortless reading without visual clutter.
+- CONDENSATION TECHNIQUE:
+  * Streamline long-winded sentences by trimming redundant sub-clauses and conversational disfluencies.
+  * Keep standard short sentence structure (Subject + Object + Verb) with clean conversational clarity.
+${isBn ? `  * Side-by-Side Bengali Examples:
+    - Input: "What are you doing over there?" -> Concise: "তুমি ওখানে কী করছ?"
+    - Input: "I really don't think we should be doing this at all." -> Concise: "আমাদের এটা করা ঠিক হবে না।"
+    - Input: "Are you sure you want to go inside that room?" -> Concise: "তুমি কি নিশ্চিত ওই ঘরে যাবে?"
+    - Input: "I'm telling you, he is not going to listen to anything you say." -> Concise: "তোমাকে বলছি, ও তোমার কথা শুনবে না।"
+    - Input: "Wait a minute, where do you think you are going?" -> Concise: "একটু দাঁড়াও, তুমি কোথায় যাচ্ছ?"` : ''}`;
   }
 
   if (pace === 'balanced') {
     return `SUBTITLE PACING: [ BALANCED & NATURAL ] (CINEMATIC CADENCE)
-- CORE OBJECTIVE: Natural spoken dialogue cadence matching realistic cinema and TV dubbing speed (ideal 6 to 12 words per line).
-- Preserve all natural idioms, emotional warmth, conversational tone markers, and spoken dialogue nuances faithfully without artificial shortening.
-${isBn ? `  * Side-by-Side Bengali Reference Examples:
-    - Input: "What are you doing over there?" -> Balanced: "তুমি এখন ওই দিকটাতে গিয়ে কী করছ বলো তো?" (9 words)
-    - Input: "I really don't think we should be doing this at all." -> Balanced: "আমার মনে হয় না আমাদের এখন এই কাজটা করা কোনোভাবেই ঠিক হবে।" (11 words)
-    - Input: "Are you sure you want to go inside that room?" -> Balanced: "তুমি কি সত্যিই নিশ্চিত যে তুমি ওই রুমটার ভেতরে যেতে চাও?" (11 words)` : ''}
-- Translate in lively, natural everyday spoken cinema/drama dialogue (চলতি কথ্য ভাষা).`;
+- GOLDEN RULE: Standard cinematic dubbing flow matching the natural voiceover cadence and realistic spoken rhythm.
+- CORE OBJECTIVE: Translate with full conversational nuance, emotional warmth, idioms, and natural dialogue cadence without artificial shortening.
+${isBn ? `  * Side-by-Side Bengali Examples:
+    - Input: "What are you doing over there?" -> Balanced: "তুমি এখন ওই দিকটাতে গিয়ে কী করছ বলো তো?"
+    - Input: "I really don't think we should be doing this at all." -> Balanced: "আমার মনে হয় না আমাদের এখন এই কাজটা করা কোনোভাবেই ঠিক হবে।"
+    - Input: "Are you sure you want to go inside that room?" -> Balanced: "তুমি কি সত্যিই নিশ্চিত যে তুমি ওই রুমটার ভেতরে যেতে চাও?"` : ''}`;
   }
 
   // detailed
   return `SUBTITLE PACING: [ DETAILED & COMPLETE ] (UNABRIDGED LITERAL)
-- CORE OBJECTIVE: 100% comprehensive, unabridged literal dialogue translation without summarizing or omitting any clauses.
-- Translate every single word, descriptive adjective, honorific, sub-clause, qualifier, and narrative nuance accurately.
-- Preserve complete original grammatical richness, dialogue structure, and full descriptive vocabulary.`;
+- GOLDEN RULE: 100% comprehensive, unabridged literal translation without summarizing or omitting any clauses.
+- Translate every single word, descriptive adjective, honorific, sub-clause, qualifier, and narrative nuance accurately.`;
 }
 
 // ── Google Gemini Translation Engine ──
