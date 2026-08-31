@@ -31,13 +31,19 @@ const AI_PROVIDERS = {
     docLink: 'https://openrouter.ai/keys',
     endpoint: 'https://openrouter.ai/api/v1/chat/completions',
     type: 'openai_compatible',
-    defaultModel: 'deepseek/deepseek-chat',
+    defaultModel: 'google/gemini-2.5-pro',
     badge: 'Required',
     models: [
+      { id: 'google/gemini-2.5-pro', displayName: 'Gemini 2.5 Pro (OpenRouter)', version: '2.5', inputTokens: 2097152, outputTokens: 8192, rpm: 'Dynamic', rpd: 'Unlimited', desc: 'Top Nuance Reasoning via OpenRouter' },
+      { id: 'google/gemini-2.5-flash', displayName: 'Gemini 2.5 Flash (OpenRouter)', version: '2.5', inputTokens: 1048576, outputTokens: 8192, rpm: 'Dynamic', rpd: 'Unlimited', desc: 'Ultra-Fast High Quality via OpenRouter' },
+      { id: 'google/gemini-2.0-flash-001', displayName: 'Gemini 2.0 Flash (OpenRouter)', version: '2.0', inputTokens: 1048576, outputTokens: 8192, rpm: 'Dynamic', rpd: 'Unlimited', desc: 'Ultra Fast via OpenRouter' },
+      { id: 'google/gemini-2.0-flash-lite-001', displayName: 'Gemini 2.0 Flash Lite (OpenRouter)', version: '2.0', inputTokens: 1048576, outputTokens: 8192, rpm: 'Dynamic', rpd: 'Unlimited', desc: 'Ultra-Light via OpenRouter' },
+      { id: 'google/gemini-flash-1.5', displayName: 'Gemini 1.5 Flash (OpenRouter)', version: '1.5', inputTokens: 1048576, outputTokens: 8192, rpm: 'Dynamic', rpd: 'Unlimited', desc: 'High-Volume Translation' },
+      { id: 'google/gemini-pro-1.5', displayName: 'Gemini 1.5 Pro (OpenRouter)', version: '1.5', inputTokens: 2097152, outputTokens: 8192, rpm: 'Dynamic', rpd: 'Unlimited', desc: 'Deep Nuance Reasoning' },
       { id: 'deepseek/deepseek-chat', displayName: 'DeepSeek V3 (Chat)', version: 'V3', inputTokens: 64000, outputTokens: 8192, rpm: 'Dynamic', rpd: 'Unlimited', desc: 'Top Multilingual Subtitles' },
       { id: 'meta-llama/llama-3.3-70b-instruct', displayName: 'Meta Llama 3.3 70B', version: '3.3', inputTokens: 128000, outputTokens: 8192, rpm: 'Dynamic', rpd: 'Unlimited', desc: 'Natural Dialogue Flow' },
-      { id: 'google/gemini-2.0-flash-001', displayName: 'Gemini 2.0 Flash', version: '2.0', inputTokens: 1048576, outputTokens: 8192, rpm: 'Dynamic', rpd: 'Unlimited', desc: 'Ultra Fast via OpenRouter' },
-      { id: 'anthropic/claude-3.5-haiku', displayName: 'Claude 3.5 Haiku', version: '3.5', inputTokens: 200000, outputTokens: 8192, rpm: 'Dynamic', rpd: 'Unlimited', desc: 'Natural Spoken Dubbing' }
+      { id: 'anthropic/claude-3.5-haiku', displayName: 'Claude 3.5 Haiku', version: '3.5', inputTokens: 200000, outputTokens: 8192, rpm: 'Dynamic', rpd: 'Unlimited', desc: 'Natural Spoken Dubbing' },
+      { id: 'deepseek/deepseek-r1', displayName: 'DeepSeek R1 (OpenRouter)', version: 'R1', inputTokens: 64000, outputTokens: 8192, rpm: 'Dynamic', rpd: 'Unlimited', desc: 'Deep Reasoning Chain' }
     ]
   },
   groq: {
@@ -99,37 +105,49 @@ const AI_PROVIDERS = {
 // ── Translation Quality & Auto-Switch Priority Hierarchy ──
 // Ranked by: Dialogue translation naturalness, nuance/slang retention, speed, and rate-limit resilience
 const TRANSLATION_MODEL_RANKING = [
-  // ── Tier 1A: Gemini Latest Pro & Flash Models (Top Initial Priority) ──
-  { providerId: 'gemini', modelId: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro', tier: 'Tier 1A (Gemini Latest Pro)', desc: 'Top Nuance Reasoning & Context' },
-  { providerId: 'gemini', modelId: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', tier: 'Tier 1A (Gemini Latest Flash)', desc: 'Next-Gen Ultra Fast & Nuanced' },
+  // ── Tier 1A: Google Gemini (Direct) Pro & Flash Models ──
+  { providerId: 'gemini', modelId: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro', tier: 'Tier 1A (Gemini Pro)', desc: 'Top Nuance Reasoning & Context' },
+  { providerId: 'gemini', modelId: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', tier: 'Tier 1A (Gemini Flash)', desc: 'Next-Gen Ultra Fast & Nuanced' },
   { providerId: 'gemini', modelId: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash', tier: 'Tier 1A (Gemini Flash)', desc: 'Ultra Fast Production Model' },
   { providerId: 'gemini', modelId: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro', tier: 'Tier 1A (Gemini Pro)', desc: 'Deep Context Nuance' },
   { providerId: 'gemini', modelId: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash', tier: 'Tier 1A (Gemini Flash)', desc: 'Stable Google High-Volume' },
 
-  // ── Tier 1B: Gemini Lite Models (Newest to Oldest) ──
+  // ── Tier 1B: Google Gemini (Direct) Lite Models (Newest to Oldest) ──
   { providerId: 'gemini', modelId: 'gemini-3.5-flash-lite', name: 'Gemini 3.5 Flash Lite', tier: 'Tier 1B (Gemini Lite)', desc: 'Gemini 3.5 Ultra-Fast Lite' },
   { providerId: 'gemini', modelId: 'gemini-3.1-flash-lite', name: 'Gemini 3.1 Flash Lite', tier: 'Tier 1B (Gemini Lite)', desc: 'Gemini 3.1 Ultra-Fast Lite' },
   { providerId: 'gemini', modelId: 'gemini-3.0-flash-lite', name: 'Gemini 3.0 Flash Lite', tier: 'Tier 1B (Gemini Lite)', desc: 'Gemini 3.0 Ultra-Fast Lite' },
   { providerId: 'gemini', modelId: 'gemini-2.0-flash-lite', name: 'Gemini 2.0 Flash Lite', tier: 'Tier 1B (Gemini Lite)', desc: '30 RPM Ultra-Lightweight' },
 
-  // ── Tier 2: OpenRouter & Groq Models (Cross-AI Switch) ──
-  { providerId: 'openrouter', modelId: 'deepseek/deepseek-chat', name: 'DeepSeek V3 (OpenRouter)', tier: 'Tier 2 (OpenRouter)', desc: 'Top Cinematic Dialogue & Idioms' },
-  { providerId: 'openrouter', modelId: 'meta-llama/llama-3.3-70b-instruct', name: 'Meta Llama 3.3 70B (OpenRouter)', tier: 'Tier 2 (OpenRouter)', desc: 'Natural Conversational Flow' },
-  { providerId: 'openrouter', modelId: 'anthropic/claude-3.5-haiku', name: 'Claude 3.5 Haiku (OpenRouter)', tier: 'Tier 2 (OpenRouter)', desc: 'Natural Spoken Dubbing' },
-  { providerId: 'groq', modelId: 'llama-3.3-70b-versatile', name: 'Groq Llama 3.3 70B', tier: 'Tier 2 (Groq)', desc: '14,400 RPD • 300 tok/s' },
-  { providerId: 'groq', modelId: 'llama-3.1-8b-instant', name: 'Groq Llama 3.1 8B', tier: 'Tier 2 (Groq)', desc: 'Ultra-Fast Sub-Second' },
-  { providerId: 'deepseek', modelId: 'deepseek-chat', name: 'DeepSeek V3 (Official)', tier: 'Tier 2 (DeepSeek)', desc: 'Exceptional Dialogue Slang & Idioms' },
-  { providerId: 'openai', modelId: 'gpt-4o-mini', name: 'GPT-4o Mini', tier: 'Tier 2 (OpenAI)', desc: 'Fast & Highly Precise' },
+  // ── Tier 2A: OpenRouter Gemini Models (Pro/Flash First -> Lite Next) ──
+  { providerId: 'openrouter', modelId: 'google/gemini-2.5-pro', name: 'Gemini 2.5 Pro (OpenRouter)', tier: 'Tier 2A (OpenRouter Gemini Pro)', desc: 'Top Nuance via OpenRouter' },
+  { providerId: 'openrouter', modelId: 'google/gemini-2.5-flash', name: 'Gemini 2.5 Flash (OpenRouter)', tier: 'Tier 2A (OpenRouter Gemini Flash)', desc: 'Next-Gen Speed via OpenRouter' },
+  { providerId: 'openrouter', modelId: 'google/gemini-2.0-flash-001', name: 'Gemini 2.0 Flash (OpenRouter)', tier: 'Tier 2A (OpenRouter Gemini Flash)', desc: 'Ultra-Fast via OpenRouter' },
+  { providerId: 'openrouter', modelId: 'google/gemini-2.0-flash-lite-001', name: 'Gemini 2.0 Flash Lite (OpenRouter)', tier: 'Tier 2A (OpenRouter Gemini Lite)', desc: 'Ultra-Light via OpenRouter' },
+  { providerId: 'openrouter', modelId: 'google/gemini-flash-1.5', name: 'Gemini 1.5 Flash (OpenRouter)', tier: 'Tier 2A (OpenRouter Gemini Flash)', desc: 'High-Volume via OpenRouter' },
+  { providerId: 'openrouter', modelId: 'google/gemini-pro-1.5', name: 'Gemini 1.5 Pro (OpenRouter)', tier: 'Tier 2A (OpenRouter Gemini Pro)', desc: 'Deep Nuance via OpenRouter' },
 
-  // ── Tier 3: High-Reasoning & Complex Dialogue ──
-  { providerId: 'openrouter', modelId: 'deepseek/deepseek-r1', name: 'DeepSeek R1 (OpenRouter)', tier: 'Tier 3 (Reasoning)', desc: 'Deep Reasoning for Ambiguous Lines' },
-  { providerId: 'groq', modelId: 'deepseek-r1-distill-llama-70b', name: 'Groq DeepSeek R1 70B', tier: 'Tier 3 (Reasoning)', desc: 'Complex Metaphor Understanding' },
-  { providerId: 'openai', modelId: 'gpt-4o', name: 'GPT-4o Flagship', tier: 'Tier 3 (Flagship)', desc: 'Maximum Linguistic Precision' },
+  // ── Tier 2B: OpenRouter Other Top Cinematic / Dialogue AI Models ──
+  { providerId: 'openrouter', modelId: 'deepseek/deepseek-chat', name: 'DeepSeek V3 (OpenRouter)', tier: 'Tier 2B (OpenRouter DeepSeek)', desc: 'Top Cinematic Dialogue & Idioms' },
+  { providerId: 'openrouter', modelId: 'meta-llama/llama-3.3-70b-instruct', name: 'Meta Llama 3.3 70B (OpenRouter)', tier: 'Tier 2B (OpenRouter Llama)', desc: 'Natural Conversational Flow' },
+  { providerId: 'openrouter', modelId: 'anthropic/claude-3.5-haiku', name: 'Claude 3.5 Haiku (OpenRouter)', tier: 'Tier 2B (OpenRouter Claude)', desc: 'Natural Spoken Dubbing' },
+  { providerId: 'openrouter', modelId: 'deepseek/deepseek-r1', name: 'DeepSeek R1 (OpenRouter)', tier: 'Tier 2B (OpenRouter Reasoning)', desc: 'Deep Reasoning for Ambiguous Lines' },
 
-  // ── Tier 4: Emergency Fallback ──
-  { providerId: 'groq', modelId: 'mixtral-8x7b-32768', name: 'Groq Mixtral 8x7B', tier: 'Tier 4 (Fallback)', desc: 'High Multilingual Throughput' },
-  { providerId: 'deepseek', modelId: 'deepseek-reasoner', name: 'DeepSeek R1 Reasoner', tier: 'Tier 4 (Fallback)', desc: 'Deep Reasoning Chain' },
-  { providerId: 'custom', modelId: 'custom-model', name: 'Custom Model', tier: 'Tier 4 (Custom Endpoint)', desc: 'Custom OpenAI-Compatible Model' }
+  // ── Tier 3: Groq High-Speed Models ──
+  { providerId: 'groq', modelId: 'llama-3.3-70b-versatile', name: 'Groq Llama 3.3 70B', tier: 'Tier 3 (Groq)', desc: '14,400 RPD • 300 tok/s' },
+  { providerId: 'groq', modelId: 'llama-3.1-8b-instant', name: 'Groq Llama 3.1 8B', tier: 'Tier 3 (Groq)', desc: 'Ultra-Fast Sub-Second' },
+  { providerId: 'groq', modelId: 'deepseek-r1-distill-llama-70b', name: 'Groq DeepSeek R1 70B', tier: 'Tier 3 (Groq Reasoning)', desc: 'Complex Metaphor Understanding' },
+  { providerId: 'groq', modelId: 'mixtral-8x7b-32768', name: 'Groq Mixtral 8x7B', tier: 'Tier 3 (Groq Fallback)', desc: 'High Multilingual Throughput' },
+
+  // ── Tier 4: DeepSeek Official API ──
+  { providerId: 'deepseek', modelId: 'deepseek-chat', name: 'DeepSeek V3 (Official)', tier: 'Tier 4 (DeepSeek)', desc: 'Exceptional Dialogue Slang & Idioms' },
+  { providerId: 'deepseek', modelId: 'deepseek-reasoner', name: 'DeepSeek R1 Reasoner', tier: 'Tier 4 (DeepSeek)', desc: 'Deep Reasoning Chain' },
+
+  // ── Tier 5: OpenAI API ──
+  { providerId: 'openai', modelId: 'gpt-4o-mini', name: 'GPT-4o Mini', tier: 'Tier 5 (OpenAI)', desc: 'Fast & Highly Precise' },
+  { providerId: 'openai', modelId: 'gpt-4o', name: 'GPT-4o Flagship', tier: 'Tier 5 (OpenAI)', desc: 'Maximum Linguistic Precision' },
+
+  // ── Tier 6: Custom OpenAI Endpoint ──
+  { providerId: 'custom', modelId: 'custom-model', name: 'Custom Model', tier: 'Tier 6 (Custom Endpoint)', desc: 'Custom OpenAI-Compatible Model' }
 ];
 
 // Global State
@@ -2397,10 +2415,19 @@ function findFailoverBackup(currentProviderId, currentModelId) {
     }
   }
 
-  // ── RULE 4: Check any other live verified model across other connected providers ──
+  // ── RULE 4: Check any other live verified model across other connected providers (OpenRouter Gemini prioritized first) ──
   for (const pid of ['openrouter', 'groq', 'deepseek', 'openai', 'custom']) {
     if (!state.apiKeys[pid] || !state.providerStatus[pid]?.connected) continue;
-    const liveModels = state.providerStatus[pid]?.models || AI_PROVIDERS[pid]?.models || [];
+    let liveModels = state.providerStatus[pid]?.models || AI_PROVIDERS[pid]?.models || [];
+    if (pid === 'openrouter') {
+      liveModels = [...liveModels].sort((a, b) => {
+        const aGem = (a.id || '').toLowerCase().includes('gemini');
+        const bGem = (b.id || '').toLowerCase().includes('gemini');
+        if (aGem && !bGem) return -1;
+        if (!aGem && bGem) return 1;
+        return 0;
+      });
+    }
     for (const m of liveModels) {
       if (isModelHealthy(pid, m.id)) {
         return {
