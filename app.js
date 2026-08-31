@@ -14,6 +14,7 @@ const AI_PROVIDERS = {
     badge: 'Required',
     models: [
       { id: 'gemini-3.0-flash-lite', displayName: 'Gemini 3.0 Flash Lite', version: '3.0', inputTokens: 1048576, outputTokens: 8192, rpm: '30 RPM', rpd: '1,500 RPD', desc: 'Gemini 3.0 Ultra-Fast Lightweight (Google AI)' },
+      { id: 'gemini-3.1-flash-lite', displayName: 'Gemini 3.1 Flash Lite', version: '3.1', inputTokens: 1048576, outputTokens: 8192, rpm: '30 RPM', rpd: '1,500 RPD', desc: 'Gemini 3.1 Ultra-Fast Lightweight (Google AI)' },
       { id: 'gemini-3.5-flash-lite', displayName: 'Gemini 3.5 Flash Lite', version: '3.5', inputTokens: 1048576, outputTokens: 8192, rpm: '30 RPM', rpd: '1,500 RPD', desc: 'Gemini 3.5 Ultra-Fast Lightweight (Google AI)' },
       { id: 'gemini-2.5-flash', displayName: 'Gemini 2.5 Flash', version: '2.5', inputTokens: 1048576, outputTokens: 8192, rpm: '15 RPM', rpd: '1,500 RPD', desc: 'Latest Ultra-Fast & High Quality (Google AI)' },
       { id: 'gemini-2.0-flash', displayName: 'Gemini 2.0 Flash', version: '2.0', inputTokens: 1048576, outputTokens: 8192, rpm: '15 RPM', rpd: '1,500 RPD', desc: 'Fast Production Model (Google AI)' },
@@ -101,6 +102,7 @@ const AI_PROVIDERS = {
 const TRANSLATION_MODEL_RANKING = [
   // ── Tier 1: Gemini 3+ Lite Models (Highest Priority) ──
   { providerId: 'gemini', modelId: 'gemini-3.0-flash-lite', name: 'Gemini 3.0 Flash Lite', tier: 'Tier 1 (Gemini 3+ Lite)', desc: 'Gemini 3.0 Ultra-Fast Lite' },
+  { providerId: 'gemini', modelId: 'gemini-3.1-flash-lite', name: 'Gemini 3.1 Flash Lite', tier: 'Tier 1 (Gemini 3+ Lite)', desc: 'Gemini 3.1 Ultra-Fast Lite' },
   { providerId: 'gemini', modelId: 'gemini-3.5-flash-lite', name: 'Gemini 3.5 Flash Lite', tier: 'Tier 1 (Gemini 3+ Lite)', desc: 'Gemini 3.5 Ultra-Fast Lite' },
 
   // ── Tier 2: OpenRouter & Groq Models (Cross-AI Switch) ──
@@ -2112,11 +2114,15 @@ function resolveRealTimeBestModel() {
     }
   }
 
-  // 1. Primary Rule: Check Gemini 3+ Lite models FIRST if Gemini is connected & healthy
+  // 1. Primary Rule: Check Gemini 3+ Lite models (e.g. 3.0, 3.1, 3.5 Flash Lite) FIRST if Gemini is connected & healthy
   if (state.apiKeys.gemini && state.providerStatus.gemini?.connected !== false) {
     const gemini3PlusLiteOrder = [
       'gemini-3.0-flash-lite',
-      'gemini-3.5-flash-lite'
+      'gemini-3.1-flash-lite',
+      'gemini-3.5-flash-lite',
+      'gemini-3.0-lite',
+      'gemini-3.1-lite',
+      'gemini-3.5-lite'
     ];
     for (const mId of gemini3PlusLiteOrder) {
       if (modelHealthTracker.isAvailable('gemini', mId)) {
@@ -2232,10 +2238,14 @@ function findFailoverBackup(currentProviderId, currentModelId) {
     return true;
   }
 
-  // ── RULE 1: Try healthy Gemini 3+ Lite models FIRST upon failure ──
+  // ── RULE 1: Try healthy Gemini 3+ Lite models (e.g. 3.0, 3.1, 3.5 Flash Lite) FIRST upon failure ──
   const gemini3PlusLiteCandidates = [
     'gemini-3.0-flash-lite',
-    'gemini-3.5-flash-lite'
+    'gemini-3.1-flash-lite',
+    'gemini-3.5-flash-lite',
+    'gemini-3.0-lite',
+    'gemini-3.1-lite',
+    'gemini-3.5-lite'
   ];
   for (const mId of gemini3PlusLiteCandidates) {
     if (isModelHealthy('gemini', mId)) {
