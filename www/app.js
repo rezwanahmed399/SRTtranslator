@@ -10,13 +10,13 @@ const AI_PROVIDERS = {
     storageKey: 'gemini_api_key',
     docLink: 'https://aistudio.google.com/app/apikey',
     type: 'gemini',
-    defaultModel: 'gemini-2.0-flash',
+    defaultModel: 'gemini-2.0-flash-lite',
     badge: 'Required',
     models: [
+      { id: 'gemini-2.0-flash-lite', displayName: 'Gemini 2.0 Flash Lite', version: '2.0', inputTokens: 1048576, outputTokens: 8192, rpm: '30 RPM', rpd: '1,500 RPD', desc: 'Ultra-Fast Lightweight & High Throughput (Google AI)' },
       { id: 'gemini-2.5-flash', displayName: 'Gemini 2.5 Flash', version: '2.5', inputTokens: 1048576, outputTokens: 8192, rpm: '15 RPM', rpd: '1,500 RPD', desc: 'Latest Ultra-Fast & High Quality (Google AI)' },
       { id: 'gemini-2.0-flash', displayName: 'Gemini 2.0 Flash', version: '2.0', inputTokens: 1048576, outputTokens: 8192, rpm: '15 RPM', rpd: '1,500 RPD', desc: 'Fast Production Model (Google AI)' },
       { id: 'gemini-1.5-flash', displayName: 'Gemini 1.5 Flash', version: '1.5', inputTokens: 1048576, outputTokens: 8192, rpm: '15 RPM', rpd: '1,500 RPD', desc: 'Stable High-Volume Translation' },
-      { id: 'gemini-2.0-flash-lite', displayName: 'Gemini 2.0 Flash Lite', version: '2.0', inputTokens: 1048576, outputTokens: 8192, rpm: '30 RPM', rpd: '1,500 RPD', desc: 'Ultra-Fast Lightweight' },
       { id: 'gemini-2.5-pro', displayName: 'Gemini 2.5 Pro', version: '2.5', inputTokens: 2097152, outputTokens: 8192, rpm: '2 RPM', rpd: '50 RPD', desc: 'Deep Nuance Reasoning' },
       { id: 'gemini-1.5-pro', displayName: 'Gemini 1.5 Pro', version: '1.5', inputTokens: 2097152, outputTokens: 8192, rpm: '2 RPM', rpd: '50 RPD', desc: 'Complex Nuances & Context' }
     ]
@@ -97,31 +97,33 @@ const AI_PROVIDERS = {
 // Ranked by: Dialogue translation naturalness, nuance/slang retention, speed, and rate-limit resilience
 // Priority: Google Gemini (Required) | OpenRouter (Required) | Groq | DeepSeek | OpenAI | Custom API
 const TRANSLATION_MODEL_RANKING = [
-  // ── Tier 1: Flagship Quality + Ultra High-Throughput (Top Priority) ──
-  { providerId: 'gemini', modelId: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', tier: 'Tier 1 (Flagship)', desc: 'Next-Gen Ultra Fast & Nuanced' },
-  { providerId: 'gemini', modelId: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash', tier: 'Tier 1 (Flagship)', desc: 'Ultra Fast & 1M Context' },
-  { providerId: 'openrouter', modelId: 'deepseek/deepseek-chat', name: 'DeepSeek V3 (OpenRouter)', tier: 'Tier 1 (Flagship)', desc: 'Top Cinematic Dialogue & Idioms' },
-  { providerId: 'openrouter', modelId: 'meta-llama/llama-3.3-70b-instruct', name: 'Meta Llama 3.3 70B (OpenRouter)', tier: 'Tier 1 (Flagship)', desc: 'Natural Conversational Flow' },
-  { providerId: 'openrouter', modelId: 'google/gemini-2.0-flash-001', name: 'Gemini 2.0 Flash (OpenRouter)', tier: 'Tier 1 (Flagship)', desc: 'Ultra-Fast via OpenRouter Multi-Cloud' },
-  { providerId: 'gemini', modelId: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash', tier: 'Tier 1 (Flagship)', desc: 'Stable Google High-Volume' },
-  { providerId: 'groq', modelId: 'llama-3.3-70b-versatile', name: 'Groq Llama 3.3 70B', tier: 'Tier 1 (High Speed)', desc: '14,400 RPD • 300 tok/s' },
-  { providerId: 'gemini', modelId: 'gemini-2.0-flash-lite', name: 'Gemini 2.0 Flash Lite', tier: 'Tier 1 (High Speed)', desc: '30 RPM Ultra-Lightweight' },
-  { providerId: 'openrouter', modelId: 'anthropic/claude-3.5-haiku', name: 'Claude 3.5 Haiku (OpenRouter)', tier: 'Tier 1 (Flagship)', desc: 'Natural Spoken Dubbing' },
-  { providerId: 'deepseek', modelId: 'deepseek-chat', name: 'DeepSeek V3 (Official)', tier: 'Tier 1 (Flagship)', desc: 'Exceptional Dialogue Slang & Idioms' },
-  { providerId: 'groq', modelId: 'llama-3.1-8b-instant', name: 'Groq Llama 3.1 8B', tier: 'Tier 1 (High Speed)', desc: 'Ultra-Fast Sub-Second' },
-  { providerId: 'openai', modelId: 'gpt-4o-mini', name: 'GPT-4o Mini', tier: 'Tier 1 (Flagship)', desc: 'Fast & Highly Precise' },
+  // ── Tier 1: Gemini Lite & High-Speed Flash Models (Top Priority) ──
+  { providerId: 'gemini', modelId: 'gemini-2.0-flash-lite', name: 'Gemini 2.0 Flash Lite', tier: 'Tier 1 (Gemini Lite)', desc: '30 RPM Ultra-Lightweight & Fast' },
+  { providerId: 'gemini', modelId: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', tier: 'Tier 1 (Gemini Flash)', desc: 'Next-Gen Ultra Fast & Nuanced' },
+  { providerId: 'gemini', modelId: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash', tier: 'Tier 1 (Gemini Flash)', desc: 'Ultra Fast & 1M Context' },
+  { providerId: 'gemini', modelId: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash', tier: 'Tier 1 (Gemini Flash)', desc: 'Stable Google High-Volume' },
 
-  // ── Tier 2: High-Reasoning & Robust Multilingual Workhorses ──
-  { providerId: 'gemini', modelId: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro', tier: 'Tier 2 (High Reasoning)', desc: 'Deep Context & Literature Quality' },
-  { providerId: 'openrouter', modelId: 'deepseek/deepseek-r1', name: 'DeepSeek R1 (OpenRouter)', tier: 'Tier 2 (High Reasoning)', desc: 'Deep Reasoning for Ambiguous Lines' },
-  { providerId: 'groq', modelId: 'deepseek-r1-distill-llama-70b', name: 'Groq DeepSeek R1 70B', tier: 'Tier 2 (High Reasoning)', desc: 'Complex Metaphor Understanding' },
-  { providerId: 'openai', modelId: 'gpt-4o', name: 'GPT-4o Flagship', tier: 'Tier 2 (High Reasoning)', desc: 'Maximum Linguistic Precision' },
+  // ── Tier 2: OpenRouter & Groq High-Speed Multilingual ──
+  { providerId: 'openrouter', modelId: 'deepseek/deepseek-chat', name: 'DeepSeek V3 (OpenRouter)', tier: 'Tier 2 (OpenRouter)', desc: 'Top Cinematic Dialogue & Idioms' },
+  { providerId: 'openrouter', modelId: 'meta-llama/llama-3.3-70b-instruct', name: 'Meta Llama 3.3 70B (OpenRouter)', tier: 'Tier 2 (OpenRouter)', desc: 'Natural Conversational Flow' },
+  { providerId: 'openrouter', modelId: 'google/gemini-2.0-flash-001', name: 'Gemini 2.0 Flash (OpenRouter)', tier: 'Tier 2 (OpenRouter)', desc: 'Ultra-Fast via OpenRouter Multi-Cloud' },
+  { providerId: 'openrouter', modelId: 'anthropic/claude-3.5-haiku', name: 'Claude 3.5 Haiku (OpenRouter)', tier: 'Tier 2 (OpenRouter)', desc: 'Natural Spoken Dubbing' },
+  { providerId: 'groq', modelId: 'llama-3.3-70b-versatile', name: 'Groq Llama 3.3 70B', tier: 'Tier 2 (Groq)', desc: '14,400 RPD • 300 tok/s' },
+  { providerId: 'groq', modelId: 'llama-3.1-8b-instant', name: 'Groq Llama 3.1 8B', tier: 'Tier 2 (Groq)', desc: 'Ultra-Fast Sub-Second' },
+  { providerId: 'deepseek', modelId: 'deepseek-chat', name: 'DeepSeek V3 (Official)', tier: 'Tier 2 (DeepSeek)', desc: 'Exceptional Dialogue Slang & Idioms' },
+  { providerId: 'openai', modelId: 'gpt-4o-mini', name: 'GPT-4o Mini', tier: 'Tier 2 (OpenAI)', desc: 'Fast & Highly Precise' },
 
-  // ── Tier 3: Emergency Fallback & Specialized Deep Models ──
-  { providerId: 'groq', modelId: 'mixtral-8x7b-32768', name: 'Groq Mixtral 8x7B', tier: 'Tier 3 (Fallback)', desc: 'High Multilingual Throughput' },
-  { providerId: 'deepseek', modelId: 'deepseek-reasoner', name: 'DeepSeek R1 Reasoner', tier: 'Tier 3 (Fallback)', desc: 'Deep Reasoning Chain' },
-  { providerId: 'gemini', modelId: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro', tier: 'Tier 3 (Fallback)', desc: 'Pro Reasoning (2 RPM / 50 RPD)' },
-  { providerId: 'custom', modelId: 'custom-model', name: 'Custom Model', tier: 'Tier 3 (Custom Endpoint)', desc: 'Custom OpenAI-Compatible Model' }
+  // ── Tier 3: High-Reasoning & Complex Dialogue ──
+  { providerId: 'gemini', modelId: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro', tier: 'Tier 3 (Pro Reasoning)', desc: 'Deep Context & Literature Quality' },
+  { providerId: 'openrouter', modelId: 'deepseek/deepseek-r1', name: 'DeepSeek R1 (OpenRouter)', tier: 'Tier 3 (Reasoning)', desc: 'Deep Reasoning for Ambiguous Lines' },
+  { providerId: 'groq', modelId: 'deepseek-r1-distill-llama-70b', name: 'Groq DeepSeek R1 70B', tier: 'Tier 3 (Reasoning)', desc: 'Complex Metaphor Understanding' },
+  { providerId: 'openai', modelId: 'gpt-4o', name: 'GPT-4o Flagship', tier: 'Tier 3 (Flagship)', desc: 'Maximum Linguistic Precision' },
+
+  // ── Tier 4: Emergency Fallback & Specialized Models ──
+  { providerId: 'groq', modelId: 'mixtral-8x7b-32768', name: 'Groq Mixtral 8x7B', tier: 'Tier 4 (Fallback)', desc: 'High Multilingual Throughput' },
+  { providerId: 'deepseek', modelId: 'deepseek-reasoner', name: 'DeepSeek R1 Reasoner', tier: 'Tier 4 (Fallback)', desc: 'Deep Reasoning Chain' },
+  { providerId: 'gemini', modelId: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro', tier: 'Tier 4 (Fallback)', desc: 'Pro Reasoning (2 RPM / 50 RPD)' },
+  { providerId: 'custom', modelId: 'custom-model', name: 'Custom Model', tier: 'Tier 4 (Custom Endpoint)', desc: 'Custom OpenAI-Compatible Model' }
 ];
 
 // Global State
@@ -2101,61 +2103,66 @@ function resolveRealTimeBestModel() {
     }
   }
 
-  // Real-time live candidates evaluation
-  const candidates = [];
-
-  for (const pid of ['gemini', 'openrouter', 'groq', 'deepseek', 'openai', 'custom']) {
-    if (!state.apiKeys[pid] || !state.providerStatus[pid]?.connected) continue;
-    const models = state.providerStatus[pid]?.models || AI_PROVIDERS[pid]?.models || [];
-    const providerPing = state.providerStatus[pid]?.lastLatency || 999;
-
-    for (const m of models) {
-      const mid = m.id;
-      if (!modelHealthTracker.isAvailable(pid, mid)) continue;
-
-      let score = 100;
-      const lower = mid.toLowerCase();
-
-      // Provider tier weighting
-      if (pid === 'gemini') score += 40;
-      else if (pid === 'openrouter') score += 35;
-      else if (pid === 'groq') score += 20;
-
-      // Speed / Flash tier boost
-      if (lower.includes('flash') || lower.includes('instant') || lower.includes('chat') || lower.includes('mini') || lower.includes('versatile')) {
-        score += 50;
+  // 1. Primary Rule: Check Gemini Lite & Flash models FIRST if Gemini is connected & healthy
+  if (state.apiKeys.gemini && state.providerStatus.gemini?.connected !== false) {
+    const geminiLitePriority = [
+      'gemini-2.0-flash-lite',
+      'gemini-2.5-flash',
+      'gemini-2.0-flash',
+      'gemini-1.5-flash'
+    ];
+    for (const mId of geminiLitePriority) {
+      if (modelHealthTracker.isAvailable('gemini', mId)) {
+        const mObj = AI_PROVIDERS.gemini.models.find(m => m.id === mId) || { displayName: mId };
+        return {
+          providerId: 'gemini',
+          model: mId,
+          key: state.apiKeys.gemini,
+          displayName: mObj.displayName || mId
+        };
       }
-      if (lower.includes('2.5') || lower.includes('2.0') || lower.includes('3.3') || lower.includes('v3') || lower.includes('4o')) {
-        score += 30;
+    }
+    // Also check any live Gemini flash/lite models returned dynamically from Gemini API
+    const liveGemini = state.providerStatus.gemini?.models || [];
+    for (const m of liveGemini) {
+      const lower = (m.id || '').toLowerCase();
+      if ((lower.includes('lite') || lower.includes('flash')) && modelHealthTracker.isAvailable('gemini', m.id)) {
+        return {
+          providerId: 'gemini',
+          model: m.id,
+          key: state.apiKeys.gemini,
+          displayName: m.displayName || m.id
+        };
       }
-
-      // Latency penalty
-      score -= Math.min(Math.round(providerPing / 10), 30);
-
-      candidates.push({
-        providerId: pid,
-        model: mid,
-        key: state.apiKeys[pid],
-        score,
-        ping: providerPing,
-        displayName: m.displayName || mid
-      });
     }
   }
 
-  if (candidates.length > 0) {
-    candidates.sort((a, b) => b.score - a.score);
-    return candidates[0];
+  // 2. Secondary Rule: If Gemini Lite is unavailable/failed, cascade to other connected providers by ranking
+  for (const entry of TRANSLATION_MODEL_RANKING) {
+    const pid = entry.providerId;
+    if (state.apiKeys[pid] && state.providerStatus[pid]?.connected && modelHealthTracker.isAvailable(pid, entry.modelId)) {
+      return {
+        providerId: pid,
+        model: entry.modelId,
+        key: state.apiKeys[pid],
+        displayName: entry.name
+      };
+    }
   }
 
-  // Fallbacks
-  if (state.apiKeys.gemini && state.providerStatus.gemini?.connected !== false) {
-    return { providerId: 'gemini', model: 'gemini-2.0-flash', key: state.apiKeys.gemini, displayName: 'Gemini 2.0 Flash' };
+  // 3. Fallback to any connected provider's default model
+  for (const pid of ['gemini', 'openrouter', 'groq', 'deepseek', 'openai', 'custom']) {
+    if (state.apiKeys[pid] && state.providerStatus[pid]?.connected) {
+      return {
+        providerId: pid,
+        model: AI_PROVIDERS[pid].defaultModel,
+        key: state.apiKeys[pid],
+        displayName: AI_PROVIDERS[pid].name
+      };
+    }
   }
-  if (state.apiKeys.openrouter && state.providerStatus.openrouter?.connected !== false) {
-    return { providerId: 'openrouter', model: 'deepseek/deepseek-chat', key: state.apiKeys.openrouter, displayName: 'DeepSeek V3 (OpenRouter)' };
-  }
-  return { providerId: 'gemini', model: 'gemini-2.0-flash', key: state.apiKeys.gemini || '', displayName: 'Gemini 2.0 Flash' };
+
+  return { providerId: 'gemini', model: 'gemini-2.0-flash-lite', key: state.apiKeys.gemini || '', displayName: 'Gemini 2.0 Flash Lite' };
 }
 
 function getActiveProviderAndKey(modelId) {
@@ -2203,7 +2210,7 @@ function getActiveProviderAndKey(modelId) {
     }
   }
 
-  return { providerId: 'gemini', model: 'gemini-2.0-flash', key: state.apiKeys.gemini || '' };
+  return { providerId: 'gemini', model: 'gemini-2.0-flash-lite', key: state.apiKeys.gemini || '' };
 }
 
 function findFailoverBackup(currentProviderId, currentModelId) {
@@ -2219,9 +2226,57 @@ function findFailoverBackup(currentProviderId, currentModelId) {
     return true;
   }
 
-  // 1. Primary Search: Top-ranked model from a DIFFERENT connected provider (highest priority)
+  function isGeminiLiteOrFlash(pid, mid) {
+    if (pid !== 'gemini') return false;
+    const lower = (mid || '').toLowerCase();
+    return lower.includes('lite') || lower.includes('flash');
+  }
+
+  // ── RULE 1: Always try healthy Gemini Lite / Flash models FIRST upon failure ──
+  // (Unless the failed model was already that specific model)
+  const geminiLiteCandidates = [
+    'gemini-2.0-flash-lite',
+    'gemini-2.5-flash',
+    'gemini-2.0-flash',
+    'gemini-1.5-flash'
+  ];
+  for (const mId of geminiLiteCandidates) {
+    if (isModelHealthy('gemini', mId)) {
+      const pConf = AI_PROVIDERS.gemini;
+      const mObj = pConf.models.find(m => m.id === mId) || { displayName: mId, desc: 'Gemini Lite/Flash Engine' };
+      return {
+        providerId: 'gemini',
+        providerName: pConf.name,
+        model: mId,
+        modelName: mObj.displayName || mId,
+        tier: 'Tier 1 (Gemini Lite/Flash)',
+        desc: mObj.desc || 'High-Speed Translation',
+        key: state.apiKeys.gemini
+      };
+    }
+  }
+
+  // Check any other live Gemini flash/lite models returned dynamically by Gemini API
+  if (state.providerStatus.gemini?.connected && state.apiKeys.gemini) {
+    const liveGeminiModels = state.providerStatus.gemini?.models || [];
+    for (const m of liveGeminiModels) {
+      if (isGeminiLiteOrFlash('gemini', m.id) && isModelHealthy('gemini', m.id)) {
+        return {
+          providerId: 'gemini',
+          providerName: AI_PROVIDERS.gemini.name,
+          model: m.id,
+          modelName: m.displayName || m.name || m.id,
+          tier: 'Tier 1 (Gemini Lite/Flash Live)',
+          desc: m.desc || 'Gemini Flash Engine',
+          key: state.apiKeys.gemini
+        };
+      }
+    }
+  }
+
+  // ── RULE 2: If Gemini Lite models fail/unavailable, cascade to other AIs in priority hierarchy ──
   for (const entry of TRANSLATION_MODEL_RANKING) {
-    if (entry.providerId !== currentProviderId && isModelHealthy(entry.providerId, entry.modelId)) {
+    if (isModelHealthy(entry.providerId, entry.modelId)) {
       return {
         providerId: entry.providerId,
         providerName: AI_PROVIDERS[entry.providerId]?.name || entry.providerId,
@@ -2234,24 +2289,9 @@ function findFailoverBackup(currentProviderId, currentModelId) {
     }
   }
 
-  // 2. Secondary Search: Alternative ranked models from the SAME connected provider (e.g. Gemini 1.5 Flash, Gemini 2.0 Flash Lite)
-  for (const entry of TRANSLATION_MODEL_RANKING) {
-    if (entry.providerId === currentProviderId && isModelHealthy(entry.providerId, entry.modelId)) {
-      return {
-        providerId: entry.providerId,
-        providerName: AI_PROVIDERS[entry.providerId]?.name || entry.providerId,
-        model: entry.modelId,
-        modelName: entry.name,
-        tier: entry.tier,
-        desc: entry.desc,
-        key: state.apiKeys[entry.providerId]
-      };
-    }
-  }
-
-  // 3. Tertiary Search: Any live verified model from other connected providers (Priority order)
-  for (const pid of ['gemini', 'openrouter', 'groq', 'deepseek', 'openai', 'custom']) {
-    if (pid === currentProviderId || !state.apiKeys[pid] || !state.providerStatus[pid]?.connected) continue;
+  // ── RULE 3: Check any other live verified model across all connected providers in priority order ──
+  for (const pid of ['openrouter', 'groq', 'deepseek', 'openai', 'gemini', 'custom']) {
+    if (!state.apiKeys[pid] || !state.providerStatus[pid]?.connected) continue;
     const liveModels = state.providerStatus[pid]?.models || AI_PROVIDERS[pid]?.models || [];
     for (const m of liveModels) {
       if (isModelHealthy(pid, m.id)) {
@@ -2268,39 +2308,27 @@ function findFailoverBackup(currentProviderId, currentModelId) {
     }
   }
 
-  // 4. Quaternary Search: Any other live verified model from the SAME connected provider
-  const sameModels = state.providerStatus[currentProviderId]?.models || AI_PROVIDERS[currentProviderId]?.models || [];
-  for (const m of sameModels) {
-    if (isModelHealthy(currentProviderId, m.id)) {
-      return {
-        providerId: currentProviderId,
-        providerName: AI_PROVIDERS[currentProviderId]?.name || currentProviderId,
-        model: m.id,
-        modelName: m.displayName || m.name || m.id,
-        tier: 'Alternative Same-Provider Model',
-        desc: m.desc || 'Alternative Model',
-        key: state.apiKeys[currentProviderId]
-      };
-    }
-  }
-
-  // 5. Emergency Cooldown Reset: If all backup models were temporarily cooling down, reset and pick the best alternative
+  // ── RULE 4: Emergency Cooldown Reset (If all models cooled down, unblock best available non-broken model) ──
   for (const pid of ['gemini', 'openrouter', 'groq', 'deepseek', 'openai']) {
     if (!state.apiKeys[pid] || !state.providerStatus[pid]?.connected) continue;
     const models = state.providerStatus[pid]?.models || AI_PROVIDERS[pid]?.models || [];
     for (const m of models) {
       const cleanMid = (m.id || '').replace(/^models\//, '').trim().toLowerCase();
       if (pid === currentProviderId && cleanMid === cleanCurrentModel) continue;
-      modelHealthTracker.failures.delete(`${pid}:${cleanMid}`);
-      return {
-        providerId: pid,
-        providerName: AI_PROVIDERS[pid]?.name || pid,
-        model: m.id,
-        modelName: m.displayName || m.name || m.id,
-        tier: 'Emergency Auto-Recovered Backup',
-        desc: 'Recovered Model',
-        key: state.apiKeys[pid]
-      };
+      const key = `${pid}:${cleanMid}`;
+      const entry = modelHealthTracker.failures.get(key);
+      if (entry && !entry.isPermanent) {
+        modelHealthTracker.failures.delete(key);
+        return {
+          providerId: pid,
+          providerName: AI_PROVIDERS[pid]?.name || pid,
+          model: m.id,
+          modelName: m.displayName || m.name || m.id,
+          tier: 'Emergency Auto-Recovered Backup',
+          desc: 'Recovered Model',
+          key: state.apiKeys[pid]
+        };
+      }
     }
   }
 
