@@ -4112,8 +4112,9 @@ async function translateBatchWithAdaptiveSplitting(batch, activeKey, modelToUse,
         if (isBalanceOrAuth) reason = 'Insufficient Balance / Auth error';
         else if (isRateLimitOrOverload) reason = 'Rate limit / Server busy';
         else if (isModelBroken) reason = 'Model unavailable';
+        else if (errMsg.includes('timeout') || errMsg.includes('slow')) reason = 'Response timed out / Slow server';
 
-        addTerminalLog('warn', `⚡ [Auto-Failover] ${reason} on [${AI_PROVIDERS[currentPid]?.name || currentPid}] "${activeModel}". Automatically switching to [${backup.providerName}] "${backup.modelName}" to continue translation without losing any lines!`);
+        addTerminalLog('warn', `⚡ [Auto-Failover] ${reason} on [${AI_PROVIDERS[currentPid]?.name || currentPid}] "${activeModel}". Instantly switching to [${backup.providerName}] "${backup.modelName}" without delay!`);
 
         // Dynamically update active model globally
         state.selectedModel = backup.model;
@@ -4122,10 +4123,10 @@ async function translateBatchWithAdaptiveSplitting(batch, activeKey, modelToUse,
           refreshCustomSelect('modelSelect');
         }
         updateQuotaDashboardForActiveModel();
-        updateApiHealthUI('optimal', `Switched to [${backup.providerName}] ${backup.modelName}`);
+        updateApiHealthUI('optimal', `Instantly switched to [${backup.providerName}] ${backup.modelName}`);
 
-        // Small delay and seamless retry on the new model
-        await sleep(600);
+        // Immediate switch with minimal 100ms yield to UI loop
+        await sleep(100);
         return await translateBatchWithAdaptiveSplitting(batch, backup.key, backup.model, 1);
       }
     }
@@ -4294,17 +4295,30 @@ OUTPUT (JSON Array):`;
   const reqStart = Date.now();
   updateApiHealthUI('active', `[Gemini] Sending Batch #${batch[0]?.num || 1}...`);
 
+  const timeoutMs = selectedModel.includes('pro') ? 10000 : 8000;
+  const abortController = new AbortController();
+  const timeoutId = setTimeout(() => {
+    abortController.abort(new Error(`Gemini API request timed out (${timeoutMs / 1000}s slow response)`));
+  }, timeoutMs);
+
   let response;
   try {
     response = await fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(requestBody)
+      body: JSON.stringify(requestBody),
+      signal: abortController.signal
     });
   } catch (netErr) {
     const lat = Date.now() - reqStart;
-    updateApiHealthUI('warning', '[Gemini] Network Retry...', lat);
+    if (netErr.name === 'AbortError' || abortController.signal.aborted) {
+      updateApiHealthUI('warning', '[Gemini] Slow response timeout...', lat);
+      throw new Error(`Gemini API timeout (${timeoutMs / 1000}s slow response). Switching to fast backup model.`);
+    }
+    updateApiHealthUI('warning', '[Gemini] Network Error...', lat);
     throw netErr;
+  } finally {
+    clearTimeout(timeoutId);
   }
 
   const duration = Date.now() - reqStart;
