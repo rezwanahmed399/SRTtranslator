@@ -6,7 +6,7 @@
   "scripts": {
     "start": "npx serve www",
     "build": "node build-app.js",
-    "cap:sync": "node build-app.js && npx cap sync android",
+    "cap:sync": "node build-app.js && npx cap sync android && node -e \"const fs=require('fs'); const p='android/app/src/main/assets/public/SRTtranslator-latest.apk'; if(fs.existsSync(p)) fs.unlinkSync(p);\"",
     "cap:open": "npx cap open android"
   },
   "keywords": [

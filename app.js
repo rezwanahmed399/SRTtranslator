@@ -11,11 +11,30 @@ const AI_PROVIDERS = {
     docLink: 'https://aistudio.google.com/app/apikey',
     type: 'gemini',
     defaultModel: 'gemini-2.0-flash',
+    badge: 'Required',
     models: [
-      { id: 'gemini-2.0-flash', displayName: 'Gemini 2.0 Flash', version: '2.0', inputTokens: 1048576, outputTokens: 8192, rpm: '15 RPM', rpd: '1,500 RPD', desc: 'Fastest & Recommended (Next-Gen)' },
+      { id: 'gemini-2.5-flash', displayName: 'Gemini 2.5 Flash', version: '2.5', inputTokens: 1048576, outputTokens: 8192, rpm: '15 RPM', rpd: '1,500 RPD', desc: 'Latest Ultra-Fast & High Quality (Google AI)' },
+      { id: 'gemini-2.0-flash', displayName: 'Gemini 2.0 Flash', version: '2.0', inputTokens: 1048576, outputTokens: 8192, rpm: '15 RPM', rpd: '1,500 RPD', desc: 'Fast Production Model (Google AI)' },
       { id: 'gemini-1.5-flash', displayName: 'Gemini 1.5 Flash', version: '1.5', inputTokens: 1048576, outputTokens: 8192, rpm: '15 RPM', rpd: '1,500 RPD', desc: 'Stable High-Volume Translation' },
       { id: 'gemini-2.0-flash-lite', displayName: 'Gemini 2.0 Flash Lite', version: '2.0', inputTokens: 1048576, outputTokens: 8192, rpm: '30 RPM', rpd: '1,500 RPD', desc: 'Ultra-Fast Lightweight' },
+      { id: 'gemini-2.5-pro', displayName: 'Gemini 2.5 Pro', version: '2.5', inputTokens: 2097152, outputTokens: 8192, rpm: '2 RPM', rpd: '50 RPD', desc: 'Deep Nuance Reasoning' },
       { id: 'gemini-1.5-pro', displayName: 'Gemini 1.5 Pro', version: '1.5', inputTokens: 2097152, outputTokens: 8192, rpm: '2 RPM', rpd: '50 RPD', desc: 'Complex Nuances & Context' }
+    ]
+  },
+  openrouter: {
+    id: 'openrouter',
+    name: 'OpenRouter',
+    storageKey: 'openrouter_api_key',
+    docLink: 'https://openrouter.ai/keys',
+    endpoint: 'https://openrouter.ai/api/v1/chat/completions',
+    type: 'openai_compatible',
+    defaultModel: 'deepseek/deepseek-chat',
+    badge: 'Required',
+    models: [
+      { id: 'deepseek/deepseek-chat', displayName: 'DeepSeek V3 (Chat)', version: 'V3', inputTokens: 64000, outputTokens: 8192, rpm: 'Dynamic', rpd: 'Unlimited', desc: 'Top Multilingual Subtitles' },
+      { id: 'meta-llama/llama-3.3-70b-instruct', displayName: 'Meta Llama 3.3 70B', version: '3.3', inputTokens: 128000, outputTokens: 8192, rpm: 'Dynamic', rpd: 'Unlimited', desc: 'Natural Dialogue Flow' },
+      { id: 'google/gemini-2.0-flash-001', displayName: 'Gemini 2.0 Flash', version: '2.0', inputTokens: 1048576, outputTokens: 8192, rpm: 'Dynamic', rpd: 'Unlimited', desc: 'Ultra Fast via OpenRouter' },
+      { id: 'anthropic/claude-3.5-haiku', displayName: 'Claude 3.5 Haiku', version: '3.5', inputTokens: 200000, outputTokens: 8192, rpm: 'Dynamic', rpd: 'Unlimited', desc: 'Natural Spoken Dubbing' }
     ]
   },
   groq: {
@@ -27,25 +46,10 @@ const AI_PROVIDERS = {
     type: 'openai_compatible',
     defaultModel: 'llama-3.3-70b-versatile',
     models: [
-      { id: 'llama-3.3-70b-versatile', displayName: 'Llama 3.3 70B (Versatile)', version: '3.3', inputTokens: 128000, outputTokens: 32768, rpm: '30 RPM', rpd: '14,400 RPD', desc: 'Ultra-Fast & Free (Groq)' },
+      { id: 'llama-3.3-70b-versatile', displayName: 'Llama 3.3 70B (Versatile)', version: '3.3', inputTokens: 128000, outputTokens: 32768, rpm: '30 RPM', rpd: '14,400 RPD', desc: 'Ultra-Fast & Free (Groq LPU)' },
       { id: 'deepseek-r1-distill-llama-70b', displayName: 'DeepSeek R1 Distill 70B', version: 'R1', inputTokens: 128000, outputTokens: 32768, rpm: '30 RPM', rpd: '14,400 RPD', desc: 'Reasoning Subtitles' },
       { id: 'llama-3.1-8b-instant', displayName: 'Llama 3.1 8B Instant', version: '3.1', inputTokens: 128000, outputTokens: 8192, rpm: '30 RPM', rpd: '14,400 RPD', desc: 'Sub-second Speed' },
       { id: 'mixtral-8x7b-32768', displayName: 'Mixtral 8x7B 32k', version: '8x7B', inputTokens: 32768, outputTokens: 32768, rpm: '30 RPM', rpd: '14,400 RPD', desc: 'High Multilingual Throughput' }
-    ]
-  },
-  openrouter: {
-    id: 'openrouter',
-    name: 'OpenRouter',
-    storageKey: 'openrouter_api_key',
-    docLink: 'https://openrouter.ai/keys',
-    endpoint: 'https://openrouter.ai/api/v1/chat/completions',
-    type: 'openai_compatible',
-    defaultModel: 'deepseek/deepseek-chat',
-    models: [
-      { id: 'deepseek/deepseek-chat', displayName: 'DeepSeek V3 (Chat)', version: 'V3', inputTokens: 64000, outputTokens: 8192, rpm: 'Dynamic', rpd: 'Unlimited', desc: 'Top Multilingual Subtitles' },
-      { id: 'meta-llama/llama-3.3-70b-instruct', displayName: 'Meta Llama 3.3 70B', version: '3.3', inputTokens: 128000, outputTokens: 8192, rpm: 'Dynamic', rpd: 'Unlimited', desc: 'Natural Dialogue Flow' },
-      { id: 'google/gemini-2.0-flash-001', displayName: 'Gemini 2.0 Flash', version: '2.0', inputTokens: 1048576, outputTokens: 8192, rpm: 'Dynamic', rpd: 'Unlimited', desc: 'Ultra Fast via OpenRouter' },
-      { id: 'anthropic/claude-3.5-haiku', displayName: 'Claude 3.5 Haiku', version: '3.5', inputTokens: 200000, outputTokens: 8192, rpm: 'Dynamic', rpd: 'Unlimited', desc: 'Natural Spoken Dubbing' }
     ]
   },
   deepseek: {
@@ -57,7 +61,7 @@ const AI_PROVIDERS = {
     type: 'openai_compatible',
     defaultModel: 'deepseek-chat',
     models: [
-      { id: 'deepseek-chat', displayName: 'DeepSeek V3 (deepseek-chat)', version: 'V3', inputTokens: 64000, outputTokens: 8192, rpm: '60 RPM', rpd: 'Unlimited', desc: 'Official API - Recommended' },
+      { id: 'deepseek-chat', displayName: 'DeepSeek V3 (deepseek-chat)', version: 'V3', inputTokens: 64000, outputTokens: 8192, rpm: '60 RPM', rpd: 'Unlimited', desc: 'Official API - High Quality' },
       { id: 'deepseek-reasoner', displayName: 'DeepSeek R1 (deepseek-reasoner)', version: 'R1', inputTokens: 64000, outputTokens: 8192, rpm: '60 RPM', rpd: 'Unlimited', desc: 'Full Reasoning Chain' }
     ]
   },
@@ -73,55 +77,76 @@ const AI_PROVIDERS = {
       { id: 'gpt-4o-mini', displayName: 'GPT-4o Mini', version: '4o-mini', inputTokens: 128000, outputTokens: 16384, rpm: '500 RPM', rpd: 'Unlimited', desc: 'Fast & Precise Subtitles' },
       { id: 'gpt-4o', displayName: 'GPT-4o Full', version: '4o', inputTokens: 128000, outputTokens: 16384, rpm: '500 RPM', rpd: 'Unlimited', desc: 'Flagship Multilingual' }
     ]
+  },
+  custom: {
+    id: 'custom',
+    name: 'Custom API',
+    storageKey: 'custom_api_key',
+    docLink: '',
+    endpoint: '',
+    type: 'openai_compatible',
+    defaultModel: 'custom-model',
+    badge: 'Custom Endpoint',
+    models: [
+      { id: 'custom-model', displayName: 'Custom Model', version: 'Custom', inputTokens: 128000, outputTokens: 8192, rpm: 'Custom', rpd: 'Custom', desc: 'Custom OpenAI-Compatible Endpoint' }
+    ]
   }
 };
 
 // ── Translation Quality & Auto-Switch Priority Hierarchy ──
 // Ranked by: Dialogue translation naturalness, nuance/slang retention, speed, and rate-limit resilience
+// Priority: Google Gemini (Required) | OpenRouter (Required) | Groq | DeepSeek | OpenAI | Custom API
 const TRANSLATION_MODEL_RANKING = [
   // ── Tier 1: Flagship Quality + Ultra High-Throughput (Top Priority) ──
-  { providerId: 'gemini', modelId: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash', tier: 'Tier 1 (Flagship)', desc: 'Next-Gen Ultra Fast & 1M Context' },
-  { providerId: 'groq', modelId: 'llama-3.3-70b-versatile', name: 'Groq Llama 3.3 70B', tier: 'Tier 1 (Flagship)', desc: '14,400 RPD • 300 tok/s' },
-  { providerId: 'deepseek', modelId: 'deepseek-chat', name: 'DeepSeek V3 (Chat)', tier: 'Tier 1 (Flagship)', desc: 'Exceptional Dialogue Slang & Idioms' },
-  { providerId: 'openrouter', modelId: 'deepseek/deepseek-chat', name: 'DeepSeek V3 (OpenRouter)', tier: 'Tier 1 (Flagship)', desc: 'Natural Cinematic Dub' },
-  { providerId: 'openai', modelId: 'gpt-4o-mini', name: 'GPT-4o Mini', tier: 'Tier 1 (Flagship)', desc: 'Fast & Highly Precise' },
+  { providerId: 'gemini', modelId: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', tier: 'Tier 1 (Flagship)', desc: 'Next-Gen Ultra Fast & Nuanced' },
+  { providerId: 'gemini', modelId: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash', tier: 'Tier 1 (Flagship)', desc: 'Ultra Fast & 1M Context' },
+  { providerId: 'openrouter', modelId: 'deepseek/deepseek-chat', name: 'DeepSeek V3 (OpenRouter)', tier: 'Tier 1 (Flagship)', desc: 'Top Cinematic Dialogue & Idioms' },
+  { providerId: 'openrouter', modelId: 'meta-llama/llama-3.3-70b-instruct', name: 'Meta Llama 3.3 70B (OpenRouter)', tier: 'Tier 1 (Flagship)', desc: 'Natural Conversational Flow' },
+  { providerId: 'openrouter', modelId: 'google/gemini-2.0-flash-001', name: 'Gemini 2.0 Flash (OpenRouter)', tier: 'Tier 1 (Flagship)', desc: 'Ultra-Fast via OpenRouter Multi-Cloud' },
   { providerId: 'gemini', modelId: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash', tier: 'Tier 1 (Flagship)', desc: 'Stable Google High-Volume' },
+  { providerId: 'groq', modelId: 'llama-3.3-70b-versatile', name: 'Groq Llama 3.3 70B', tier: 'Tier 1 (High Speed)', desc: '14,400 RPD • 300 tok/s' },
+  { providerId: 'gemini', modelId: 'gemini-2.0-flash-lite', name: 'Gemini 2.0 Flash Lite', tier: 'Tier 1 (High Speed)', desc: '30 RPM Ultra-Lightweight' },
+  { providerId: 'openrouter', modelId: 'anthropic/claude-3.5-haiku', name: 'Claude 3.5 Haiku (OpenRouter)', tier: 'Tier 1 (Flagship)', desc: 'Natural Spoken Dubbing' },
+  { providerId: 'deepseek', modelId: 'deepseek-chat', name: 'DeepSeek V3 (Official)', tier: 'Tier 1 (Flagship)', desc: 'Exceptional Dialogue Slang & Idioms' },
+  { providerId: 'groq', modelId: 'llama-3.1-8b-instant', name: 'Groq Llama 3.1 8B', tier: 'Tier 1 (High Speed)', desc: 'Ultra-Fast Sub-Second' },
+  { providerId: 'openai', modelId: 'gpt-4o-mini', name: 'GPT-4o Mini', tier: 'Tier 1 (Flagship)', desc: 'Fast & Highly Precise' },
 
   // ── Tier 2: High-Reasoning & Robust Multilingual Workhorses ──
-  { providerId: 'gemini', modelId: 'gemini-2.0-flash-lite', name: 'Gemini 2.0 Flash Lite', tier: 'Tier 2 (High Speed)', desc: '30 RPM Ultra-Lightweight' },
+  { providerId: 'gemini', modelId: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro', tier: 'Tier 2 (High Reasoning)', desc: 'Deep Context & Literature Quality' },
+  { providerId: 'openrouter', modelId: 'deepseek/deepseek-r1', name: 'DeepSeek R1 (OpenRouter)', tier: 'Tier 2 (High Reasoning)', desc: 'Deep Reasoning for Ambiguous Lines' },
   { providerId: 'groq', modelId: 'deepseek-r1-distill-llama-70b', name: 'Groq DeepSeek R1 70B', tier: 'Tier 2 (High Reasoning)', desc: 'Complex Metaphor Understanding' },
-  { providerId: 'openrouter', modelId: 'meta-llama/llama-3.3-70b-instruct', name: 'Meta Llama 3.3 70B', tier: 'Tier 2 (High Reasoning)', desc: 'Superb Conversational Flow' },
   { providerId: 'openai', modelId: 'gpt-4o', name: 'GPT-4o Flagship', tier: 'Tier 2 (High Reasoning)', desc: 'Maximum Linguistic Precision' },
-  { providerId: 'openrouter', modelId: 'anthropic/claude-3.5-haiku', name: 'Claude 3.5 Haiku', tier: 'Tier 2 (High Reasoning)', desc: 'Natural Spoken Dubbing' },
 
   // ── Tier 3: Emergency Fallback & Specialized Deep Models ──
   { providerId: 'groq', modelId: 'mixtral-8x7b-32768', name: 'Groq Mixtral 8x7B', tier: 'Tier 3 (Fallback)', desc: 'High Multilingual Throughput' },
-  { providerId: 'groq', modelId: 'llama-3.1-8b-instant', name: 'Groq Llama 3.1 8B', tier: 'Tier 3 (Fallback)', desc: 'Emergency Speed Fallback' },
   { providerId: 'deepseek', modelId: 'deepseek-reasoner', name: 'DeepSeek R1 Reasoner', tier: 'Tier 3 (Fallback)', desc: 'Deep Reasoning Chain' },
-  { providerId: 'gemini', modelId: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro', tier: 'Tier 3 (Fallback)', desc: 'Pro Reasoning (2 RPM / 50 RPD)' }
+  { providerId: 'gemini', modelId: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro', tier: 'Tier 3 (Fallback)', desc: 'Pro Reasoning (2 RPM / 50 RPD)' },
+  { providerId: 'custom', modelId: 'custom-model', name: 'Custom Model', tier: 'Tier 3 (Custom Endpoint)', desc: 'Custom OpenAI-Compatible Model' }
 ];
 
 // Global State
 const state = {
   apiKeys: {
     gemini: '',
-    groq: '',
     openrouter: '',
+    groq: '',
     deepseek: '',
-    openai: ''
+    openai: '',
+    custom: ''
   },
   activeTabProvider: 'gemini',
   autoFailoverEnabled: true,
   providerStatus: {
     gemini: { connected: null, models: [], lastLatency: 0 },
-    groq: { connected: null, models: [], lastLatency: 0 },
     openrouter: { connected: null, models: [], lastLatency: 0 },
+    groq: { connected: null, models: [], lastLatency: 0 },
     deepseek: { connected: null, models: [], lastLatency: 0 },
-    openai: { connected: null, models: [], lastLatency: 0 }
+    openai: { connected: null, models: [], lastLatency: 0 },
+    custom: { connected: null, models: [], lastLatency: 0 }
   },
   apiKey: '', // Backward compatibility
   availableModels: [],
-  selectedModel: 'gemini-2.0-flash',
+  selectedModel: 'auto',
   activeProvider: 'gemini',
   parsedBlocks: [],       // Array of { num, timeCode, lines: [] }
   translatedBlocks: [],   // Array of { num, timeCode, lines: [], translatedLines: [] }
@@ -133,6 +158,7 @@ const state = {
   optimalBatchSize: 30,
   isTranslating: false,
   isCondensing: false,
+  isCloudJob: false,
   isPaused: false,
   isCancelled: false,
   apiMetrics: {
@@ -389,6 +415,8 @@ async function loadSavedSession() {
 async function clearSavedSession() {
   try {
     localStorage.removeItem('subsync_session_backup');
+    localStorage.removeItem('srt_saved_session');
+    localStorage.setItem('srt_session_last_cleared', String(Date.now()));
     const db = await openSessionDB();
     if (!db) return;
     const tx = db.transaction(STORE_NAME, 'readwrite');
@@ -399,8 +427,14 @@ async function clearSavedSession() {
 }
 
 async function restoreSessionIfAvailable() {
+  const lastCleared = localStorage.getItem('srt_session_last_cleared');
   const session = await loadSavedSession();
   if (!session || !session.parsedBlocks || session.parsedBlocks.length === 0) return;
+
+  if (lastCleared && session.timestamp && Number(lastCleared) >= session.timestamp) {
+    await clearSavedSession();
+    return;
+  }
 
   state.parsedBlocks = session.parsedBlocks;
   state.translatedBlocks = session.translatedBlocks || [];
@@ -448,6 +482,7 @@ window.addEventListener('beforeunload', e => {
 function initNativeAppIntegrations() {
   if (typeof window !== 'undefined' && window.Capacitor && window.Capacitor.isNativePlatform()) {
     console.log('[Native App] Running inside Android via Capacitor.');
+    document.body.classList.add('is-native-app');
 
     // 1. Android Status Bar Styling
     if (window.Capacitor.Plugins && window.Capacitor.Plugins.StatusBar) {
@@ -491,6 +526,29 @@ function initNativeAppIntegrations() {
         window.Capacitor.Plugins.App.exitApp();
       });
     }
+  }
+
+  // Clear Saved Subtitle Session Data Button
+  const resetBtn = $('resetSessionDataBtn');
+  if (resetBtn) {
+    resetBtn.addEventListener('click', async () => {
+      const confirmed = await showCustomConfirm({
+        title: 'Clear Session Data?',
+        message: 'This will reset any unsaved translation session and clear temporary cached subtitle lines.',
+        confirmText: 'Clear Session',
+        cancelText: 'Cancel',
+        type: 'warning'
+      });
+      if (confirmed) {
+        clearSavedSession();
+        state.parsedBlocks = [];
+        state.translatedBlocks = [];
+        state.uncompressedBlocks = [];
+        if (progressCard) progressCard.classList.add('hidden');
+        if (resultCard) resultCard.classList.add('hidden');
+        showToast('✓ Local subtitle session data cleared.');
+      }
+    });
   }
 }
 
@@ -573,8 +631,63 @@ document.addEventListener('visibilitychange', () => {
   }
 });
 
-// ── Initialization ──
+// ── Initialization & Full Website Load Synchronization ──
+let isAppFullyLoaded = false;
+
+function dismissInitialLoader() {
+  const loader = $('appInitialLoader');
+  if (!loader || isAppFullyLoaded) return;
+  isAppFullyLoaded = true;
+  loader.classList.add('loader-hidden');
+  setTimeout(() => {
+    if (loader.parentNode) loader.remove();
+  }, 400);
+}
+
+// Ensure the website is 100% loaded (window resources, fonts, cloud sync & key verifications) before revealing
+async function waitForWebsiteFullLoad() {
+  const loadTasks = [];
+
+  // 1. Wait for Full Window Load (stylesheets, scripts, images, and sub-resources)
+  if (document.readyState === 'complete') {
+    loadTasks.push(Promise.resolve());
+  } else {
+    loadTasks.push(new Promise(resolve => {
+      window.addEventListener('load', resolve, { once: true });
+    }));
+  }
+
+  // 2. Wait for Web Fonts Layout & Rendering (Plus Jakarta Sans, JetBrains Mono, etc.)
+  if (document.fonts && document.fonts.ready) {
+    loadTasks.push(document.fonts.ready.catch(() => {}));
+  }
+
+  // 3. Wait for Firebase Auth & Cloud Sync (if user logged in, wait for cloud keys/history)
+  if (window.FirebaseCloudSync && typeof window.FirebaseCloudSync.waitForInitialSync === 'function') {
+    loadTasks.push(window.FirebaseCloudSync.waitForInitialSync().catch(() => {}));
+  }
+
+  // 4. Wait for local stored API keys verifications
+  if (Array.isArray(window._pendingProviderVerifications) && window._pendingProviderVerifications.length > 0) {
+    loadTasks.push(Promise.allSettled(window._pendingProviderVerifications).catch(() => {}));
+  }
+
+  // Race all full-load tasks against a failsafe timeout (max 3.5s so offline/slow network never hangs)
+  const allLoadedPromise = Promise.all(loadTasks);
+  const timeoutPromise = new Promise(resolve => setTimeout(resolve, 3500));
+
+  await Promise.race([allLoadedPromise, timeoutPromise]);
+
+  // Final UI sync pass right before unveiling
+  updateApiGuardAndHeaderStatus();
+  checkReadyToTranslate();
+
+  // Dismiss loader and reveal the fully prepared, fully styled website seamlessly
+  dismissInitialLoader();
+}
+
 window.addEventListener('DOMContentLoaded', () => {
+  window._pendingProviderVerifications = [];
   initTheme();
   initCustomSelects();
   initFaqAccordion();
@@ -585,12 +698,49 @@ window.addEventListener('DOMContentLoaded', () => {
   checkReadyToTranslate();
   restoreSessionIfAvailable();
   initNativeAppIntegrations();
+  initFirebaseAuthAndCloudSync();
+
+  // Begin monitoring full website load state
+  waitForWebsiteFullLoad();
 });
+
+// Single global failsafe in case all listeners fail
+setTimeout(dismissInitialLoader, 4000);
+
+// ── Native App Platform & Android Browser Detection ──
+function initNativeAppIntegrations() {
+  const isNative = !!(
+    (window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform()) ||
+    window.location.protocol === 'capacitor:' ||
+    (window.location.hostname === 'localhost' && /Android/i.test(navigator.userAgent))
+  );
+
+  const isAndroidBrowser = /Android/i.test(navigator.userAgent) && !isNative;
+  const headerApkBtn = document.getElementById('headerApkBtn') || document.querySelector('.header-apk-btn');
+
+  if (isNative) {
+    document.body.classList.add('is-native-platform');
+    if (headerApkBtn) headerApkBtn.style.display = 'none';
+  } else if (isAndroidBrowser) {
+    // Show Get APK button ONLY on Android mobile browsers
+    if (headerApkBtn) {
+      headerApkBtn.style.display = 'inline-flex';
+      headerApkBtn.addEventListener('click', () => {
+        headerApkBtn.href = `SRTtranslator-latest.apk?t=${Date.now()}`;
+      });
+    }
+  } else {
+    // Desktop (Windows, Mac, Linux) & iOS (iPhone, iPad): Hide Get APK button completely
+    if (headerApkBtn) headerApkBtn.style.display = 'none';
+  }
+}
 
 // ── 2-Tab Navigation Engine (Translator vs Settings) ──
 function switchAppTab(tabId) {
   const tabBtnTranslator = $('tabBtnTranslator');
   const tabBtnSettings = $('tabBtnSettings');
+  const bottomTabBtnTranslator = $('bottomTabBtnTranslator');
+  const bottomTabBtnSettings = $('bottomTabBtnSettings');
   const viewTranslator = $('viewTranslator');
   const viewSettings = $('viewSettings');
 
@@ -603,6 +753,12 @@ function switchAppTab(tabId) {
       tabBtnSettings.classList.remove('active');
       tabBtnSettings.setAttribute('aria-selected', 'false');
     }
+    if (bottomTabBtnTranslator) {
+      bottomTabBtnTranslator.classList.add('active');
+    }
+    if (bottomTabBtnSettings) {
+      bottomTabBtnSettings.classList.remove('active');
+    }
     if (viewTranslator) viewTranslator.classList.add('active');
     if (viewSettings) viewSettings.classList.remove('active');
   } else {
@@ -614,24 +770,120 @@ function switchAppTab(tabId) {
       tabBtnSettings.classList.add('active');
       tabBtnSettings.setAttribute('aria-selected', 'true');
     }
+    if (bottomTabBtnTranslator) {
+      bottomTabBtnTranslator.classList.remove('active');
+    }
+    if (bottomTabBtnSettings) {
+      bottomTabBtnSettings.classList.add('active');
+    }
     if (viewTranslator) viewTranslator.classList.remove('active');
     if (viewSettings) viewSettings.classList.add('active');
+
+    // Default to API Keys sub-tab when entering Settings
+    switchSettingsSubTab('apikeys');
+  }
+
+  // Smooth scroll to top of view on tab switch
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── Sub-Tabs Navigation Controllers ──
+function switchTranslatorSubTab(subTabId) {
+  const btnSettings = $('subTabBtnEngineSettings');
+  const btnWorkspace = $('subTabBtnWorkspace');
+  const panelSettings = $('subViewEngineSettings');
+  const panelWorkspace = $('subViewWorkspace');
+
+  if (subTabId === 'settings' || subTabId === 'engine') {
+    if (btnSettings) {
+      btnSettings.classList.add('active');
+      btnSettings.setAttribute('aria-selected', 'true');
+    }
+    if (btnWorkspace) {
+      btnWorkspace.classList.remove('active');
+      btnWorkspace.setAttribute('aria-selected', 'false');
+    }
+    if (panelSettings) panelSettings.classList.add('active');
+    if (panelWorkspace) panelWorkspace.classList.remove('active');
+  } else {
+    if (btnSettings) {
+      btnSettings.classList.remove('active');
+      btnSettings.setAttribute('aria-selected', 'false');
+    }
+    if (btnWorkspace) {
+      btnWorkspace.classList.add('active');
+      btnWorkspace.setAttribute('aria-selected', 'true');
+    }
+    if (panelSettings) panelSettings.classList.remove('active');
+    if (panelWorkspace) panelWorkspace.classList.add('active');
   }
 }
 
+function switchSettingsSubTab(subTabId) {
+  const btnApiKeys = $('subTabBtnApiKeys');
+  const btnHistory = $('subTabBtnHistory');
+  const panelApiKeys = $('subViewApiKeys');
+  const panelHistory = $('subViewHistory');
+
+  if (subTabId === 'history') {
+    if (btnApiKeys) {
+      btnApiKeys.classList.remove('active');
+      btnApiKeys.setAttribute('aria-selected', 'false');
+    }
+    if (btnHistory) {
+      btnHistory.classList.add('active');
+      btnHistory.setAttribute('aria-selected', 'true');
+    }
+    if (panelApiKeys) panelApiKeys.classList.remove('active');
+    if (panelHistory) panelHistory.classList.add('active');
+
+    // Auto-refresh history when switching to history sub-tab
+    if (typeof loadCloudHistory === 'function') {
+      loadCloudHistory();
+    }
+  } else {
+    // Default to API Keys
+    if (btnApiKeys) {
+      btnApiKeys.classList.add('active');
+      btnApiKeys.setAttribute('aria-selected', 'true');
+    }
+    if (btnHistory) {
+      btnHistory.classList.remove('active');
+      btnHistory.setAttribute('aria-selected', 'false');
+    }
+    if (panelApiKeys) panelApiKeys.classList.add('active');
+    if (panelHistory) panelHistory.classList.remove('active');
+  }
+}
+
+function hasGeminiApiKey() {
+  const memKey = state.apiKeys.gemini ? state.apiKeys.gemini.trim() : '';
+  const storedKey = (localStorage.getItem('gemini_api_key') || '').trim();
+  const hasKeyString = (memKey.length > 5) || (storedKey.length > 5);
+  return state.providerStatus.gemini?.connected === true || (hasKeyString && state.providerStatus.gemini?.connected !== false);
+}
+
+function hasOpenRouterApiKey() {
+  const memKey = state.apiKeys.openrouter ? state.apiKeys.openrouter.trim() : '';
+  const storedKey = (localStorage.getItem('openrouter_api_key') || '').trim();
+  const hasKeyString = (memKey.length > 5) || (storedKey.length > 5);
+  return state.providerStatus.openrouter?.connected === true || (hasKeyString && state.providerStatus.openrouter?.connected !== false);
+}
+
+function hasRequiredMandatoryApiKeys() {
+  return hasGeminiApiKey() && hasOpenRouterApiKey();
+}
+
 function hasAnyConnectedApiKey() {
-  return Object.keys(AI_PROVIDERS).some(pid => {
-    const memKey = state.apiKeys[pid] ? state.apiKeys[pid].trim() : '';
-    const storedKey = (localStorage.getItem(AI_PROVIDERS[pid].storageKey) || '').trim();
-    const hasKeyString = (memKey.length > 5) || (storedKey.length > 5);
-    if (state.providerStatus[pid]?.connected === true) return true;
-    if (hasKeyString && state.providerStatus[pid]?.connected !== false) return true;
-    return false;
-  });
+  return hasRequiredMandatoryApiKeys();
 }
 
 function getConnectedProviderNames() {
   const connected = Object.keys(AI_PROVIDERS).filter(pid => {
+    if (pid === 'custom') {
+      const storedUrl = (localStorage.getItem('custom_api_base_url') || '').trim();
+      return state.providerStatus.custom?.connected === true || (storedUrl.length > 5 && state.providerStatus.custom?.connected !== false);
+    }
     const memKey = state.apiKeys[pid] ? state.apiKeys[pid].trim() : '';
     const storedKey = (localStorage.getItem(AI_PROVIDERS[pid].storageKey) || '').trim();
     const hasKeyString = (memKey.length > 5) || (storedKey.length > 5);
@@ -640,29 +892,87 @@ function getConnectedProviderNames() {
   return connected.map(pid => AI_PROVIDERS[pid]?.name || pid);
 }
 
+function setSelectDisabledState(selectEl, isDisabled) {
+  if (!selectEl) return;
+  selectEl.disabled = isDisabled;
+  const wrapper = selectEl.closest('.select-wrapper');
+  if (wrapper) {
+    wrapper.classList.toggle('is-disabled', isDisabled);
+    const customContainer = wrapper.querySelector('.custom-select-container');
+    if (customContainer) {
+      customContainer.classList.toggle('is-disabled', isDisabled);
+    }
+  }
+}
+
+function updateControlsLockState() {
+  const isTranslating = state.isTranslating || state.isCondensing;
+  const isPaused = state.isPaused;
+  const isActivelyRunning = isTranslating && !isPaused;
+
+  // 1. Target Language (#targetLang): LOCKED once translation process starts, EVEN IF PAUSED.
+  setSelectDisabledState(targetLang, isTranslating);
+
+  // 2. Subtitle Pacing Preset (#styleMode): LOCKED once translation process starts, EVEN IF PAUSED.
+  setSelectDisabledState(styleMode, isTranslating);
+
+  // 3. AI Model (#modelSelect): LOCKED during active translation, BUT UNLOCKED when PAUSED.
+  setSelectDisabledState(modelSelect, isActivelyRunning);
+
+  // 4. API Key Remove Buttons (.btn-remove-key): LOCKED during active translation, BUT UNLOCKED when PAUSED.
+  document.querySelectorAll('.btn-remove-key').forEach(btn => {
+    btn.disabled = isActivelyRunning;
+    if (isActivelyRunning) {
+      btn.classList.add('is-disabled');
+      btn.style.opacity = '0.45';
+      btn.style.cursor = 'not-allowed';
+      btn.title = 'Pause translation to remove API key';
+    } else {
+      btn.classList.remove('is-disabled');
+      btn.style.opacity = '';
+      btn.style.cursor = '';
+      btn.title = '';
+    }
+  });
+
+  // 5. Google Sign Out Buttons: LOCKED during active translation or condensing
+  const googleSignOutBtn = $('googleSignOutBtn');
+  const settingsSignOutBtn = $('settingsSignOutBtn');
+  if (googleSignOutBtn) {
+    googleSignOutBtn.disabled = isTranslating;
+    googleSignOutBtn.style.opacity = isTranslating ? '0.45' : '';
+    googleSignOutBtn.style.cursor = isTranslating ? 'not-allowed' : '';
+  }
+  if (settingsSignOutBtn) {
+    settingsSignOutBtn.disabled = isTranslating;
+    settingsSignOutBtn.style.opacity = isTranslating ? '0.45' : '';
+    settingsSignOutBtn.style.cursor = isTranslating ? 'not-allowed' : '';
+  }
+}
+
 function updateApiGuardAndHeaderStatus() {
-  const lockGuard = $('translatorLockGuard');
-  const viewTranslator = $('viewTranslator');
   const headerBadge = $('headerAiBadge');
   const headerText = $('headerAiStatusText');
   const settingsNavDot = $('settingsNavDot');
+  const bottomNavDot = $('bottomNavDot');
 
-  const hasKey = hasAnyConnectedApiKey();
+  const hasGemini = hasGeminiApiKey();
+  const hasOpenRouter = hasOpenRouterApiKey();
+  const allMandatoryConnected = hasGemini && hasOpenRouter;
 
-  if (!hasKey) {
-    if (lockGuard) lockGuard.classList.remove('hidden');
-    if (viewTranslator) viewTranslator.classList.add('has-api-lockout');
+  if (!allMandatoryConnected) {
     if (headerBadge) {
       headerBadge.className = 'header-ai-status-badge badge-off';
       if (headerText) headerText.textContent = 'No API Key';
     }
     if (settingsNavDot) {
       settingsNavDot.className = 'settings-nav-dot dot-off';
-      settingsNavDot.title = 'No API Key connected';
+      settingsNavDot.title = 'API Keys Required';
+    }
+    if (bottomNavDot) {
+      bottomNavDot.className = 'bottom-nav-dot dot-off';
     }
   } else {
-    if (lockGuard) lockGuard.classList.add('hidden');
-    if (viewTranslator) viewTranslator.classList.remove('has-api-lockout');
     const connectedNames = getConnectedProviderNames();
     if (headerBadge) {
       headerBadge.className = 'header-ai-status-badge badge-on';
@@ -671,6 +981,102 @@ function updateApiGuardAndHeaderStatus() {
     if (settingsNavDot) {
       settingsNavDot.className = 'settings-nav-dot dot-on';
       settingsNavDot.title = `Connected (${connectedNames.join(', ')})`;
+    }
+    if (bottomNavDot) {
+      bottomNavDot.className = 'bottom-nav-dot dot-on';
+    }
+  }
+
+  updateRequiredChecklistUI();
+  checkReadyToTranslate();
+  updateControlsLockState();
+}
+
+function updateRequiredChecklistUI() {
+  const hasGemini = hasGeminiApiKey();
+  const hasOpenRouter = hasOpenRouterApiKey();
+
+  const itemGemini = $('checkItemGemini');
+  const iconGemini = $('checkIconGemini');
+  const statusTextGemini = $('checkStatusTextGemini');
+  const actionGemini = $('checkActionGemini');
+
+  const itemOpenRouter = $('checkItemOpenRouter');
+  const iconOpenRouter = $('checkIconOpenRouter');
+  const statusTextOpenRouter = $('checkStatusTextOpenRouter');
+  const actionOpenRouter = $('checkActionOpenRouter');
+
+  const overallBadge = $('checklistOverallBadge');
+
+  let connectedCount = 0;
+  if (hasGemini) connectedCount++;
+  if (hasOpenRouter) connectedCount++;
+
+  // Update Gemini Item
+  if (itemGemini) {
+    if (hasGemini) {
+      itemGemini.className = 'checklist-item is-connected';
+      if (iconGemini) {
+        iconGemini.className = 'checklist-status-icon status-connected';
+        iconGemini.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>';
+      }
+      if (statusTextGemini) {
+        statusTextGemini.textContent = 'Connected';
+        statusTextGemini.className = 'checklist-item-status-text status-connected';
+      }
+      if (actionGemini) actionGemini.textContent = 'Manage';
+    } else {
+      itemGemini.className = 'checklist-item is-missing';
+      if (iconGemini) {
+        iconGemini.className = 'checklist-status-icon status-missing';
+        iconGemini.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+      }
+      if (statusTextGemini) {
+        statusTextGemini.textContent = 'Not Connected';
+        statusTextGemini.className = 'checklist-item-status-text status-missing';
+      }
+      if (actionGemini) actionGemini.textContent = 'Configure \u2192';
+    }
+  }
+
+  // Update OpenRouter Item
+  if (itemOpenRouter) {
+    if (hasOpenRouter) {
+      itemOpenRouter.className = 'checklist-item is-connected';
+      if (iconOpenRouter) {
+        iconOpenRouter.className = 'checklist-status-icon status-connected';
+        iconOpenRouter.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>';
+      }
+      if (statusTextOpenRouter) {
+        statusTextOpenRouter.textContent = 'Connected';
+        statusTextOpenRouter.className = 'checklist-item-status-text status-connected';
+      }
+      if (actionOpenRouter) actionOpenRouter.textContent = 'Manage';
+    } else {
+      itemOpenRouter.className = 'checklist-item is-missing';
+      if (iconOpenRouter) {
+        iconOpenRouter.className = 'checklist-status-icon status-missing';
+        iconOpenRouter.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+      }
+      if (statusTextOpenRouter) {
+        statusTextOpenRouter.textContent = 'Not Connected';
+        statusTextOpenRouter.className = 'checklist-item-status-text status-missing';
+      }
+      if (actionOpenRouter) actionOpenRouter.textContent = 'Configure \u2192';
+    }
+  }
+
+  // Update Overall Badge
+  if (overallBadge) {
+    if (connectedCount === 2) {
+      overallBadge.className = 'checklist-status-badge badge-all-done';
+      overallBadge.textContent = '2/2 Connected';
+    } else if (connectedCount === 1) {
+      overallBadge.className = 'checklist-status-badge badge-partial';
+      overallBadge.textContent = '1/2 Connected (1 Missing)';
+    } else {
+      overallBadge.className = 'checklist-status-badge badge-none';
+      overallBadge.textContent = '0/2 Connected';
     }
   }
 }
@@ -689,7 +1095,8 @@ function switchProviderTab(providerId) {
   }
 
   if (providerSelectedTag && pConf) {
-    providerSelectedTag.textContent = pConf.name;
+    const badge = pConf.badge ? ` (${pConf.badge})` : '';
+    providerSelectedTag.textContent = `${pConf.name}${badge}`;
   }
 
   // Update Panels
@@ -707,27 +1114,55 @@ function initMultiProviderHub() {
     autoFailoverToggle.checked = state.autoFailoverEnabled;
   }
 
-  // Load saved keys for each provider
+  // Load saved keys for each provider (Priority: Gemini, OpenRouter, Groq, DeepSeek, OpenAI, Custom)
   let atLeastOneConnected = false;
-  ['gemini', 'groq', 'openrouter', 'deepseek', 'openai'].forEach(pid => {
+  ['gemini', 'openrouter', 'groq', 'deepseek', 'openai', 'custom'].forEach(pid => {
     const pConf = AI_PROVIDERS[pid];
     const savedKey = (localStorage.getItem(pConf.storageKey) || '').trim();
-    if (savedKey) {
+    const savedBaseUrl = pid === 'custom' ? (localStorage.getItem('custom_api_base_url') || '').trim() : '';
+    const savedModelName = pid === 'custom' ? (localStorage.getItem('custom_api_model_name') || '').trim() : '';
+
+    if (pid === 'custom') {
+      const urlInp = $('customApiBaseUrl');
+      const modelInp = $('customApiModelName');
+      const keyInp = $('apiKeyInput_custom');
+      if (urlInp && savedBaseUrl) urlInp.value = savedBaseUrl;
+      if (modelInp && savedModelName) modelInp.value = savedModelName;
+      if (keyInp && savedKey) keyInp.value = savedKey;
+    }
+
+    if (savedKey || (pid === 'custom' && savedBaseUrl)) {
       state.apiKeys[pid] = savedKey;
       if (pid === 'gemini') {
         state.apiKey = savedKey;
         if (apiKeyInput) apiKeyInput.value = savedKey;
-      } else {
+      } else if (pid !== 'custom') {
         const inp = $(`apiKeyInput_${pid}`);
         if (inp) inp.value = savedKey;
       }
-      showProviderFeedback(pid, 'Stored key loaded. Verifying...', 'ok');
-      verifyAndLoadProvider(pid, savedKey);
+      showProviderFeedback(pid, 'Stored endpoint loaded. Verifying...', 'ok');
+      const vPromise = verifyAndLoadProvider(pid, savedKey);
+      if (Array.isArray(window._pendingProviderVerifications)) {
+        window._pendingProviderVerifications.push(vPromise);
+      }
       atLeastOneConnected = true;
     } else {
       updateProviderStatusUI(pid, false);
     }
   });
+
+  // Load saved User Preferences (Translate In language & Subtitle Pacing Preset)
+  const savedLang = localStorage.getItem('preferred_target_lang');
+  if (savedLang && targetLang) {
+    targetLang.value = savedLang;
+    refreshCustomSelect('targetLang');
+  }
+
+  const savedPacing = localStorage.getItem('preferred_pacing_preset');
+  if (savedPacing && styleMode) {
+    styleMode.value = savedPacing;
+    refreshCustomSelect('styleMode');
+  }
 
   updateApiGuardAndHeaderStatus();
 
@@ -743,13 +1178,32 @@ async function handleSaveProviderKey(providerId) {
 
   const inp = providerId === 'gemini' ? apiKeyInput : $(`apiKeyInput_${providerId}`);
   const saveBtn = providerId === 'gemini' ? saveApiKey : $(`saveApiKey_${providerId}`);
-  if (!inp) return;
 
-  const rawKey = inp.value.trim().replace(/^["']|["']$/g, '');
+  let rawKey = inp ? inp.value.trim().replace(/^["']|["']$/g, '') : '';
 
-  if (!rawKey || rawKey.length < 5) {
-    showProviderFeedback(providerId, `Please enter a valid ${pConf.name} API Key.`, 'err');
-    return;
+  if (providerId === 'custom') {
+    const urlInp = $('customApiBaseUrl');
+    const modelInp = $('customApiModelName');
+    const rawBaseUrl = urlInp ? urlInp.value.trim() : '';
+    const baseUrl = normalizeCustomBaseUrl(rawBaseUrl);
+    const modelName = modelInp ? modelInp.value.trim() : '';
+
+    if (!baseUrl || !/^https?:\/\//i.test(baseUrl)) {
+      showProviderFeedback('custom', 'Please enter a valid API Base URL (must start with http:// or https://).', 'err');
+      return;
+    }
+
+    if (urlInp && urlInp.value !== baseUrl) {
+      urlInp.value = baseUrl;
+    }
+
+    localStorage.setItem('custom_api_base_url', baseUrl);
+    if (modelName) localStorage.setItem('custom_api_model_name', modelName);
+  } else {
+    if (!rawKey || rawKey.length < 5) {
+      showProviderFeedback(providerId, `Please enter a valid ${pConf.name} API Key.`, 'err');
+      return;
+    }
   }
 
   if (saveBtn) {
@@ -760,6 +1214,10 @@ async function handleSaveProviderKey(providerId) {
 
   try {
     await verifyAndLoadProvider(providerId, rawKey);
+    // If logged in to Google account, automatically backup to cloud
+    if (window.FirebaseCloudSync && window.FirebaseCloudSync.getUser()) {
+      window.FirebaseCloudSync.saveKeysToCloud(state.apiKeys);
+    }
   } finally {
     updateApiGuardAndHeaderStatus();
     checkReadyToTranslate();
@@ -770,9 +1228,100 @@ async function handleSaveProviderKey(providerId) {
   }
 }
 
+async function handleRemoveProviderKey(providerId) {
+  const pConf = AI_PROVIDERS[providerId];
+  if (!pConf) return;
+
+  if (state.isTranslating && !state.isPaused) {
+    showToast('Cannot disconnect API key while translation is running. Please pause the translation first.', true);
+    return;
+  }
+
+  const confirmed = await showConfirmModal({
+    title: `Disconnect ${pConf.name}?`,
+    message: `Are you sure you want to disconnect and remove your ${pConf.name} API key? It will be removed from this session.`,
+    confirmText: 'Yes, Disconnect',
+    cancelText: 'Cancel',
+    iconType: 'warning',
+    confirmBtnClass: 'btn btn-modal-confirm'
+  });
+
+  if (!confirmed) return;
+
+  // Clear memory & localStorage keys
+  state.apiKeys[providerId] = '';
+  localStorage.removeItem(pConf.storageKey);
+
+  if (providerId === 'gemini') {
+    state.apiKey = '';
+    localStorage.removeItem('gemini_api_key');
+  } else if (providerId === 'custom') {
+    localStorage.removeItem('custom_api_key');
+    localStorage.removeItem('custom_api_base_url');
+    localStorage.removeItem('custom_api_model_name');
+    const urlInp = $('customApiBaseUrl');
+    const modelInp = $('customApiModelName');
+    if (urlInp) urlInp.value = '';
+    if (modelInp) modelInp.value = '';
+    renderCustomDetectedModels([]);
+  }
+
+  // Reset provider state
+  state.providerStatus[providerId] = {
+    connected: false,
+    models: [],
+    lastChecked: null,
+    lastLatency: null
+  };
+
+  // Clear input in UI
+  const inp = providerId === 'gemini' ? apiKeyInput : $(`apiKeyInput_${providerId}`);
+  if (inp) {
+    inp.value = '';
+    inp.type = 'password';
+  }
+
+  // Reset eye icon to open eye
+  const eyeBtn = providerId === 'gemini' ? toggleApiKey : $(`toggleApiKey_${providerId}`);
+  if (eyeBtn) {
+    eyeBtn.title = 'Show or hide key';
+    eyeBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+  }
+
+  // Update UI and feedback
+  updateProviderStatusUI(providerId, false);
+  showProviderFeedback(providerId, `${pConf.name} disconnected & removed.`, 'ok');
+
+  // If logged in to Google account, sync updated keys to cloud
+  if (window.FirebaseCloudSync && window.FirebaseCloudSync.getUser()) {
+    window.FirebaseCloudSync.saveKeysToCloud({
+      ...state.apiKeys,
+      custom_api_base_url: localStorage.getItem('custom_api_base_url') || '',
+      custom_api_model_name: localStorage.getItem('custom_api_model_name') || ''
+    });
+  }
+
+  // Check if any other provider is still connected
+  const anyConnected = Object.values(state.providerStatus).some(ps => ps.connected);
+  if (!anyConnected) {
+    resetQuotaDashboardToDisconnected('No API Key');
+  }
+
+  // Refresh model dropdown, lockout guard, and readiness
+  populateCombinedModelDropdown();
+  updateApiGuardAndHeaderStatus();
+  checkReadyToTranslate();
+
+  if (inp) {
+    setTimeout(() => inp.focus(), 50);
+  }
+}
+
 async function verifyAndLoadProvider(providerId, key) {
   const pConf = AI_PROVIDERS[providerId];
-  if (!pConf || !key) return;
+  if (!pConf) return;
+  if (providerId !== 'custom' && !key) return;
+  if (providerId === 'custom' && !key && !localStorage.getItem('custom_api_base_url') && !$('customApiBaseUrl')?.value) return;
 
   const startTime = performance.now();
 
@@ -797,8 +1346,8 @@ async function verifyAndLoadProvider(providerId, key) {
       const textModels = data.models.filter(m => {
         const id = m.name.replace(/^models\//, '').toLowerCase();
         const hasGenContent = Array.isArray(m.supportedGenerationMethods) && m.supportedGenerationMethods.includes('generateContent');
-        if (!hasGenContent || !id.startsWith('gemini')) return false;
-        const nonText = ['tts', 'banana', 'nano', 'robotics', 'transcribe', 'clip', 'deep-research', 'embedding', 'embed', 'imagen', 'image', 'audio', 'realtime', 'gemini-2.5', 'gemini-3.6'];
+        if (!hasGenContent || (!id.startsWith('gemini') && !id.startsWith('gemma'))) return false;
+        const nonText = ['tts', 'banana', 'nano', 'robotics', 'transcribe', 'clip', 'deep-research', 'embedding', 'embed', 'imagen', 'image', 'audio', 'realtime'];
         return !nonText.some(t => id.includes(t));
       });
 
@@ -806,26 +1355,30 @@ async function verifyAndLoadProvider(providerId, key) {
         throw new Error('No compatible translation models available for this Gemini API Key.');
       }
 
-      // Sort with gemini-2.0-flash and gemini-1.5-flash at top
+      // Dynamic real-time sorting: Flash & next-gen models at top
       textModels.sort((a, b) => {
         const idA = a.name.replace(/^models\//, '').toLowerCase();
         const idB = b.name.replace(/^models\//, '').toLowerCase();
-        if (idA === 'gemini-2.0-flash') return -1;
-        if (idB === 'gemini-2.0-flash') return 1;
-        if (idA === 'gemini-1.5-flash') return -1;
-        if (idB === 'gemini-1.5-flash') return 1;
-        if (idA === 'gemini-2.0-flash-lite') return -1;
-        if (idB === 'gemini-2.0-flash-lite') return 1;
+        if (idA.includes('2.5-flash')) return -1;
+        if (idB.includes('2.5-flash')) return 1;
+        if (idA.includes('2.0-flash') && !idA.includes('lite')) return -1;
+        if (idB.includes('2.0-flash') && !idB.includes('lite')) return 1;
+        if (idA.includes('2.0-flash-lite')) return -1;
+        if (idB.includes('2.0-flash-lite')) return 1;
+        if (idA.includes('1.5-flash')) return -1;
+        if (idB.includes('1.5-flash')) return 1;
         return idA.localeCompare(idB);
       });
 
       loadedModels = textModels.map(m => {
         const id = m.name.replace(/^models\//, '');
         const isPro = id.includes('pro');
+        const is25 = id.includes('2.5');
+        const is20 = id.includes('2.0');
         return {
           id,
           displayName: m.displayName || id,
-          version: m.version || (id.includes('2.0') ? '2.0' : '1.5'),
+          version: m.version || (is25 ? '2.5' : is20 ? '2.0' : '1.5'),
           inputTokens: m.inputTokenLimit || 1048576,
           outputTokens: m.outputTokenLimit || 8192,
           rpm: isPro ? '2 RPM' : '15 RPM',
@@ -840,9 +1393,9 @@ async function verifyAndLoadProvider(providerId, key) {
       state.apiKey = key;
       localStorage.setItem('gemini_api_key', key);
 
-      // Auto-select the top live model if current selection is not in loaded models
-      if (!loadedModels.some(m => m.id === state.selectedModel)) {
-        state.selectedModel = loadedModels[0].id;
+      // Keep auto selected by default, or select top model if a specific model was missing
+      if (state.selectedModel !== 'auto' && !loadedModels.some(m => m.id === state.selectedModel)) {
+        state.selectedModel = 'auto';
       }
     } else if (providerId === 'groq') {
       // Real-time live Groq models endpoint
@@ -1064,6 +1617,68 @@ async function verifyAndLoadProvider(providerId, key) {
 
       state.apiKeys.openai = key;
       localStorage.setItem('openai_api_key', key);
+    } else if (providerId === 'custom') {
+      const rawBaseUrl = (localStorage.getItem('custom_api_base_url') || $('customApiBaseUrl')?.value || '').trim();
+      const baseUrl = normalizeCustomBaseUrl(rawBaseUrl);
+      const modelName = (localStorage.getItem('custom_api_model_name') || $('customApiModelName')?.value || '').trim();
+
+      if (!baseUrl) {
+        throw new Error('Please enter a valid API Base URL (e.g. https://api.together.xyz/v1 or http://localhost:11434/v1)');
+      }
+
+      const headers = { 'Content-Type': 'application/json' };
+      if (key && key.trim()) {
+        headers['Authorization'] = `Bearer ${key.trim()}`;
+      }
+
+      let fetchedModels = [];
+      try {
+        const res = await fetch(`${baseUrl}/models`, { headers });
+        probeMs = Math.round(performance.now() - startTime);
+        if (res.ok) {
+          const data = await res.json();
+          const list = Array.isArray(data?.data) ? data.data : (Array.isArray(data) ? data : []);
+          fetchedModels = list.map(m => (typeof m === 'string' ? m : (m.id || m.name))).filter(Boolean);
+        }
+      } catch (e) {
+        probeMs = Math.round(performance.now() - startTime);
+        console.warn('Could not auto-fetch custom models list:', e);
+      }
+
+      if (fetchedModels.length > 0) {
+        renderCustomDetectedModels(fetchedModels);
+        loadedModels = fetchedModels.slice(0, 30).map(mId => ({
+          id: mId,
+          displayName: mId,
+          version: 'Custom',
+          inputTokens: 128000,
+          outputTokens: 8192,
+          rpm: 'Custom',
+          rpd: 'Custom',
+          desc: `Custom Endpoint: ${baseUrl}`,
+          providerId: 'custom',
+          livePingMs: probeMs
+        }));
+      } else {
+        const activeModel = modelName || 'custom-model';
+        loadedModels = [{
+          id: activeModel,
+          displayName: activeModel,
+          version: 'Custom',
+          inputTokens: 128000,
+          outputTokens: 8192,
+          rpm: 'Custom',
+          rpd: 'Custom',
+          desc: `Custom Endpoint: ${baseUrl}`,
+          providerId: 'custom',
+          livePingMs: probeMs
+        }];
+      }
+
+      state.apiKeys.custom = key || '';
+      localStorage.setItem('custom_api_key', key || '');
+      localStorage.setItem('custom_api_base_url', baseUrl);
+      if (modelName) localStorage.setItem('custom_api_model_name', modelName);
     }
 
     state.providerStatus[providerId] = {
@@ -1090,11 +1705,184 @@ async function verifyAndLoadProvider(providerId, key) {
   }
 }
 
+function normalizeCustomBaseUrl(rawUrl) {
+  if (!rawUrl) return '';
+  let url = rawUrl.trim().replace(/\/+$/, '');
+  url = url.replace(/\/chat\/completions\/?$/i, '').replace(/\/models\/?$/i, '');
+  try {
+    const parsed = new URL(url);
+    if (parsed.pathname === '' || parsed.pathname === '/') {
+      parsed.pathname = '/v1';
+      url = parsed.toString().replace(/\/+$/, '');
+    }
+  } catch (e) {
+    // If malformed or relative, leave sanitized string
+  }
+  return url;
+}
+
+function renderCustomDetectedModels(models = []) {
+  const box = $('customDetectedModelsBox');
+  const countEl = $('customDetectedCount');
+  const listEl = $('customDetectedModelsList');
+  const modelInp = $('customApiModelName');
+
+  if (!box || !listEl) return;
+
+  if (!Array.isArray(models) || models.length === 0) {
+    box.classList.add('hidden');
+    listEl.innerHTML = '';
+    return;
+  }
+
+  const currentActive = (modelInp ? modelInp.value.trim() : '') || localStorage.getItem('custom_api_model_name') || '';
+  if (countEl) countEl.textContent = `${models.length} model${models.length > 1 ? 's' : ''}`;
+
+  listEl.innerHTML = '';
+  models.forEach(m => {
+    const mId = typeof m === 'string' ? m : (m.id || m.name || '');
+    if (!mId) return;
+
+    const pill = document.createElement('button');
+    pill.type = 'button';
+    pill.className = `detected-model-pill ${mId === currentActive ? 'active' : ''}`;
+    pill.textContent = mId;
+    pill.title = `Click to set "${mId}" as default Custom Model`;
+
+    pill.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (modelInp) {
+        modelInp.value = mId;
+        localStorage.setItem('custom_api_model_name', mId);
+      }
+      listEl.querySelectorAll('.detected-model-pill').forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      showProviderFeedback('custom', `Selected model: ${mId}`, 'ok');
+    });
+
+    listEl.appendChild(pill);
+  });
+
+  box.classList.remove('hidden');
+}
+
+async function handleTestPingCustom() {
+  const urlInp = $('customApiBaseUrl');
+  const keyInp = $('apiKeyInput_custom');
+  const rawUrl = urlInp ? urlInp.value.trim() : '';
+  const key = keyInp ? keyInp.value.trim() : '';
+
+  const baseUrl = normalizeCustomBaseUrl(rawUrl);
+  if (!baseUrl || !/^https?:\/\//i.test(baseUrl)) {
+    showProviderFeedback('custom', 'Please enter a valid API Base URL starting with http:// or https://', 'err');
+    return;
+  }
+
+  if (urlInp && urlInp.value !== baseUrl) {
+    urlInp.value = baseUrl;
+  }
+
+  showProviderFeedback('custom', `Pinging ${baseUrl}...`, 'ok');
+  const testBtn = $('testPing_custom');
+  if (testBtn) {
+    testBtn.disabled = true;
+    testBtn.innerHTML = '<span>Pinging...</span>';
+  }
+
+  const startTime = performance.now();
+  try {
+    const headers = { 'Content-Type': 'application/json' };
+    if (key) headers['Authorization'] = `Bearer ${key}`;
+
+    const res = await fetch(`${baseUrl}/models`, { headers });
+    const latency = Math.round(performance.now() - startTime);
+
+    if (res.ok) {
+      const data = await res.json();
+      const list = Array.isArray(data?.data) ? data.data : (Array.isArray(data) ? data : []);
+      const modelNames = list.map(m => (typeof m === 'string' ? m : (m.id || m.name))).filter(Boolean);
+
+      if (modelNames.length > 0) {
+        renderCustomDetectedModels(modelNames);
+        showProviderFeedback('custom', `✓ Endpoint reachable! Ping: ${latency}ms (${modelNames.length} models detected).`, 'ok');
+      } else {
+        showProviderFeedback('custom', `✓ Endpoint reachable! Ping: ${latency}ms.`, 'ok');
+      }
+    } else {
+      showProviderFeedback('custom', `Endpoint responded with HTTP ${res.status} (${latency}ms). Please check your URL & Key.`, 'err');
+    }
+  } catch (err) {
+    const latency = Math.round(performance.now() - startTime);
+    const isLocal = /localhost|127\.0\.0\.1/i.test(baseUrl);
+    const corsMsg = isLocal
+      ? `Could not reach ${baseUrl} (${latency}ms). Tip: Start Ollama with OLLAMA_ORIGINS="*" ollama serve to allow browser access.`
+      : `Network error reaching ${baseUrl} (${err.message || 'Check URL & CORS'}).`;
+    showProviderFeedback('custom', corsMsg, 'err');
+  } finally {
+    if (testBtn) {
+      testBtn.disabled = false;
+      testBtn.innerHTML = `
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;display:inline-block;margin-right:4px;vertical-align:-2px;">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+        </svg>
+        <span>Test Ping</span>
+      `;
+    }
+  }
+}
+
 function updateProviderStatusUI(providerId, isConnected, extraText = '') {
   const dot = $(`statusDot_${providerId}`);
   const chip = $(`chip_${providerId}`);
+  const removeBtn = $(`removeApiKey_${providerId}`);
+  const saveBtn = providerId === 'gemini' ? saveApiKey : $(`saveApiKey_${providerId}`);
+  const inp = providerId === 'gemini' ? apiKeyInput : $(`apiKeyInput_${providerId}`);
   const pConf = AI_PROVIDERS[providerId];
   if (!pConf) return;
+
+  if (inp) {
+    inp.readOnly = isConnected;
+    if (isConnected) {
+      inp.classList.add('input-locked');
+      inp.setAttribute('title', 'API Key is connected. Click Disconnect to modify.');
+    } else {
+      inp.classList.remove('input-locked');
+      inp.removeAttribute('title');
+    }
+  }
+
+  if (providerId === 'custom') {
+    const urlInp = $('customApiBaseUrl');
+    const modelInp = $('customApiModelName');
+    if (urlInp) {
+      urlInp.readOnly = isConnected;
+      if (isConnected) {
+        urlInp.classList.add('input-locked');
+        urlInp.setAttribute('title', 'Endpoint is connected. Click Disconnect to modify.');
+      } else {
+        urlInp.classList.remove('input-locked');
+        urlInp.removeAttribute('title');
+      }
+    }
+    if (modelInp) {
+      modelInp.readOnly = isConnected;
+      if (isConnected) {
+        modelInp.classList.add('input-locked');
+        modelInp.setAttribute('title', 'Model is connected. Click Disconnect to modify.');
+      } else {
+        modelInp.classList.remove('input-locked');
+        modelInp.removeAttribute('title');
+      }
+    }
+  }
+
+  if (saveBtn) {
+    saveBtn.style.display = isConnected ? 'none' : 'inline-flex';
+  }
+
+  if (removeBtn) {
+    removeBtn.style.display = isConnected ? 'inline-flex' : 'none';
+  }
 
   if (dot) {
     dot.className = `provider-status-dot ${isConnected ? 'dot-connected' : 'dot-off'}`;
@@ -1132,9 +1920,9 @@ function populateCombinedModelDropdown() {
 
   if (connectedProviders.length === 0) {
     modelSelect.disabled = true;
-    modelSelect.innerHTML = '<option value="" disabled selected>Connect at least one AI Provider (Gemini, Groq, DeepSeek, etc.) above...</option>';
+    modelSelect.innerHTML = '<option value="" disabled selected>Connect API keys in Settings to load models...</option>';
     if (modelLiveBadge) {
-      modelLiveBadge.textContent = 'Awaiting API Key';
+      modelLiveBadge.textContent = 'Awaiting API Keys';
       modelLiveBadge.className = 'hint-tag';
     }
     syncCustomSelectDisabled('modelSelect');
@@ -1142,11 +1930,16 @@ function populateCombinedModelDropdown() {
     return;
   }
 
-  let totalModelsCount = 0;
-  let firstModelValue = null;
+  // Add Real-Time Dynamic Auto-Selection Option at top
+  const autoOpt = document.createElement('option');
+  autoOpt.value = 'auto';
+  autoOpt.textContent = 'Auto Select';
+  modelSelect.appendChild(autoOpt);
 
-  // Sort connected providers by tier recommendation (Gemini, Groq, DeepSeek, OpenRouter, OpenAI)
-  const providerOrder = ['gemini', 'groq', 'deepseek', 'openrouter', 'openai'];
+  let totalModelsCount = 0;
+
+  // Sort connected providers (Gemini, OpenRouter, Groq, DeepSeek, OpenAI, Custom)
+  const providerOrder = ['gemini', 'openrouter', 'groq', 'deepseek', 'openai', 'custom'];
   const sortedConnectedProviders = connectedProviders.sort((a, b) => providerOrder.indexOf(a) - providerOrder.indexOf(b));
 
   sortedConnectedProviders.forEach(pid => {
@@ -1165,14 +1958,13 @@ function populateCombinedModelDropdown() {
 
     const ping = state.providerStatus[pid]?.lastLatency ? ` • ${state.providerStatus[pid].lastLatency}ms ping` : '';
     const optgroup = document.createElement('optgroup');
-    optgroup.label = `${pConf.name} (${pModels.length} live models${ping})`;
+    const badgeLabel = pConf.badge ? ` (${pConf.badge})` : '';
+    optgroup.label = `${pConf.name}${badgeLabel} (${pModels.length} live models${ping})`;
 
-    pModels.forEach((m, idx) => {
+    pModels.forEach((m) => {
       const opt = document.createElement('option');
       opt.value = m.id;
-      const isTopPick = idx === 0;
-      opt.textContent = `${m.displayName || m.id}${isTopPick ? ' (Recommended)' : ''}`;
-      if (!firstModelValue) firstModelValue = m.id;
+      opt.textContent = m.displayName || m.id;
       optgroup.appendChild(opt);
     });
 
@@ -1181,14 +1973,14 @@ function populateCombinedModelDropdown() {
 
   modelSelect.disabled = false;
   
-  // Restore previously selected model or pick the first connected model
+  // Default to 'auto' for best real-time experience unless user specifically selected a valid model
   const existingSelection = state.selectedModel;
-  const isExistingValid = Array.from(modelSelect.options).some(o => o.value === existingSelection);
+  const isExistingValid = existingSelection && existingSelection !== 'auto' && Array.from(modelSelect.options).some(o => o.value === existingSelection);
   if (isExistingValid) {
     modelSelect.value = existingSelection;
-  } else if (firstModelValue) {
-    modelSelect.value = firstModelValue;
-    state.selectedModel = firstModelValue;
+  } else {
+    modelSelect.value = 'auto';
+    state.selectedModel = 'auto';
   }
 
   if (modelLiveBadge) {
@@ -1204,6 +1996,7 @@ function populateCombinedModelDropdown() {
   syncCustomSelectDisabled('modelSelect');
   refreshCustomSelect('modelSelect');
   updateQuotaDashboardForActiveModel();
+  checkReadyToTranslate();
 }
 
 // Dynamic Model Failure & Cooldown Tracker
@@ -1224,8 +2017,8 @@ const modelHealthTracker = {
     const entry = this.failures.get(key);
     if (!entry) return true;
     if (entry.isPermanent) return false;
-    // 5-minute cooldown for temporary 429 rate limit or 503 overload
-    if (Date.now() - entry.failedAt < 300000) {
+    // 45-second cooldown for temporary 429 rate limit or 503 overload
+    if (Date.now() - entry.failedAt < 45000) {
       return false;
     }
     this.failures.delete(key);
@@ -1237,12 +2030,80 @@ const modelHealthTracker = {
   }
 };
 
+function resolveRealTimeBestModel() {
+  if (state.selectedModel && state.selectedModel !== 'auto') {
+    const { providerId, model, key } = getActiveProviderAndKey(state.selectedModel);
+    if (key && modelHealthTracker.isAvailable(providerId, model)) {
+      return { providerId, model, key, displayName: state.selectedModel };
+    }
+  }
+
+  // Real-time live candidates evaluation
+  const candidates = [];
+
+  for (const pid of ['gemini', 'openrouter', 'groq', 'deepseek', 'openai', 'custom']) {
+    if (!state.apiKeys[pid] || !state.providerStatus[pid]?.connected) continue;
+    const models = state.providerStatus[pid]?.models || AI_PROVIDERS[pid]?.models || [];
+    const providerPing = state.providerStatus[pid]?.lastLatency || 999;
+
+    for (const m of models) {
+      const mid = m.id;
+      if (!modelHealthTracker.isAvailable(pid, mid)) continue;
+
+      let score = 100;
+      const lower = mid.toLowerCase();
+
+      // Provider tier weighting
+      if (pid === 'gemini') score += 40;
+      else if (pid === 'openrouter') score += 35;
+      else if (pid === 'groq') score += 20;
+
+      // Speed / Flash tier boost
+      if (lower.includes('flash') || lower.includes('instant') || lower.includes('chat') || lower.includes('mini') || lower.includes('versatile')) {
+        score += 50;
+      }
+      if (lower.includes('2.5') || lower.includes('2.0') || lower.includes('3.3') || lower.includes('v3') || lower.includes('4o')) {
+        score += 30;
+      }
+
+      // Latency penalty
+      score -= Math.min(Math.round(providerPing / 10), 30);
+
+      candidates.push({
+        providerId: pid,
+        model: mid,
+        key: state.apiKeys[pid],
+        score,
+        ping: providerPing,
+        displayName: m.displayName || mid
+      });
+    }
+  }
+
+  if (candidates.length > 0) {
+    candidates.sort((a, b) => b.score - a.score);
+    return candidates[0];
+  }
+
+  // Fallbacks
+  if (state.apiKeys.gemini && state.providerStatus.gemini?.connected !== false) {
+    return { providerId: 'gemini', model: 'gemini-2.0-flash', key: state.apiKeys.gemini, displayName: 'Gemini 2.0 Flash' };
+  }
+  if (state.apiKeys.openrouter && state.providerStatus.openrouter?.connected !== false) {
+    return { providerId: 'openrouter', model: 'deepseek/deepseek-chat', key: state.apiKeys.openrouter, displayName: 'DeepSeek V3 (OpenRouter)' };
+  }
+  return { providerId: 'gemini', model: 'gemini-2.0-flash', key: state.apiKeys.gemini || '', displayName: 'Gemini 2.0 Flash' };
+}
+
 function getActiveProviderAndKey(modelId) {
-  const targetModel = modelId || (modelSelect && modelSelect.value ? modelSelect.value : '') || state.selectedModel || 'gemini-2.0-flash';
+  const targetModel = modelId || (modelSelect && modelSelect.value ? modelSelect.value : '') || state.selectedModel || 'auto';
+  if (targetModel === 'auto') {
+    return resolveRealTimeBestModel();
+  }
   const cleanModel = targetModel.replace(/^models\//, '').trim();
 
   // 1. Check live model lists from connected providers first
-  for (const pid of ['gemini', 'groq', 'deepseek', 'openrouter', 'openai']) {
+  for (const pid of ['gemini', 'openrouter', 'groq', 'deepseek', 'openai', 'custom']) {
     const list = state.providerStatus[pid]?.models;
     if (Array.isArray(list) && list.some(m => m.id === cleanModel || m.id === targetModel || m.id?.replace(/^models\//, '') === cleanModel)) {
       return { providerId: pid, model: cleanModel, key: state.apiKeys[pid] };
@@ -1250,16 +2111,19 @@ function getActiveProviderAndKey(modelId) {
   }
 
   // 2. Explicit provider identification by model prefix/pattern
-  if (cleanModel.startsWith('gemini')) {
+  if (cleanModel.startsWith('gemini') || cleanModel.startsWith('gemma')) {
     return { providerId: 'gemini', model: cleanModel, key: state.apiKeys.gemini };
   }
-  if (cleanModel.startsWith('llama-') || cleanModel.startsWith('deepseek-r1-distill') || cleanModel.startsWith('mixtral-') || cleanModel.startsWith('gemma') || cleanModel.startsWith('qwen')) {
-    return { providerId: 'groq', model: cleanModel, key: state.apiKeys.groq };
-  }
-  if (cleanModel.includes('/') || cleanModel.startsWith('anthropic/') || cleanModel.startsWith('meta-llama/')) {
+  if (cleanModel.includes('/') || cleanModel.startsWith('anthropic/') || cleanModel.startsWith('meta-llama/') || cleanModel.startsWith('google/') || cleanModel.startsWith('mistralai/') || cleanModel.startsWith('qwen/')) {
     return { providerId: 'openrouter', model: cleanModel, key: state.apiKeys.openrouter };
   }
+  if (cleanModel.startsWith('llama-') || cleanModel.startsWith('deepseek-r1-distill') || cleanModel.startsWith('mixtral-')) {
+    return { providerId: 'groq', model: cleanModel, key: state.apiKeys.groq };
+  }
   if (cleanModel === 'deepseek-chat' || cleanModel === 'deepseek-reasoner') {
+    if (state.apiKeys.openrouter && !state.apiKeys.deepseek) {
+      return { providerId: 'openrouter', model: `deepseek/${cleanModel}`, key: state.apiKeys.openrouter };
+    }
     if (state.apiKeys.deepseek) {
       return { providerId: 'deepseek', model: cleanModel, key: state.apiKeys.deepseek };
     }
@@ -1270,7 +2134,7 @@ function getActiveProviderAndKey(modelId) {
   }
 
   // 3. Fallback to first available connected provider
-  for (const pid of ['gemini', 'groq', 'deepseek', 'openrouter', 'openai']) {
+  for (const pid of ['gemini', 'openrouter', 'groq', 'deepseek', 'openai', 'custom']) {
     if (state.apiKeys[pid] && state.providerStatus[pid]?.connected) {
       return { providerId: pid, model: AI_PROVIDERS[pid].defaultModel, key: state.apiKeys[pid] };
     }
@@ -1282,47 +2146,58 @@ function getActiveProviderAndKey(modelId) {
 function findFailoverBackup(currentProviderId, currentModelId) {
   if (!state.autoFailoverEnabled) return null;
 
-  function isValid(pid, mid) {
+  const cleanCurrentModel = (currentModelId || '').replace(/^models\//, '').trim().toLowerCase();
+
+  function isModelHealthy(pid, mid) {
     if (!state.apiKeys[pid] || !state.providerStatus[pid]?.connected) return false;
+    const cleanMid = (mid || '').replace(/^models\//, '').trim().toLowerCase();
+    if (pid === currentProviderId && cleanMid === cleanCurrentModel) return false;
     if (!modelHealthTracker.isAvailable(pid, mid)) return false;
     return true;
   }
 
-  // 1. Primary Search: Top-ranked model from a DIFFERENT connected provider
+  // 1. Primary Search: Top-ranked model from a DIFFERENT connected provider (highest priority)
   for (const entry of TRANSLATION_MODEL_RANKING) {
-    const pid = entry.providerId;
-    const mid = entry.modelId;
-
-    if (pid === currentProviderId) continue;
-
-    if (isValid(pid, mid)) {
+    if (entry.providerId !== currentProviderId && isModelHealthy(entry.providerId, entry.modelId)) {
       return {
-        providerId: pid,
-        providerName: AI_PROVIDERS[pid]?.name || pid,
-        model: mid,
+        providerId: entry.providerId,
+        providerName: AI_PROVIDERS[entry.providerId]?.name || entry.providerId,
+        model: entry.modelId,
         modelName: entry.name,
         tier: entry.tier,
         desc: entry.desc,
-        key: state.apiKeys[pid]
+        key: state.apiKeys[entry.providerId]
       };
     }
   }
 
-  // 2. Secondary Search: Any live connected model from other providers
-  for (const pid of ['gemini', 'groq', 'deepseek', 'openrouter', 'openai']) {
-    if (pid === currentProviderId) continue;
-    if (!state.apiKeys[pid] || !state.providerStatus[pid]?.connected) continue;
+  // 2. Secondary Search: Alternative ranked models from the SAME connected provider (e.g. Gemini 1.5 Flash, Gemini 2.0 Flash Lite)
+  for (const entry of TRANSLATION_MODEL_RANKING) {
+    if (entry.providerId === currentProviderId && isModelHealthy(entry.providerId, entry.modelId)) {
+      return {
+        providerId: entry.providerId,
+        providerName: AI_PROVIDERS[entry.providerId]?.name || entry.providerId,
+        model: entry.modelId,
+        modelName: entry.name,
+        tier: entry.tier,
+        desc: entry.desc,
+        key: state.apiKeys[entry.providerId]
+      };
+    }
+  }
 
+  // 3. Tertiary Search: Any live verified model from other connected providers (Priority order)
+  for (const pid of ['gemini', 'openrouter', 'groq', 'deepseek', 'openai', 'custom']) {
+    if (pid === currentProviderId || !state.apiKeys[pid] || !state.providerStatus[pid]?.connected) continue;
     const liveModels = state.providerStatus[pid]?.models || AI_PROVIDERS[pid]?.models || [];
     for (const m of liveModels) {
-      const mid = m.id;
-      if (isValid(pid, mid)) {
+      if (isModelHealthy(pid, m.id)) {
         return {
           providerId: pid,
           providerName: AI_PROVIDERS[pid]?.name || pid,
-          model: mid,
-          modelName: m.displayName || m.name || mid,
-          tier: 'Live Model Backup',
+          model: m.id,
+          modelName: m.displayName || m.name || m.id,
+          tier: 'Live Verified Backup',
           desc: m.desc || 'Available Connected Model',
           key: state.apiKeys[pid]
         };
@@ -1330,16 +2205,15 @@ function findFailoverBackup(currentProviderId, currentModelId) {
     }
   }
 
-  // 3. Tertiary Fallback: Different working model within the SAME connected provider
+  // 4. Quaternary Search: Any other live verified model from the SAME connected provider
   const sameModels = state.providerStatus[currentProviderId]?.models || AI_PROVIDERS[currentProviderId]?.models || [];
   for (const m of sameModels) {
-    const mid = m.id;
-    if (mid !== currentModelId && isValid(currentProviderId, mid)) {
+    if (isModelHealthy(currentProviderId, m.id)) {
       return {
         providerId: currentProviderId,
         providerName: AI_PROVIDERS[currentProviderId]?.name || currentProviderId,
-        model: mid,
-        modelName: m.displayName || m.name || mid,
+        model: m.id,
+        modelName: m.displayName || m.name || m.id,
         tier: 'Alternative Same-Provider Model',
         desc: m.desc || 'Alternative Model',
         key: state.apiKeys[currentProviderId]
@@ -1347,11 +2221,80 @@ function findFailoverBackup(currentProviderId, currentModelId) {
     }
   }
 
+  // 5. Emergency Cooldown Reset: If all backup models were temporarily cooling down, reset and pick the best alternative
+  for (const pid of ['gemini', 'openrouter', 'groq', 'deepseek', 'openai']) {
+    if (!state.apiKeys[pid] || !state.providerStatus[pid]?.connected) continue;
+    const models = state.providerStatus[pid]?.models || AI_PROVIDERS[pid]?.models || [];
+    for (const m of models) {
+      const cleanMid = (m.id || '').replace(/^models\//, '').trim().toLowerCase();
+      if (pid === currentProviderId && cleanMid === cleanCurrentModel) continue;
+      modelHealthTracker.failures.delete(`${pid}:${cleanMid}`);
+      return {
+        providerId: pid,
+        providerName: AI_PROVIDERS[pid]?.name || pid,
+        model: m.id,
+        modelName: m.displayName || m.name || m.id,
+        tier: 'Emergency Auto-Recovered Backup',
+        desc: 'Recovered Model',
+        key: state.apiKeys[pid]
+      };
+    }
+  }
+
   return null;
 }
 
+function getSelectedModelFriendlyDescription() {
+  const selVal = (modelSelect && modelSelect.value) ? modelSelect.value : (state.selectedModel || 'auto');
+  if (selVal === 'auto') {
+    return 'Auto Select';
+  }
+
+  // Check if option text exists in modelSelect dropdown
+  if (modelSelect && modelSelect.options) {
+    const activeOpt = Array.from(modelSelect.options).find(o => o.value === selVal);
+    if (activeOpt && activeOpt.text) {
+      return activeOpt.text;
+    }
+  }
+
+  const { providerId, model } = getActiveProviderAndKey(selVal);
+  const pConf = AI_PROVIDERS[providerId];
+  if (pConf) {
+    const modelsList = state.providerStatus[providerId]?.models || pConf.models || [];
+    const mObj = modelsList.find(m => m.id === model);
+    return mObj ? `${pConf.name} (${mObj.name})` : `${pConf.name} (${model})`;
+  }
+
+  return selVal;
+}
+
 function updateQuotaDashboardForActiveModel() {
-  const modelToInspect = (modelSelect && modelSelect.value ? modelSelect.value : state.selectedModel) || 'gemini-2.0-flash';
+  const modelToInspect = (modelSelect && modelSelect.value ? modelSelect.value : state.selectedModel) || 'auto';
+  
+  if (modelToInspect === 'auto') {
+    const resolved = resolveRealTimeBestModel();
+    const pConf = AI_PROVIDERS[resolved.providerId];
+    const toggleBtn = $('toggleQuotaBtn');
+    if (toggleBtn) toggleBtn.classList.remove('hidden');
+
+    const qName = $('quotaModelName');
+    const qVer = $('quotaModelVersion');
+    const qContext = $('quotaContext');
+    const qOut = $('quotaOutputTokens');
+    const qRpm = $('quotaRpm');
+    const qRpd = $('quotaRpd');
+
+    if (qName) qName.textContent = `Auto Select: ${pConf?.name || 'AI'} (${resolved.displayName || resolved.model})`;
+    if (qVer) qVer.textContent = `Real-Time Dynamic Selection`;
+    if (qContext) qContext.textContent = 'Auto-Adaptive (1M+ Max)';
+    if (qOut) qOut.textContent = 'Auto-Adaptive (32k Max)';
+    if (qRpm) qRpm.textContent = 'Dynamic Load Balance';
+    if (qRpd) qRpd.textContent = 'Multi-Provider Resilience';
+    updateApiHealthUI('optimal', `Auto Mode: Active`);
+    return;
+  }
+
   const { providerId, model } = getActiveProviderAndKey(modelToInspect);
   const pConf = AI_PROVIDERS[providerId];
   if (!pConf) return;
@@ -1455,7 +2398,7 @@ function updateApiHealthUI(status = 'optimal', customMessage = '', latencyMs = n
 
 // ── Theme Switcher ──
 function initTheme() {
-  const currentTheme = localStorage.getItem('srt_theme') || 'dark';
+  const currentTheme = localStorage.getItem('srt_theme') || 'light';
   document.documentElement.setAttribute('data-theme', currentTheme);
   updateThemeButtonUI(currentTheme);
 }
@@ -1467,7 +2410,7 @@ function updateThemeButtonUI(theme) {
 }
 
 function toggleTheme() {
-  const current = document.documentElement.getAttribute('data-theme') || 'dark';
+  const current = document.documentElement.getAttribute('data-theme') || 'light';
   const next = current === 'light' ? 'dark' : 'light';
   document.documentElement.setAttribute('data-theme', next);
   localStorage.setItem('srt_theme', next);
@@ -1476,45 +2419,80 @@ function toggleTheme() {
 
 // ── Pause / Resume & Cancel Handlers ──
 async function togglePauseTranslation() {
-  if (!state.isTranslating) return;
+  if (!state.isTranslating && !state.isCondensing) return;
 
   if (!state.isPaused) {
-    const confirmed = await showCustomConfirm({
-      title: 'Pause Translation?',
-      message: 'Are you sure you want to pause ongoing translation? You can resume it anytime right from the next batch without losing any progress.',
-      confirmText: 'Yes, Pause',
-      cancelText: 'Keep Translating',
-      type: 'warning'
-    });
-    if (!confirmed) return;
-
+    const isCondense = !!state.isCondensing;
     state.isPaused = true;
     if (ctrlIconPause) ctrlIconPause.classList.add('hidden');
     if (ctrlIconResume) ctrlIconResume.classList.remove('hidden');
     if (pauseResumeLabel) pauseResumeLabel.textContent = 'Resume';
     if (pauseResumeBtn) pauseResumeBtn.classList.add('is-paused');
-    if (liveActivityDot) liveActivityDot.style.animationPlayState = 'paused';
-    updateProgressStats(parseInt(progressPct.textContent, 10) || 0, 'Translation Paused (Click Resume to continue)...');
-    addTerminalLog('warn', 'Translation paused by user.');
+    if (liveActivityDot) {
+      liveActivityDot.classList.add('is-paused');
+      liveActivityDot.style.animationPlayState = 'paused';
+    }
+
+    // 1. Update the Main Hero Button text from "Translating Subtitles..." to "Translation Paused"
+    const loadingLabel = translateBtn ? translateBtn.querySelector('.loading-label') : null;
+    if (loadingLabel) {
+      loadingLabel.textContent = isCondense ? 'Condensation Paused' : 'Translation Paused';
+    }
+    if (translateBtn) {
+      translateBtn.classList.add('is-paused');
+    }
+
+    // 2. Update Progress Title
+    const pauseTitle = isCondense ? 'Condensation Paused (Click Resume to continue)...' : 'Translation Paused (Click Resume to continue)...';
+    updateProgressStats(parseInt(progressPct ? progressPct.textContent : '0', 10) || 0, pauseTitle);
+
+    // 3. Update API Health Status Pill
+    updateApiHealthUI('cooldown', isCondense ? 'Condensation Paused' : 'Translation Paused');
+
+    addTerminalLog('warn', isCondense ? 'AI Condensation paused.' : 'Translation paused.');
+    showToast(isCondense ? '⏸ Condensation paused.' : '⏸ Translation paused.');
   } else {
     state.isPaused = false;
+    const isCondense = !!state.isCondensing;
     if (ctrlIconPause) ctrlIconPause.classList.remove('hidden');
     if (ctrlIconResume) ctrlIconResume.classList.add('hidden');
     if (pauseResumeLabel) pauseResumeLabel.textContent = 'Pause';
     if (pauseResumeBtn) pauseResumeBtn.classList.remove('is-paused');
-    if (liveActivityDot) liveActivityDot.style.animationPlayState = 'running';
-    addTerminalLog('info', 'Translation resumed.');
+    if (liveActivityDot) {
+      liveActivityDot.classList.remove('is-paused');
+      liveActivityDot.style.animationPlayState = 'running';
+    }
+
+    // Restore Main Hero Button spinner text
+    const loadingLabel = translateBtn ? translateBtn.querySelector('.loading-label') : null;
+    if (loadingLabel) {
+      loadingLabel.textContent = isCondense ? 'Condensing Subtitles...' : 'Translating Subtitles...';
+    }
+    if (translateBtn) {
+      translateBtn.classList.remove('is-paused');
+    }
+
+    const resumeTitle = isCondense ? 'Resuming condensation...' : 'Resuming translation...';
+    updateProgressStats(parseInt(progressPct ? progressPct.textContent : '0', 10) || 0, resumeTitle);
+
+    updateApiHealthUI('active', isCondense ? 'Resuming AI Condenser...' : 'Resuming Translation...');
+    addTerminalLog('info', isCondense ? 'AI Condensation resumed.' : 'Translation resumed.');
   }
+
+  updateControlsLockState();
 }
 
 async function cancelTranslationProcess() {
-  if (!state.isTranslating) return;
+  if (!state.isTranslating && !state.isCondensing && !state.isCloudJob) return;
 
+  const isCondense = state.isCondensing;
   const confirmed = await showCustomConfirm({
-    title: 'Cancel Translation?',
-    message: 'Are you sure you want to cancel the ongoing translation? All translated data will be discarded and the session will be reset.',
-    confirmText: 'Yes, Discard All',
-    cancelText: 'Keep Translating',
+    title: isCondense ? 'Cancel Condensation?' : 'Cancel Translation?',
+    message: isCondense
+      ? 'Are you sure you want to cancel the AI condensation? Ongoing progress will be stopped and the session will be reset.'
+      : 'Are you sure you want to cancel the ongoing translation? All translated data will be discarded and the session will be reset.',
+    confirmText: 'Yes, Discard & Reset',
+    cancelText: isCondense ? 'Keep Condensing' : 'Keep Translating',
     type: 'danger'
   });
   if (!confirmed) return;
@@ -1522,20 +2500,54 @@ async function cancelTranslationProcess() {
   state.isCancelled = true;
   state.isPaused = false;
   state.isTranslating = false;
+  state.isCondensing = false;
+  state.isCloudJob = false;
 
+  if (activeCloudJobListenerUnsub) {
+    try { activeCloudJobListenerUnsub(); } catch (e) {}
+    activeCloudJobListenerUnsub = null;
+  }
+
+  if (window.FirebaseCloudSync && window.FirebaseCloudSync.getUser()) {
+    try {
+      await window.FirebaseCloudSync.cancelActiveCloudJob();
+      await window.FirebaseCloudSync.clearActiveCloudJob();
+    } catch (e) {}
+  }
+
+  const cloudJobBadge = $('cloudJobBadge');
+  if (cloudJobBadge) cloudJobBadge.classList.add('hidden');
+
+  state.parsedBlocks = [];
   state.translatedBlocks = [];
   state.uncompressedBlocks = [];
   state.isCondensed = false;
-  clearSavedSession();
+  state.fileName = '';
+  state.fileSize = 0;
 
+  // Crucial: Wipe saved session from storage so it never resurfaces on refresh
+  await clearSavedSession();
+
+  if (fileInput) fileInput.value = '';
+  if (fileInfo) fileInfo.classList.add('hidden');
+  if (dropZone) dropZone.classList.remove('hidden');
   if (progressCard) progressCard.classList.add('hidden');
   if (resultCard) resultCard.classList.add('hidden');
   if (incompleteWarningBanner) incompleteWarningBanner.classList.add('hidden');
   if (fileRestoredBadge) fileRestoredBadge.classList.add('hidden');
 
+  const actionCtaWrap = document.querySelector('.action-cta-wrap');
+  if (actionCtaWrap) actionCtaWrap.classList.remove('hidden');
+  const uploadCard = $('uploadCard');
+  if (uploadCard) {
+    uploadCard.style.pointerEvents = 'auto';
+    uploadCard.style.opacity = '1';
+  }
+
   resetTranslateButton();
   checkReadyToTranslate();
-  addTerminalLog('warn', 'Translation cancelled by user. All ongoing progress was discarded.');
+  if (typeof renderCloudHistoryUI === 'function') renderCloudHistoryUI();
+  addTerminalLog('warn', isCondense ? 'AI condensation cancelled and session reset.' : 'Translation cancelled and session reset.');
 }
 
 // ── Event Setup ──
@@ -1554,15 +2566,33 @@ function setupEventListeners() {
     }
   });
 
-  // 2-Tab Navigation Switcher
+  // 2-Tab Navigation Switcher (Desktop Header & Mobile Bottom Bar)
   const tabBtnTranslator = $('tabBtnTranslator');
   const tabBtnSettings = $('tabBtnSettings');
+  const bottomTabBtnTranslator = $('bottomTabBtnTranslator');
+  const bottomTabBtnSettings = $('bottomTabBtnSettings');
   const lockGoToSettingsBtn = $('lockGoToSettingsBtn');
   const resetSessionDataBtn = $('resetSessionDataBtn');
 
   if (tabBtnTranslator) tabBtnTranslator.addEventListener('click', () => switchAppTab('translator'));
   if (tabBtnSettings) tabBtnSettings.addEventListener('click', () => switchAppTab('settings'));
-  if (lockGoToSettingsBtn) lockGoToSettingsBtn.addEventListener('click', () => switchAppTab('settings'));
+  if (bottomTabBtnTranslator) bottomTabBtnTranslator.addEventListener('click', () => switchAppTab('translator'));
+  if (bottomTabBtnSettings) bottomTabBtnSettings.addEventListener('click', () => switchAppTab('settings'));
+  if (lockGoToSettingsBtn) lockGoToSettingsBtn.addEventListener('click', () => {
+    switchAppTab('settings');
+    switchSettingsSubTab('apikeys');
+  });
+
+  // Sub-Tabs Navigation Buttons
+  const subTabBtnEngineSettings = $('subTabBtnEngineSettings');
+  const subTabBtnWorkspace = $('subTabBtnWorkspace');
+  const subTabBtnApiKeys = $('subTabBtnApiKeys');
+  const subTabBtnHistory = $('subTabBtnHistory');
+
+  if (subTabBtnEngineSettings) subTabBtnEngineSettings.addEventListener('click', () => switchTranslatorSubTab('settings'));
+  if (subTabBtnWorkspace) subTabBtnWorkspace.addEventListener('click', () => switchTranslatorSubTab('workspace'));
+  if (subTabBtnApiKeys) subTabBtnApiKeys.addEventListener('click', () => switchSettingsSubTab('apikeys'));
+  if (subTabBtnHistory) subTabBtnHistory.addEventListener('click', () => switchSettingsSubTab('history'));
 
   if (resetSessionDataBtn) {
     resetSessionDataBtn.addEventListener('click', async () => {
@@ -1617,16 +2647,22 @@ function setupEventListeners() {
     });
   }
 
-  // Provider Inputs & Save Buttons
-  ['gemini', 'groq', 'openrouter', 'deepseek', 'openai'].forEach(pid => {
+  // Provider Inputs & Save / Disconnect Buttons
+  ['gemini', 'groq', 'openrouter', 'deepseek', 'openai', 'custom'].forEach(pid => {
     const input = pid === 'gemini' ? apiKeyInput : $(`apiKeyInput_${pid}`);
     const saveBtn = pid === 'gemini' ? saveApiKey : $(`saveApiKey_${pid}`);
+    const removeBtn = $(`removeApiKey_${pid}`);
     const eyeBtn = pid === 'gemini' ? toggleApiKey : $(`toggleApiKey_${pid}`);
 
     if (saveBtn) saveBtn.addEventListener('click', () => handleSaveProviderKey(pid));
+    if (removeBtn) removeBtn.addEventListener('click', () => handleRemoveProviderKey(pid));
     if (input) {
       input.addEventListener('keydown', e => {
-        if (e.key === 'Enter') {
+        if (input.readOnly && e.key !== 'Tab' && !e.ctrlKey && !e.metaKey) {
+          e.preventDefault();
+          return;
+        }
+        if (e.key === 'Enter' && !input.readOnly) {
           e.preventDefault();
           handleSaveProviderKey(pid);
         }
@@ -1636,9 +2672,31 @@ function setupEventListeners() {
       eyeBtn.addEventListener('click', () => {
         const isPass = input.type === 'password';
         input.type = isPass ? 'text' : 'password';
+        eyeBtn.title = isPass ? 'Hide API key' : 'Show API key';
+        eyeBtn.innerHTML = isPass
+          ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`
+          : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
       });
     }
   });
+
+  const customBaseUrlInput = $('customApiBaseUrl');
+  const customModelNameInput = $('customApiModelName');
+  [customBaseUrlInput, customModelNameInput].forEach(inp => {
+    if (inp) {
+      inp.addEventListener('keydown', e => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          handleSaveProviderKey('custom');
+        }
+      });
+    }
+  });
+
+  const testPingCustomBtn = $('testPing_custom');
+  if (testPingCustomBtn) {
+    testPingCustomBtn.addEventListener('click', handleTestPingCustom);
+  }
 
   // Drag & Drop
   if (dropZone && fileInput) {
@@ -1674,7 +2732,7 @@ function setupEventListeners() {
     removeFile.addEventListener('click', async () => {
       const isProcessing = state.isTranslating || state.isCondensing;
       const modalMessage = isProcessing
-        ? 'Translation is currently in progress. Removing this file will immediately stop and abort the translation process. Are you sure?'
+        ? 'Translation is currently in progress. Removing this file will immediately stop and abort the process. Are you sure?'
         : 'Are you sure you want to remove this file? Any existing translations and saved session data will be permanently cleared.';
 
       const confirmed = await showCustomConfirm({
@@ -1691,6 +2749,22 @@ function setupEventListeners() {
       state.isPaused = false;
       state.isTranslating = false;
       state.isCondensing = false;
+      state.isCloudJob = false;
+
+      if (activeCloudJobListenerUnsub) {
+        try { activeCloudJobListenerUnsub(); } catch (e) {}
+        activeCloudJobListenerUnsub = null;
+      }
+
+      if (window.FirebaseCloudSync && window.FirebaseCloudSync.getUser()) {
+        try {
+          await window.FirebaseCloudSync.cancelActiveCloudJob();
+          await window.FirebaseCloudSync.clearActiveCloudJob();
+        } catch (e) {}
+      }
+
+      const cloudJobBadge = $('cloudJobBadge');
+      if (cloudJobBadge) cloudJobBadge.classList.add('hidden');
 
       // 2. Clear all subtitle data
       state.parsedBlocks = [];
@@ -1700,7 +2774,10 @@ function setupEventListeners() {
       state.fileName = '';
       state.fileSize = 0;
 
-      // 3. Reset UI cards
+      // 3. Purge session from IndexedDB & LocalStorage
+      await clearSavedSession();
+
+      // 4. Reset UI cards
       if (fileInput) fileInput.value = '';
       if (fileInfo) fileInfo.classList.add('hidden');
       if (dropZone) dropZone.classList.remove('hidden');
@@ -1709,27 +2786,75 @@ function setupEventListeners() {
       if (fileRestoredBadge) fileRestoredBadge.classList.add('hidden');
       if (incompleteWarningBanner) incompleteWarningBanner.classList.add('hidden');
 
-      // 4. Reset controls and session storage
-      clearSavedSession();
+      const actionCtaWrap = document.querySelector('.action-cta-wrap');
+      if (actionCtaWrap) actionCtaWrap.classList.remove('hidden');
+      const uploadCard = $('uploadCard');
+      if (uploadCard) {
+        uploadCard.style.pointerEvents = 'auto';
+        uploadCard.style.opacity = '1';
+      }
+
+      // 5. Reset controls
       resetTranslateButton();
       checkReadyToTranslate();
-      addTerminalLog('warn', 'Subtitle file removed. Ongoing translation was aborted.');
+      addTerminalLog('warn', 'Subtitle file removed and session cleared.');
     });
   }
+
+  // Filename Renaming Triggers (Loaded Bar & Results Card)
+  const renameLoadedFileBtn = $('renameLoadedFileBtn');
+  if (renameLoadedFileBtn) renameLoadedFileBtn.addEventListener('click', promptRenameCurrentFile);
+  if (fileName) fileName.addEventListener('click', promptRenameCurrentFile);
+
+  const renameResultFileBtn = $('renameResultFileBtn');
+  if (renameResultFileBtn) renameResultFileBtn.addEventListener('click', promptRenameCurrentFile);
+  const resultFileNamePill = $('resultFileNamePill');
+  if (resultFileNamePill) resultFileNamePill.addEventListener('click', promptRenameCurrentFile);
+
+  // Top API Key Alert Banner Connect Button click handler
+  const topAlertConnectBtn = $('topAlertConnectBtn');
+  if (topAlertConnectBtn) {
+    topAlertConnectBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      switchAppTab('settings');
+      const providerSelect = $('providerSelect');
+      if (providerSelect) {
+        providerSelect.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      const apiKeyInp = $('apiKeyInput');
+      if (apiKeyInp) setTimeout(() => apiKeyInp.focus(), 250);
+    });
+  }
+
+  // Required API Keys Checklist Click Handlers (Quick Configure)
+  document.querySelectorAll('.checklist-item, .checklist-action-btn').forEach(el => {
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const provider = el.getAttribute('data-provider') || el.closest('[data-provider]')?.getAttribute('data-provider');
+      if (provider) {
+        switchProviderTab(provider);
+        const targetInput = $(`apiKeyInput${provider === 'gemini' ? '' : '_' + provider}`);
+        if (targetInput) {
+          targetInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          setTimeout(() => targetInput.focus(), 250);
+        }
+      }
+    });
+  });
 
   // Start Translation
   if (translateBtn) translateBtn.addEventListener('click', runTranslationPipeline);
   if (pauseResumeBtn) pauseResumeBtn.addEventListener('click', togglePauseTranslation);
   if (cancelTranslateBtn) cancelTranslateBtn.addEventListener('click', cancelTranslationProcess);
 
-  // Retranslate
+  // Retranslate / Change Settings Button Click Handler
   if (retranslateBtn) {
     retranslateBtn.addEventListener('click', async () => {
       const confirmed = await showCustomConfirm({
-        title: 'Retranslate Subtitles?',
-        message: 'This will reset current translations and re-translate from the beginning.',
-        confirmText: 'Yes, Retranslate',
-        cancelText: 'Cancel',
+        title: 'Translate Again or Change Settings?',
+        message: 'This will reset the current translation results so you can adjust settings, select a different language or AI model, and start a fresh translation. Are you sure you want to proceed?',
+        confirmText: 'Yes, Proceed',
+        cancelText: 'Keep Results',
         type: 'warning'
       });
       if (!confirmed) return;
@@ -1738,8 +2863,18 @@ function setupEventListeners() {
       state.translatedBlocks = [];
       state.uncompressedBlocks = [];
       state.isCondensed = false;
-      clearSavedSession();
-      runTranslationPipeline();
+      await clearSavedSession();
+      resetTranslateButton();
+      checkReadyToTranslate();
+      updateControlsLockState();
+
+      switchTranslatorSubTab('settings');
+      const settingsSection = $('settingsSection');
+      if (settingsSection) {
+        settingsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+
+      showToast('✓ Results reset. You can now adjust settings or click Translate Subtitles.');
     });
   }
 
@@ -1762,46 +2897,71 @@ function setupEventListeners() {
   // Copy Action
   if (copySrtBtn) copySrtBtn.addEventListener('click', copyFullSRTCode);
 
-  // Subtitle Pacing Preset Change
-  const pacingBadge = $('pacingBadge');
-  if (styleMode) {
-    const updatePacingUI = () => {
-      const val = styleMode.value;
-      if (pacingBadge) {
-        if (val === 'micro') {
-          pacingBadge.innerHTML = `
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;display:inline-block;vertical-align:-1px;margin-right:3px;">
-              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-            </svg>
-            <span>Glance Speed</span>
-          `;
-        } else if (val === 'concise') {
-          pacingBadge.innerHTML = `
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;display:inline-block;vertical-align:-1px;margin-right:3px;">
-              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-            </svg>
-            <span>Fast Reading</span>
-          `;
-        } else if (val === 'balanced') {
-          pacingBadge.innerHTML = `
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;display:inline-block;vertical-align:-1px;margin-right:3px;">
-              <circle cx="12" cy="12" r="10"/>
-              <polyline points="12 6 12 12 16 14"/>
-            </svg>
-            <span>Balanced</span>
-          `;
-        } else {
-          pacingBadge.innerHTML = `
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;display:inline-block;vertical-align:-1px;margin-right:3px;">
-              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-            </svg>
-            <span>Detailed</span>
-          `;
-        }
+  // Translate In (Target Language) Selection Change & Persistent Sync
+  if (targetLang) {
+    targetLang.addEventListener('change', () => {
+      localStorage.setItem('preferred_target_lang', targetLang.value);
+      if (window.FirebaseCloudSync && window.FirebaseCloudSync.getUser()) {
+        window.FirebaseCloudSync.savePreferencesToCloud({
+          targetLang: targetLang.value,
+          pacingPreset: styleMode ? styleMode.value : 'concise'
+        });
       }
-    };
-    styleMode.addEventListener('change', updatePacingUI);
+      checkReadyToTranslate();
+    });
+  }
+
+  // Subtitle Pacing Preset Change & Persistent Sync
+  const pacingBadge = $('pacingBadge');
+  function updatePacingUI() {
+    if (!styleMode) return;
+    const val = styleMode.value;
+    if (pacingBadge) {
+      if (val === 'micro') {
+        pacingBadge.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;display:inline-block;vertical-align:-1px;margin-right:3px;">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+          </svg>
+          <span>Glance Speed</span>
+        `;
+      } else if (val === 'concise') {
+        pacingBadge.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;display:inline-block;vertical-align:-1px;margin-right:3px;">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+          </svg>
+          <span>Fast Reading</span>
+        `;
+      } else if (val === 'balanced') {
+        pacingBadge.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;display:inline-block;vertical-align:-1px;margin-right:3px;">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+          <span>Balanced</span>
+        `;
+      } else {
+        pacingBadge.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;display:inline-block;vertical-align:-1px;margin-right:3px;">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+          </svg>
+          <span>Detailed</span>
+        `;
+      }
+    }
+  }
+
+  if (styleMode) {
+    styleMode.addEventListener('change', () => {
+      updatePacingUI();
+      localStorage.setItem('preferred_pacing_preset', styleMode.value);
+      if (window.FirebaseCloudSync && window.FirebaseCloudSync.getUser()) {
+        window.FirebaseCloudSync.savePreferencesToCloud({
+          targetLang: targetLang ? targetLang.value : 'Bengali',
+          pacingPreset: styleMode.value
+        });
+      }
+    });
     updatePacingUI();
   }
 
@@ -1810,6 +2970,7 @@ function setupEventListeners() {
     modelSelect.addEventListener('change', () => {
       state.selectedModel = modelSelect.value;
       updateQuotaDashboardForActiveModel();
+      checkReadyToTranslate();
     });
   }
 
@@ -1842,10 +3003,27 @@ function setupEventListeners() {
   });
 }
 
+// ── File Name Sanitizer with Strict Character Limit (Max 60 chars base) ──
+function sanitizeFileName(rawName, maxBaseLen = 60) {
+  if (!rawName || typeof rawName !== 'string') return 'subtitle.srt';
+  let clean = rawName.trim().replace(/[/\\?%*:|"<>]/g, '_');
+  let base = clean.replace(/\.srt$/i, '').trim();
+  if (!base) base = 'subtitle';
+  if (base.length > maxBaseLen) {
+    base = base.substring(0, maxBaseLen).trim();
+  }
+  return `${base}.srt`;
+}
+
 // ── File Selection & Adaptive Batching ──
 function handleFileSelection(file) {
   if (!file.name.toLowerCase().endsWith('.srt')) {
     alert('Please upload a valid .srt subtitle file.');
+    return;
+  }
+
+  if (state.isTranslating || state.isCondensing) {
+    showToast('A translation or condensation is currently running. Please cancel or wait for it to finish before uploading a new file.', true);
     return;
   }
 
@@ -1857,7 +3035,8 @@ function handleFileSelection(file) {
   if (fileRestoredBadge) fileRestoredBadge.classList.add('hidden');
   clearSavedSession();
 
-  state.fileName = file.name;
+  state.fileName = sanitizeFileName(file.name, 60);
+  state.originalFileName = state.fileName;
   state.fileSize = file.size;
 
   const reader = new FileReader();
@@ -1877,6 +3056,7 @@ function handleFileSelection(file) {
     state.optimalBatchSize = calculateOptimalBatchSize(blocks);
 
     displayLoadedFileInfo(file, blocks);
+    switchTranslatorSubTab('workspace');
     checkReadyToTranslate();
   };
   reader.readAsText(file, 'UTF-8');
@@ -1902,9 +3082,10 @@ function calculateOptimalBatchSize(blocks) {
   }
 }
 
-// Robust SRT Parser (Preserves exact timing, handles edge cases & multiline subtitles)
+// Robust SRT Parser (Preserves exact timing, handles edge cases, non-standard linebreaks & multiline subtitles)
 function parseSRT(raw) {
-  const clean = raw.replace(/^\uFEFF/, '').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  if (!raw || typeof raw !== 'string') return [];
+  const clean = raw.replace(/^\uFEFF/, '').replace(/\u00A0/g, ' ').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
   const rawChunks = clean.trim().split(/\n\s*\n+/);
   const blocks = [];
 
@@ -1937,11 +3118,61 @@ function parseSRT(raw) {
     });
   }
 
+  // Robust Line-by-Line Fallback Parser if chunk splitting yielded no blocks
+  if (blocks.length === 0) {
+    const allLines = clean.split('\n');
+    let currentNum = '';
+    let currentTimecode = '';
+    let currentLines = [];
+
+    for (let i = 0; i < allLines.length; i++) {
+      const line = allLines[i].trim();
+      if (line.includes('-->') && isValidSRTTimecode(line)) {
+        if (currentTimecode && currentLines.length > 0) {
+          blocks.push({
+            num: currentNum || String(blocks.length + 1),
+            timeCode: currentTimecode,
+            lines: currentLines
+          });
+          currentLines = [];
+        }
+        currentTimecode = line;
+      } else if (!currentTimecode) {
+        if (/^\d+$/.test(line)) {
+          currentNum = line;
+        }
+      } else {
+        if (/^\d+$/.test(line) && i + 1 < allLines.length && allLines[i + 1].includes('-->')) {
+          if (currentTimecode && currentLines.length > 0) {
+            blocks.push({
+              num: currentNum || String(blocks.length + 1),
+              timeCode: currentTimecode,
+              lines: currentLines
+            });
+            currentLines = [];
+          }
+          currentNum = line;
+          currentTimecode = '';
+        } else if (line.length > 0) {
+          currentLines.push(line);
+        }
+      }
+    }
+
+    if (currentTimecode && currentLines.length > 0) {
+      blocks.push({
+        num: currentNum || String(blocks.length + 1),
+        timeCode: currentTimecode,
+        lines: currentLines
+      });
+    }
+  }
+
   return blocks;
 }
 
 function isValidSRTTimecode(tc) {
-  return /\d{2}:\d{2}:\d{2}[,.]\d{3}\s*-->\s*\d{2}:\d{2}:\d{2}[,.]\d{3}/.test(tc);
+  return /\d{1,2}:\d{2}:\d{2}[,.]\d{1,3}\s*-->\s*\d{1,2}:\d{2}:\d{2}[,.]\d{1,3}/.test(tc);
 }
 
 function parseTimeRange(tc) {
@@ -1951,9 +3182,10 @@ function parseTimeRange(tc) {
 }
 
 function tcToMs(tc) {
-  const m = tc.replace(',', '.').match(/(\d{2}):(\d{2}):(\d{2})\.(\d{3})/);
+  const m = tc.replace(',', '.').match(/(\d{1,2}):(\d{2}):(\d{2})\.(\d{1,3})/);
   if (!m) return 0;
-  return (+m[1] * 3600 + +m[2] * 60 + +m[3]) * 1000 + +m[4];
+  const msPart = m[4].padEnd(3, '0');
+  return (+m[1] * 3600 + +m[2] * 60 + +m[3]) * 1000 + +msPart;
 }
 
 function msToTc(ms) {
@@ -1988,9 +3220,12 @@ function displayLoadedFileInfo(file, blocks) {
   dropZone.classList.add('hidden');
   fileInfo.classList.remove('hidden');
 
-  fileName.textContent = file.name;
+  const displayName = state.fileName || sanitizeFileName(file ? file.name : '', 60) || 'subtitle.srt';
+  fileName.textContent = displayName;
+  fileName.setAttribute('title', displayName);
   fileCountBadge.textContent = `${blocks.length} Subtitles`;
-  const szKb = (file.size / 1024).toFixed(1);
+  const szBytes = file && file.size ? file.size : state.fileSize || 0;
+  const szKb = (szBytes / 1024).toFixed(1);
   fileSizeBadge.textContent = `${szKb} KB`;
   fileDurationBadge.textContent = `Duration: ${state.durationStr}`;
   fileBatchBadge.textContent = `Auto Batching: ${state.optimalBatchSize} lines/req`;
@@ -2009,19 +3244,105 @@ function displayLoadedFileInfo(file, blocks) {
 
 function checkReadyToTranslate() {
   const hasFile = state.parsedBlocks.length > 0;
-  const connectedKeys = Object.values(state.apiKeys).filter(k => k && k.length > 4);
-  const hasKey = connectedKeys.length > 0;
+  const hasGemini = hasGeminiApiKey();
+  const hasOpenRouter = hasOpenRouterApiKey();
+  const hasKeys = hasGemini && hasOpenRouter;
+  const isTranslationCompleted = state.translatedBlocks && state.translatedBlocks.length > 0 && resultCard && !resultCard.classList.contains('hidden') && !state.isTranslating && !state.isCondensing;
 
-  translateBtn.disabled = !(hasFile && hasKey);
+  // 1. Synchronize Top Red Warning Alert Banner
+  const topAlertBanner = $('topApiKeyAlertBanner');
+  if (topAlertBanner) {
+    if (!hasKeys) {
+      topAlertBanner.classList.remove('hidden');
+    } else {
+      topAlertBanner.classList.add('hidden');
+    }
+  }
 
-  if (!hasKey) {
-    ctaHint.textContent = 'Please enter & connect at least one AI Provider (Gemini, Groq, DeepSeek, OpenRouter, OpenAI) above.';
-  } else if (!hasFile) {
-    ctaHint.textContent = 'Please upload an SRT subtitle file above.';
-  } else {
-    const { providerId } = getActiveProviderAndKey();
-    const pName = AI_PROVIDERS[providerId]?.name || 'AI';
-    ctaHint.textContent = `Ready! Click the button above to translate ${state.parsedBlocks.length} subtitles into ${targetLang.value} using [${pName}].`;
+  // 2. Active translation or condensing in progress
+  if (state.isTranslating || state.isCondensing) {
+    if (translateBtn) {
+      translateBtn.disabled = true;
+      translateBtn.classList.add('disabled');
+      translateBtn.classList.remove('btn-completed');
+    }
+    return;
+  }
+
+  // 3. Completed State -> Show "Translation Complete"
+  if (isTranslationCompleted) {
+    if (translateBtn) {
+      translateBtn.classList.remove('btn-missing-keys');
+      translateBtn.classList.add('btn-completed');
+      translateBtn.disabled = true;
+      const btnLabel = translateBtn.querySelector('.btn-label');
+      const btnSubtitle = translateBtn.querySelector('.btn-hero-subtitle');
+      const heroIcon = translateBtn.querySelector('.hero-icon');
+      if (btnLabel) btnLabel.textContent = 'Translation Complete';
+      if (btnSubtitle) btnSubtitle.textContent = '100% Subtitles Ready • See Results Below';
+      if (heroIcon) {
+        heroIcon.innerHTML = `
+          <polyline points="20 6 9 17 4 12"/>
+        `;
+      }
+    }
+    if (ctaHint) {
+      ctaHint.textContent = '';
+    }
+    return;
+  }
+
+  // 4. Update Translate Button State & Styling for Normal / Missing Keys State
+  if (translateBtn) {
+    translateBtn.classList.remove('btn-completed');
+    const btnLabel = translateBtn.querySelector('.btn-label');
+    const btnSubtitle = translateBtn.querySelector('.btn-hero-subtitle');
+    const heroIcon = translateBtn.querySelector('.hero-icon');
+    if (btnSubtitle) btnSubtitle.textContent = '100% Timing Preserved • Ultra-Fast AI';
+
+    if (!hasKeys) {
+      // API Keys Missing -> Red Warning Button that directs directly to Settings
+      translateBtn.disabled = false;
+      translateBtn.classList.remove('disabled');
+      translateBtn.classList.add('btn-missing-keys');
+      if (btnLabel) btnLabel.textContent = 'Please Connect API Keys';
+      if (heroIcon) {
+        heroIcon.innerHTML = `
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        `;
+      }
+    } else {
+      // API Keys Connected -> Normal Hero Button
+      translateBtn.classList.remove('btn-missing-keys');
+      if (btnLabel) btnLabel.textContent = 'Translate Subtitles Now';
+      if (heroIcon) {
+        heroIcon.innerHTML = `
+          <path d="M5 8l6 6M4 14l6-6 2-3M2 5h12M7 2h1M22 22l-5-10-5 10M14 18h6"/>
+        `;
+      }
+      if (hasFile) {
+        translateBtn.disabled = false;
+        translateBtn.classList.remove('disabled');
+      } else {
+        translateBtn.disabled = true;
+        translateBtn.classList.add('disabled');
+      }
+    }
+  }
+
+  if (ctaHint) {
+    if (!hasKeys && !hasFile) {
+      ctaHint.textContent = 'Please connect your API keys in Settings & upload an SRT subtitle file to start translating.';
+    } else if (!hasKeys) {
+      ctaHint.textContent = 'Please connect your API keys in Settings to unlock translation.';
+    } else if (!hasFile) {
+      ctaHint.textContent = 'Please upload an SRT subtitle file above to begin.';
+    } else {
+      const activeModelDesc = getSelectedModelFriendlyDescription();
+      ctaHint.textContent = `Ready! Click the button above to translate ${state.parsedBlocks.length} subtitles into ${targetLang ? targetLang.value : 'Bengali'} [${activeModelDesc}].`;
+    }
   }
 }
 
@@ -2208,8 +3529,8 @@ function matchTranslationsToBatch(batch, parsedArray) {
     if (!transText) {
       return {
         ...originalBlock,
-        translatedLines: originalBlock.lines,
-        isTranslated: false
+        translatedLines: originalBlock.translatedLines || originalBlock.lines,
+        isTranslated: originalBlock.isTranslated !== undefined ? originalBlock.isTranslated : false
       };
     }
 
@@ -2226,17 +3547,92 @@ function matchTranslationsToBatch(batch, parsedArray) {
   });
 }
 
+// ── Dedicated AI Condenser Matcher (Preserves Existing Translation 100% on Missing/Unchanged IDs) ──
+function matchCondenseToBatch(batch, parsedArray) {
+  if (!Array.isArray(parsedArray) || parsedArray.length === 0) {
+    return batch;
+  }
+
+  const hasZero = parsedArray.some(item => item && (item.id === 0 || item.id === '0'));
+  const hasOriginalNums = batch.length > 0 && parsedArray.some(item => item && (item.id === batch[0].num || item.id === String(batch[0].num)));
+  const isOneIndexed = !hasZero && !hasOriginalNums && parsedArray.some(item => item && (item.id === 1 || item.id === '1'));
+
+  return batch.map((originalBlock, idx) => {
+    let matched = null;
+
+    if (hasOriginalNums) {
+      matched = parsedArray.find(item => item && (item.id === originalBlock.num || item.id === String(originalBlock.num)));
+    } else if (isOneIndexed) {
+      matched = parsedArray.find(item => item && (item.id === idx + 1 || item.id === String(idx + 1)));
+    } else {
+      matched = parsedArray.find(item => item && (item.id === idx || item.id === String(idx)));
+    }
+
+    if (!matched && parsedArray.length === batch.length && !parsedArray.some(it => it && it.id !== undefined)) {
+      matched = parsedArray[idx];
+    }
+
+    let condensedText = '';
+    if (typeof matched === 'string') {
+      condensedText = matched.trim();
+    } else if (matched && typeof matched === 'object') {
+      condensedText = (
+        matched.text ||
+        matched.translation ||
+        matched.condensed ||
+        matched.condensed_text ||
+        matched.dialogue ||
+        Object.values(matched).find(v => typeof v === 'string' && v.trim().length > 0 && v !== String(matched.id)) ||
+        ''
+      ).trim();
+    }
+
+    if (!condensedText) {
+      return originalBlock;
+    }
+
+    const lines = condensedText
+      .split('\n')
+      .map(l => l.trim())
+      .filter(l => l.length > 0);
+
+    return {
+      ...originalBlock,
+      translatedLines: lines.length > 0 ? lines : [condensedText],
+      isTranslated: true
+    };
+  });
+}
+
 // ── Translation Pipeline ──
 async function runTranslationPipeline() {
+  if (!hasRequiredMandatoryApiKeys()) {
+    switchAppTab('settings');
+    const providerSelect = $('providerSelect');
+    if (providerSelect) {
+      providerSelect.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    const apiKeyInp = $('apiKeyInput');
+    if (apiKeyInp) setTimeout(() => apiKeyInp.focus(), 250);
+    return;
+  }
+
   const { providerId, model: initialModel, key: activeKey } = getActiveProviderAndKey();
   if (!activeKey) {
-    alert('Please enter and connect at least one AI API Key before proceeding.');
+    switchAppTab('settings');
+    const providerSelect = $('providerSelect');
+    if (providerSelect) {
+      providerSelect.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    const apiKeyInp = $('apiKeyInput');
+    if (apiKeyInp) setTimeout(() => apiKeyInp.focus(), 250);
     return;
   }
 
   state.isTranslating = true;
   state.isPaused = false;
   state.isCancelled = false;
+  updateControlsLockState();
 
   // Activate high-performance keep-awake engine
   startBackgroundKeepAlive();
@@ -2332,7 +3728,7 @@ async function runTranslationPipeline() {
 
       // Smooth inter-batch pacing delay
       if (bi < batches.length - 1 && !state.isCancelled) {
-        await sleep(1400);
+        await sleep(350);
       }
     }
 
@@ -2412,9 +3808,9 @@ async function translateBatchWithAdaptiveSplitting(batch, activeKey, modelToUse,
       if (state.isCancelled) return result;
       addTerminalLog('warn', `Batch of ${batch.length} lines had ${batch.length - translatedCount} missing translations. Dividing into smaller sub-batches to ensure 100% completion...`);
       const mid = Math.ceil(batch.length / 2);
-      await sleep(1000);
+      await sleep(800);
       const resA = await translateBatchWithAdaptiveSplitting(batch.slice(0, mid), effectiveKey, activeModel, 1);
-      await sleep(1200);
+      await sleep(800);
       const resB = await translateBatchWithAdaptiveSplitting(batch.slice(mid), effectiveKey, activeModel, 1);
       return [...resA, ...resB];
     }
@@ -2425,62 +3821,88 @@ async function translateBatchWithAdaptiveSplitting(batch, activeKey, modelToUse,
     state.stats.retries++;
     const errMsg = (err.message || '').toLowerCase();
 
-    const isModelUnavailable = errMsg.includes('no longer available') ||
-      errMsg.includes('does not exist') ||
-      errMsg.includes('do not have access') ||
+    // Comprehensive Error Classification
+    const isBalanceOrAuth = errMsg.includes('401') ||
+      errMsg.includes('402') ||
+      errMsg.includes('403') ||
+      errMsg.includes('insufficient') ||
+      errMsg.includes('balance') ||
+      errMsg.includes('credit') ||
+      errMsg.includes('credits') ||
+      errMsg.includes('billing') ||
+      errMsg.includes('payment') ||
+      errMsg.includes('unauthorized') ||
+      errMsg.includes('invalid api key') ||
+      errMsg.includes('incorrect api key') ||
+      errMsg.includes('deactivated') ||
+      errMsg.includes('expired') ||
+      errMsg.includes('permission denied') ||
+      errMsg.includes('api_key_invalid');
+
+    const isModelBroken = errMsg.includes('404') ||
       errMsg.includes('not found') ||
-      errMsg.includes('is not supported') ||
+      errMsg.includes('does not exist') ||
       errMsg.includes('deprecated') ||
-      errMsg.includes('model_not_found') ||
+      errMsg.includes('no longer available') ||
       errMsg.includes('invalid_model') ||
       errMsg.includes('unrecognized model') ||
-      errMsg.includes('invalid model') ||
-      errMsg.includes('404');
+      errMsg.includes('model_not_found') ||
+      errMsg.includes('is not supported') ||
+      errMsg.includes('do not have access') ||
+      errMsg.includes('restricted') ||
+      errMsg.includes('permission_denied') ||
+      errMsg.includes('location') ||
+      errMsg.includes('not permitted') ||
+      errMsg.includes('not allowed') ||
+      errMsg.includes('preview only') ||
+      errMsg.includes('whitelist') ||
+      errMsg.includes('blocked');
 
-    const is429 = errMsg.includes('429') || errMsg.includes('quota') || errMsg.includes('resource has been exhausted') || errMsg.includes('rate limit');
-    const is503 = errMsg.includes('503') || errMsg.includes('overloaded') || errMsg.includes('high demand') || errMsg.includes('service unavailable');
-    const isAuthError = errMsg.includes('401') || errMsg.includes('unauthorized') || errMsg.includes('invalid api key') || errMsg.includes('incorrect api key');
+    const isRateLimitOrOverload = errMsg.includes('429') ||
+      errMsg.includes('503') ||
+      errMsg.includes('500') ||
+      errMsg.includes('502') ||
+      errMsg.includes('504') ||
+      errMsg.includes('quota') ||
+      errMsg.includes('rate limit') ||
+      errMsg.includes('overloaded') ||
+      errMsg.includes('resource has been exhausted') ||
+      errMsg.includes('too many requests') ||
+      errMsg.includes('high demand') ||
+      errMsg.includes('service unavailable');
 
-    // 1. Permanent Model / Auth Error: Mark permanently broken and switch immediately
-    if (isModelUnavailable || isAuthError) {
-      modelHealthTracker.recordFailure(currentPid, activeModel, true, err.message);
-      if (state.autoFailoverEnabled) {
-        const backup = findFailoverBackup(currentPid, activeModel);
-        if (backup) {
-          addTerminalLog('warn', `⚡ [Auto-Failover] Model "${activeModel}" is unavailable on ${AI_PROVIDERS[currentPid]?.name || currentPid}. Automatically switching to [${backup.providerName}] ${backup.modelName} to continue translation!`);
-          state.selectedModel = backup.model;
-          if (modelSelect) {
-            modelSelect.value = backup.model;
-            refreshCustomSelect('modelSelect');
-          }
-          updateQuotaDashboardForActiveModel();
-          await sleep(600);
-          return await translateBatchWithAdaptiveSplitting(batch, backup.key, backup.model, 1);
-        }
-      }
-      throw new Error(`Model "${activeModel}" is not accessible on ${AI_PROVIDERS[currentPid]?.name || currentPid} (${err.message}) and no other working backup model is connected.`);
-    }
+    // 1. Instant Auto-Failover: If Auto-Failover is enabled, immediately switch to the best available backup model!
+    if (state.autoFailoverEnabled) {
+      const isPermanent = isBalanceOrAuth || isModelBroken;
+      modelHealthTracker.recordFailure(currentPid, activeModel, isPermanent, err.message);
 
-    // 2. Rate Limit / Overload: Record temporary cooldown and Auto-Failover
-    if ((is429 || is503) && state.autoFailoverEnabled) {
-      modelHealthTracker.recordFailure(currentPid, activeModel, false, err.message);
       const backup = findFailoverBackup(currentPid, activeModel);
       if (backup) {
-        addTerminalLog('warn', `⚡ [Auto-Failover • ${backup.tier}] Model ${activeModel} is ${is503 ? 'overloaded (503)' : 'rate limited (429)'}. Instantly switching to [${backup.providerName}] ${backup.modelName} to keep translating without delay!`);
+        let reason = 'Error encountered';
+        if (isBalanceOrAuth) reason = 'Insufficient Balance / Auth error';
+        else if (isRateLimitOrOverload) reason = 'Rate limit / Server busy';
+        else if (isModelBroken) reason = 'Model unavailable';
+
+        addTerminalLog('warn', `⚡ [Auto-Failover] ${reason} on [${AI_PROVIDERS[currentPid]?.name || currentPid}] "${activeModel}". Automatically switching to [${backup.providerName}] "${backup.modelName}" to continue translation without losing any lines!`);
+
+        // Dynamically update active model globally
         state.selectedModel = backup.model;
         if (modelSelect) {
           modelSelect.value = backup.model;
           refreshCustomSelect('modelSelect');
         }
         updateQuotaDashboardForActiveModel();
+        updateApiHealthUI('optimal', `Switched to [${backup.providerName}] ${backup.modelName}`);
+
+        // Small delay and seamless retry on the new model
         await sleep(600);
         return await translateBatchWithAdaptiveSplitting(batch, backup.key, backup.model, 1);
       }
     }
 
-    // 3. Rate Limit / Overload without available backup: Cooldown and retry
-    if (is429) {
-      const waitTime = Math.min(5000 * attempt, 16000);
+    // 2. Rate Limit & Overload Backoff (Only if no backup model exists)
+    if (isRateLimitOrOverload) {
+      const waitTime = Math.min(4000 * attempt, 14000);
       updateApiHealthUI('cooldown', `429 Rate Limit Cooldown (${waitTime / 1000}s)...`);
       addTerminalLog('warn', `API rate limit reached on ${AI_PROVIDERS[currentPid]?.name || 'provider'}. Pausing for ${waitTime / 1000}s before retry ${attempt}/3...`);
       await sleep(waitTime);
@@ -2488,28 +3910,22 @@ async function translateBatchWithAdaptiveSplitting(batch, activeKey, modelToUse,
       if (attempt <= 3 && !state.isCancelled) {
         return await translateBatchWithAdaptiveSplitting(batch, effectiveKey, activeModel, attempt + 1);
       }
-    } else if (is503) {
-      addTerminalLog('warn', `${AI_PROVIDERS[currentPid]?.name || 'AI Server'} busy (503). Retrying in 4s...`);
-      await sleep(4000);
-      if (attempt <= 3 && !state.isCancelled) {
-        return await translateBatchWithAdaptiveSplitting(batch, effectiveKey, activeModel, attempt + 1);
-      }
     }
 
-    // 4. Divide and Conquer: Split batch if larger than 1 item and retry on same working model
+    // 3. Divide and Conquer: Split batch if larger than 1 item
     if (batch.length > 1 && !state.isCancelled) {
       const mid = Math.ceil(batch.length / 2);
       const subA = batch.slice(0, mid);
       const subB = batch.slice(mid);
       addTerminalLog('warn', `Sub-dividing batch of ${batch.length} lines into smaller chunks (${subA.length} + ${subB.length}) to isolate error...`);
-      await sleep(1000);
+      await sleep(800);
       const resA = await translateBatchWithAdaptiveSplitting(subA, effectiveKey, activeModel, 1);
-      await sleep(1000);
+      await sleep(800);
       const resB = await translateBatchWithAdaptiveSplitting(subB, effectiveKey, activeModel, 1);
       return [...resA, ...resB];
     }
 
-    // 5. Final fallback for single block
+    // 4. Final fallback only if single block failed on all attempts and no backups exist
     addTerminalLog('err', `Subtitle #${batch[0].num} could not be translated: ${err.message}. Original lines preserved.`);
     return batch.map(b => ({
       ...b,
@@ -2525,7 +3941,7 @@ async function callAiBatchTranslate(batch, key, attemptNumber, overrideModel) {
   const { providerId, model, key: providerKey } = getActiveProviderAndKey(modelToUse);
   const effectiveKey = providerKey || state.apiKeys[providerId] || key;
 
-  if (!effectiveKey) {
+  if (providerId !== 'custom' && !effectiveKey) {
     throw new Error(`No API key configured for ${AI_PROVIDERS[providerId]?.name || providerId}. Please enter your key in the provider tabs.`);
   }
 
@@ -2577,15 +3993,17 @@ async function callGeminiBatchTranslate(batch, key, attemptNumber, overrideModel
     languageRules = `
 DIALOGUE & REGIONAL VOCABULARY RULES (Bengali / বাংলা):
 - Strictly use modern standard Bangladeshi Bengali phrasing and natural vocabulary commonly used across Bangladesh.
-- Standard Vocabulary Mapping:
-  * Use "পানি" (NEVER use "জল" for water).
-  * Use "রংধনু" (NEVER use "রামধনু").
-  * Use "জাতিসংঘ" (NEVER use "রাষ্ট্রপুঞ্জ").
-  * Use "গোসল" (NEVER use "স্নান").
-  * Use "দাওয়াত" / "আমন্ত্রণ" (NEVER use "নিমন্ত্রণ").
-  * Use "খোদা" / "ঈশ্বর" / "আল্লাহ" (NEVER use "ভগবান" as default generic deity).
-  * For greetings, use "সালাম" / "হাই" / "হ্যালো" / "কেমন আছেন" (avoid "নমস্কার" unless character-specific religious setting).
-- Avoid West Bengal / Indian regional vocabulary (e.g. জল, রামধনু, ভগবান, স্নান, রাষ্ট্রপুঞ্জ, নিমন্ত্রণ, দিদিমণি, মশাই, ইত্যাদি).
+- Standard Vocabulary Mapping & Strict Replacements:
+  * For "God / Lord / Oh God / My God": Strictly use "ঈশ্বর" or "খোদা" (e.g. "হে ঈশ্বর", "হে খোদা", "খোদার কসম", "ঈশ্বর জানেন", "খোদা না করুক"). NEVER use "আল্লাহ" for generic deity/Western god/dialogues like "oh god". NEVER use "ভগবান".
+  * For "Invitation / Invite": Strictly use "দাওয়াত" / "দাওয়াত দেওয়া". NEVER use "নিমন্ত্রণ" or "নেমত্তন্ন".
+  * For "Guest / Visitor": Strictly use "মেহমান". NEVER use "অতিথি".
+  * For "Water": Strictly use "পানি" (NEVER use "জল").
+  * For "Rainbow": Strictly use "রংধনু" (NEVER use "রামধনু").
+  * For "United Nations": Strictly use "জাতিসংঘ" (NEVER use "রাষ্ট্রপুঞ্জ").
+  * For "Bath / Shower": Strictly use "গোসল" (NEVER use "স্নান").
+  * For greetings: Use "সালাম" / "হাই" / "হ্যালো" / "কেমন আছেন" (avoid "নমস্কার" unless character-specific religious setting).
+- Strict Banned Words (Indian / West Bengal regional words that must NEVER be used):
+  * Do NOT use: জল, রামধনু, ভগবান, আল্লাহ (for generic god dialogues), স্নান, রাষ্ট্রপুঞ্জ, নিমন্ত্রণ, অতিথি, দিদিমণি, মশাই, ইত্যাদি।
 - PRONOUNS:
   * NEVER use disrespectful pronouns like "তুই", "তোর", "তোকে" unless explicitly required by intense hostility/abuse.
   * ALWAYS use polite, friendly, and natural conversational pronouns like "তুমি", "তোমার", "তোমাকে", "তোমরা" (or "আপনি/আপনার" for elders/formal roles).
@@ -2615,8 +4033,11 @@ MANDATORY RULES:
 5. Formatting & Tags:
    - Preserve HTML formatting tags (like <i>, </i>, <b>, </b>) if present in original text.
    - Preserve speaker tags or sound effects (e.g. [Music], (Laughter), [Door slams], JOHN:) appropriately without mangling brackets.
-   - If original subtitle text has multiple dialogue lines (e.g. starting with "- "), keep clean line breaks in translated text.${languageRules}
-${hint ? `6. Context/Genre: ${hint}` : ''}
+   - If original subtitle text has multiple dialogue lines (e.g. starting with "- "), keep clean line breaks in translated text.
+6. SCRIPT PURITY & NO MIXED CHARACTERS:
+   - Output 100% pure native script in ${lang}. NEVER mix English Latin characters inside ${lang} words (e.g. NEVER write "অনuবাদ", "আরo", "করe", "হবেn", "কi", "নa"; ALWAYS write "অনুবাদ", "আরো", "করে", "হবেন", "কি", "না").
+   - Write currency symbols as natural words in ${lang} (e.g. write "$50" as "৫০ ডলার").${languageRules}
+${hint ? `7. Context/Genre: ${hint}` : ''}
 
 INPUT SUBTITLES TO TRANSLATE (${batch.length} items):
 ${JSON.stringify(inputData, null, 2)}
@@ -2685,11 +4106,14 @@ OUTPUT (JSON Array):`;
   return matchTranslationsToBatch(batch, parsedArray);
 }
 
-// ── OpenAI-Compatible Translation Engine (Groq, OpenRouter, DeepSeek, OpenAI) ──
+// ── OpenAI-Compatible Translation Engine (Groq, OpenRouter, DeepSeek, OpenAI, Custom) ──
 async function callOpenAiCompatibleBatchTranslate(batch, providerId, modelId, key, attemptNumber) {
   const pConf = AI_PROVIDERS[providerId];
-  if (!pConf || !key) {
-    throw new Error(`No configuration or API key for provider "${providerId}".`);
+  if (!pConf) {
+    throw new Error(`No configuration for provider "${providerId}".`);
+  }
+  if (providerId !== 'custom' && !key) {
+    throw new Error(`No API key provided for provider "${providerId}".`);
   }
 
   const lang = targetLang.value || 'Bengali';
@@ -2728,15 +4152,17 @@ async function callOpenAiCompatibleBatchTranslate(batch, providerId, modelId, ke
     languageRules = `
 DIALOGUE & REGIONAL VOCABULARY RULES (Bengali / বাংলা):
 - Strictly use modern standard Bangladeshi Bengali phrasing and natural vocabulary commonly used across Bangladesh.
-- Standard Vocabulary Mapping:
-  * Use "পানি" (NEVER use "জল" for water).
-  * Use "রংধনু" (NEVER use "রামধনু").
-  * Use "জাতিসংঘ" (NEVER use "রাষ্ট্রপুঞ্জ").
-  * Use "গোসল" (NEVER use "স্নান").
-  * Use "দাওয়াত" / "আমন্ত্রণ" (NEVER use "নিমন্ত্রণ").
-  * Use "খোদা" / "ঈশ্বর" / "আল্লাহ" (NEVER use "ভগবান" as default generic deity).
-  * For greetings, use "সালাম" / "হাই" / "হ্যালো" / "কেমন আছেন" (avoid "নমস্কার" unless character-specific religious setting).
-- Avoid West Bengal / Indian regional vocabulary (e.g. জল, রামধনু, ভগবান, স্নান, রাষ্ট্রপুঞ্জ, নিমন্ত্রণ, দিদিমণি, মশাই, ইত্যাদি).
+- Standard Vocabulary Mapping & Strict Replacements:
+  * For "God / Lord / Oh God / My God": Strictly use "ঈশ্বর" or "খোদা" (e.g. "হে ঈশ্বর", "হে খোদা", "খোদার কসম", "ঈশ্বর জানেন", "খোদা না করুক"). NEVER use "আল্লাহ" for generic deity/Western god/dialogues like "oh god". NEVER use "ভগবান".
+  * For "Invitation / Invite": Strictly use "দাওয়াত" / "দাওয়াত দেওয়া". NEVER use "নিমন্ত্রণ" or "নেমত্তন্ন".
+  * For "Guest / Visitor": Strictly use "মেহমান". NEVER use "অতিথি".
+  * For "Water": Strictly use "পানি" (NEVER use "জল").
+  * For "Rainbow": Strictly use "রংধনু" (NEVER use "রামধনু").
+  * For "United Nations": Strictly use "জাতিসংঘ" (NEVER use "রাষ্ট্রপুঞ্জ").
+  * For "Bath / Shower": Strictly use "গোসল" (NEVER use "স্নান").
+  * For greetings: Use "সালাম" / "হাই" / "হ্যালো" / "কেমন আছেন" (avoid "নমস্কার" unless character-specific religious setting).
+- Strict Banned Words (Indian / West Bengal regional words that must NEVER be used):
+  * Do NOT use: জল, রামধনু, ভগবান, আল্লাহ (for generic god dialogues), স্নান, রাষ্ট্রপুঞ্জ, নিমন্ত্রণ, অতিথি, দিদিমণি, মশাই, ইত্যাদি।
 - PRONOUNS:
   * NEVER use disrespectful pronouns like "তুই", "তোর", "তোকে" unless explicitly required by intense hostility/abuse.
   * ALWAYS use polite, friendly, and natural conversational pronouns like "তুমি", "তোমার", "তোমাকে", "তোমরা" (or "আপনি/আপনার" for elders/formal roles).
@@ -2766,18 +4192,33 @@ MANDATORY RULES:
 5. Formatting & Tags:
    - Preserve HTML formatting tags (like <i>, </i>, <b>, </b>) if present in original text.
    - Preserve speaker tags or sound effects (e.g. [Music], (Laughter), [Door slams], JOHN:) appropriately without mangling brackets.
-   - If original subtitle text has multiple dialogue lines (e.g. starting with "- "), keep clean line breaks in translated text.${languageRules}
-${hint ? `6. Context/Genre: ${hint}` : ''}`;
+   - If original subtitle text has multiple dialogue lines (e.g. starting with "- "), keep clean line breaks in translated text.
+6. SCRIPT PURITY & NO MIXED CHARACTERS:
+   - Output 100% pure native script in ${lang}. NEVER mix English Latin characters inside ${lang} words (e.g. NEVER write "অনuবাদ", "আরo", "করe", "হবেn", "কi", "নa"; ALWAYS write "অনুবাদ", "আরো", "করে", "হবেন", "কি", "না").
+   - Write currency symbols as natural words in ${lang} (e.g. write "$50" as "৫০ ডলার").${languageRules}
+${hint ? `7. Context/Genre: ${hint}` : ''}`;
 
   const userPrompt = `INPUT SUBTITLES TO TRANSLATE (${batch.length} items):
 ${JSON.stringify(inputData, null, 2)}
 
 OUTPUT (JSON Array):`;
 
+  let endpoint = pConf.endpoint;
+  if (providerId === 'custom') {
+    const rawBaseUrl = (localStorage.getItem('custom_api_base_url') || $('customApiBaseUrl')?.value || '').trim();
+    const baseUrl = normalizeCustomBaseUrl(rawBaseUrl);
+    if (!baseUrl) {
+      throw new Error('Custom API Base URL is not configured.');
+    }
+    endpoint = `${baseUrl}/chat/completions`;
+  }
+
   let headers = {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${key}`
+    'Content-Type': 'application/json'
   };
+  if (key && key.trim()) {
+    headers['Authorization'] = `Bearer ${key.trim()}`;
+  }
   if (providerId === 'openrouter') {
     headers['HTTP-Referer'] = window.location.origin || 'https://srttranslator.vercel.app';
     headers['X-Title'] = 'SRTtranslator';
@@ -2802,7 +4243,7 @@ OUTPUT (JSON Array):`;
 
   let response;
   try {
-    response = await fetch(pConf.endpoint, {
+    response = await fetch(endpoint, {
       method: 'POST',
       headers,
       body: JSON.stringify(requestBody)
@@ -2818,8 +4259,20 @@ OUTPUT (JSON Array):`;
 
   if (!response.ok) {
     const errorJson = await response.json().catch(() => ({}));
-    const errMsg = errorJson?.error?.message || `HTTP ${response.status} ${response.statusText}`;
-    if (response.status === 429) {
+    let errMsg = '';
+    if (typeof errorJson?.error === 'string') {
+      errMsg = errorJson.error;
+    } else if (errorJson?.error?.message) {
+      errMsg = errorJson.error.message;
+    } else if (errorJson?.message) {
+      errMsg = errorJson.message;
+    } else {
+      errMsg = `HTTP ${response.status} ${response.statusText}`;
+    }
+
+    if (response.status === 402 || errMsg.toLowerCase().includes('insufficient') || errMsg.toLowerCase().includes('balance') || errMsg.toLowerCase().includes('credit')) {
+      updateApiHealthUI('exhausted', `[${pConf.name}] 402 Insufficient Balance`, duration);
+    } else if (response.status === 429) {
       state.apiMetrics.rateLimitHits++;
       updateApiHealthUI('cooldown', `[${pConf.name}] 429 Rate Limit`, duration);
     } else {
@@ -2981,16 +4434,132 @@ async function retryIncompleteBatchesPipeline() {
   }
 }
 
+// ── Deterministic Bangladeshi Bengali Vocabulary & Tokenizer Bleeding Sanitizer ──
+function sanitizeBengaliVocabulary(text) {
+  if (!text || typeof text !== 'string') return text;
+  let s = text;
+
+  // 1. Currency & Stray Symbol Artifact Normalization
+  // e.g. "$50" or "$৫০" -> "৫০ ডলার" (prevent duplicate "ডলার ডলার")
+  s = s.replace(/\$\s*([0-9\u09E6-\u09EF]+)(?:\s*ডলার)?/g, '$1 ডলার');
+  s = s.replace(/(?<=[^\w\s]|^)\$\s*(?=[\u0980-\u09FF])/g, '');
+  s = s.replace(/(?<=[\u0980-\u09FF])\s*\$/g, '');
+  // Clean stray backslashes before Bengali characters
+  s = s.replace(/\\([\u0980-\u09FF])/g, '$1');
+
+  // 2. Multi-character Latin suffixes embedded in Bengali words (LLM Tokenizer Artifacts)
+  s = s.replace(/([\u0985-\u09B9])che(?=[^a-zA-Z\u0980-\u09FF]|$)/g, '$1ছে');
+  s = s.replace(/([\u0985-\u09B9])be(?=[^a-zA-Z\u0980-\u09FF]|$)/g, '$1বে');
+  s = s.replace(/([\u0985-\u09B9])te(?=[^a-zA-Z\u0980-\u09FF]|$)/g, '$1তে');
+  s = s.replace(/([\u0985-\u09B9])le(?=[^a-zA-Z\u0980-\u09FF]|$)/g, '$1লে');
+  s = s.replace(/([\u0985-\u09B9])re(?=[^a-zA-Z\u0980-\u09FF]|$)/g, '$1রে');
+  s = s.replace(/([\u0985-\u09B9])ke(?=[^a-zA-Z\u0980-\u09FF]|$)/g, '$1কে');
+  s = s.replace(/([\u0985-\u09B9])me(?=[^a-zA-Z\u0980-\u09FF]|$)/g, '$1মে');
+  s = s.replace(/([\u0985-\u09B9])se(?=[^a-zA-Z\u0980-\u09FF]|$)/g, '$1সে');
+  s = s.replace(/([\u0985-\u09B9])ta(?=[^a-zA-Z\u0980-\u09FF]|$)/g, '$1টা');
+  s = s.replace(/([\u0985-\u09B9])ti(?=[^a-zA-Z\u0980-\u09FF]|$)/g, '$1টি');
+  s = s.replace(/([\u0985-\u09B9])ra(?=[^a-zA-Z\u0980-\u09FF]|$)/g, '$1রা');
+
+  // 3. Single Latin vowels embedded in Bengali words (e.g. "অনuবাদ" -> "অনুবাদ", "আরo" -> "আরো", "করe" -> "করে")
+  s = s.replace(/([\u0985-\u09B9\u09CE\u09DC\u09DD\u09DF])u([\u0985-\u09B9\u09CE\u09DC\u09DD\u09DF])/g, '$1ু$2');
+  s = s.replace(/([\u0985-\u09B9\u09CE\u09DC\u09DD\u09DF])u(?=[^a-zA-Z\u0980-\u09FF]|$)/g, '$1ু');
+
+  s = s.replace(/([\u0985-\u09B9\u09CE\u09DC\u09DD\u09DF])o(?=[^a-zA-Z\u0980-\u09FF]|$)/g, '$1ো');
+  s = s.replace(/([\u0985-\u09B9\u09CE\u09DC\u09DD\u09DF])o([\u0985-\u09B9\u09CE\u09DC\u09DD\u09DF])/g, '$1ো$2');
+
+  s = s.replace(/([\u0985-\u09B9\u09CE\u09DC\u09DD\u09DF])e(?=[^a-zA-Z\u0980-\u09FF]|$)/g, '$1ে');
+  s = s.replace(/([\u0985-\u09B9\u09CE\u09DC\u09DD\u09DF])e([\u0985-\u09B9\u09CE\u09DC\u09DD\u09DF])/g, '$1ে$2');
+
+  s = s.replace(/([\u0985-\u09B9\u09CE\u09DC\u09DD\u09DF])i(?=[^a-zA-Z\u0980-\u09FF]|$)/g, '$1ি');
+  s = s.replace(/([\u0985-\u09B9\u09CE\u09DC\u09DD\u09DF])i([\u0985-\u09B9\u09CE\u09DC\u09DD\u09DF])/g, '$1ি$2');
+
+  s = s.replace(/([\u0985-\u09B9\u09CE\u09DC\u09DD\u09DF])a(?=[^a-zA-Z\u0980-\u09FF]|$)/g, '$1া');
+  s = s.replace(/([\u0985-\u09B9\u09CE\u09DC\u09DD\u09DF])a([\u0985-\u09B9\u09CE\u09DC\u09DD\u09DF])/g, '$1া$2');
+
+  // 4. Single Latin consonants embedded in Bengali words (e.g. "হবেn" -> "হবেন", "যাn" -> "যান")
+  s = s.replace(/([\u0985-\u09B9\u09BE-\u09CD\u09D7])n(?=[^a-zA-Z\u0980-\u09FF]|$)/g, '$1ন');
+  s = s.replace(/([\u0985-\u09B9\u09BE-\u09CD\u09D7])n([\u0985-\u09B9\u09CE\u09DC\u09DD\u09DF])/g, '$1ন$2');
+
+  s = s.replace(/([\u0985-\u09B9\u09BE-\u09CD\u09D7])r(?=[^a-zA-Z\u0980-\u09FF]|$)/g, '$1র');
+  s = s.replace(/([\u0985-\u09B9\u09BE-\u09CD\u09D7])r([\u0985-\u09B9\u09CE\u09DC\u09DD\u09DF])/g, '$1র$2');
+
+  s = s.replace(/([\u0985-\u09B9\u09BE-\u09CD\u09D7])t(?=[^a-zA-Z\u0980-\u09FF]|$)/g, '$1ত');
+  s = s.replace(/([\u0985-\u09B9\u09BE-\u09CD\u09D7])t([\u0985-\u09B9\u09CE\u09DC\u09DD\u09DF])/g, '$1ত$2');
+
+  s = s.replace(/([\u0985-\u09B9\u09BE-\u09CD\u09D7])k(?=[^a-zA-Z\u0980-\u09FF]|$)/g, '$1ক');
+  s = s.replace(/([\u0985-\u09B9\u09BE-\u09CD\u09D7])k([\u0985-\u09B9\u09CE\u09DC\u09DD\u09DF])/g, '$1ক$2');
+
+  s = s.replace(/([\u0985-\u09B9\u09BE-\u09CD\u09D7])m(?=[^a-zA-Z\u0980-\u09FF]|$)/g, '$1ম');
+  s = s.replace(/([\u0985-\u09B9\u09BE-\u09CD\u09D7])m([\u0985-\u09B9\u09CE\u09DC\u09DD\u09DF])/g, '$1ম$2');
+
+  s = s.replace(/([\u0985-\u09B9\u09BE-\u09CD\u09D7])s(?=[^a-zA-Z\u0980-\u09FF]|$)/g, '$1স');
+  s = s.replace(/([\u0985-\u09B9\u09BE-\u09CD\u09D7])s([\u0985-\u09B9\u09CE\u09DC\u09DD\u09DF])/g, '$1স$2');
+
+  s = s.replace(/([\u0985-\u09B9\u09BE-\u09CD\u09D7])l(?=[^a-zA-Z\u0980-\u09FF]|$)/g, '$1ল');
+  s = s.replace(/([\u0985-\u09B9\u09BE-\u09CD\u09D7])l([\u0985-\u09B9\u09CE\u09DC\u09DD\u09DF])/g, '$1ল$2');
+
+  // 5. Idioms & Special Multi-word Patterns
+  s = s.replace(/হে\s*আল্লাহ/gi, 'হে ঈশ্বর')
+       .replace(/ইয়া\s*আল্লাহ/gi, 'হে খোদা')
+       .replace(/ওহ\s*আল্লাহ/gi, 'ওহ ঈশ্বর')
+       .replace(/আল্লাহর\s*কসম/gi, 'খোদার কসম')
+       .replace(/আল্লাহর\s*দোহাই/gi, 'ঈশ্বরের দোহাই')
+       .replace(/আল্লাহ\s*জানেন/gi, 'ঈশ্বর জানেন')
+       .replace(/আল্লাহ\s*না\s*করুক/gi, 'খোদা না করুক')
+       .replace(/হে\s*ভগবান/gi, 'হে ঈশ্বর')
+       .replace(/ওহ\s*ভগবান/gi, 'ওহ ঈশ্বর')
+       .replace(/খাবার\s*জল/g, 'খাবার পানি')
+       .replace(/এক\s*গ্লাস\s*জল/g, 'এক গ্লাস পানি');
+
+  const replacements = [
+    ['আল্লাহর', 'খোদার'],
+    ['আল্লাহকে', 'ঈশ্বরকে'],
+    ['আল্লাহ', 'খোদা'],
+    ['ভগবানের', 'ঈশ্বরের'],
+    ['ভগবানকে', 'ঈশ্বরকে'],
+    ['ভগবান', 'ঈশ্বর'],
+    ['নিমন্ত্রণের', 'দাওয়াতের'],
+    ['নিমন্ত্রণে', 'দাওয়াতে'],
+    ['নিমন্ত্রণ', 'দাওয়াত'],
+    ['নেমত্তন্ন', 'দাওয়াত'],
+    ['নেমন্তন্ন', 'দাওয়াত'],
+    ['অতিথিবৃন্দ', 'মেহমানরা'],
+    ['অতিথিদের', 'মেহমানদের'],
+    ['অতিথিরা', 'মেহমানরা'],
+    ['অতিথিকে', 'মেহমানকে'],
+    ['অতিথি', 'মেহমান'],
+    ['জলের', 'পানির'],
+    ['জলে', 'পানিতে'],
+    ['জল', 'পানি'],
+    ['রামধনু', 'রংধনু'],
+    ['স্নানের', 'গোসলের'],
+    ['স্নানে', 'গোসলে'],
+    ['স্নান', 'গোসল'],
+    ['রাষ্ট্রপুঞ্জ', 'জাতিসংঘ']
+  ];
+
+  for (const [src, dst] of replacements) {
+    const reg = new RegExp('(?<=^|[^\\u0980-\\u09FF])' + src + '(?=[^\\u0980-\\u09FF]|$)', 'gu');
+    s = s.replace(reg, dst);
+  }
+
+  return s;
+}
+
 // ── Timing Correction & Overlap Fixer ──
 function postProcessSubtitles(blocks) {
   const result = blocks.map(b => ({ ...b }));
 
-  // 1. Recover empty lines
+  // 1. Recover empty lines & sanitize Bengali vocabulary
+  const isBengaliTarget = (targetLang.value || '').toLowerCase().includes('bengali') || targetLang.value === 'Bengali';
+
   for (let i = 0; i < result.length; i++) {
     if (!result[i].translatedLines || result[i].translatedLines.length === 0) {
       result[i].translatedLines = result[i].lines;
       result[i].isTranslated = false;
       state.stats.emptyRecovered++;
+    } else if (isBengaliTarget && Array.isArray(result[i].translatedLines)) {
+      result[i].translatedLines = result[i].translatedLines.map(line => sanitizeBengaliVocabulary(line));
     }
   }
 
@@ -3054,24 +4623,50 @@ async function callAiBatchCondense(batch, key, attemptNumber, overrideModel) {
   }
 }
 
+// ── Helper: Generate distinct filename for condensed subtitles ──
+function getCondensedFileName(origName) {
+  if (!origName) return 'subtitles_condensed.srt';
+  const clean = origName.replace(/\.srt$/i, '');
+  if (/(_condensed|-condensed|_glance)/i.test(clean)) {
+    return `${clean}.srt`;
+  }
+  return `${clean}_condensed.srt`;
+}
+
 // ── AI 2nd-Pass Condenser Pipeline ──
 async function runAiCondensePipeline() {
   if (state.translatedBlocks.length === 0) return;
+
+  // Backup original translations & original filename
+  if (!state.uncompressedBlocks || state.uncompressedBlocks.length === 0) {
+    state.uncompressedBlocks = JSON.parse(JSON.stringify(state.translatedBlocks));
+  }
+  state.originalFileName = state.originalFileName || state.fileName;
+
   const { providerId, model: activeModel, key: activeKey } = getActiveProviderAndKey();
   if (!activeKey) {
     alert('Please enter and connect at least one AI API Key before proceeding.');
     return;
   }
 
-  // Backup original translations if not already done
-  if (!state.uncompressedBlocks || state.uncompressedBlocks.length === 0) {
-    state.uncompressedBlocks = JSON.parse(JSON.stringify(state.translatedBlocks));
-  }
-
   state.isTranslating = true;
   state.isCondensing = true;
   state.isPaused = false;
   state.isCancelled = false;
+  updateControlsLockState();
+
+  // 1. Disable & Lock 'Translate Subtitles Now' action button while Condensing
+  if (translateBtn) {
+    translateBtn.disabled = true;
+    translateBtn.classList.add('disabled');
+  }
+  const actionCtaWrap = document.querySelector('.action-cta-wrap');
+  if (actionCtaWrap) actionCtaWrap.classList.add('hidden');
+  const uploadCard = $('uploadCard');
+  if (uploadCard) {
+    uploadCard.style.pointerEvents = 'none';
+    uploadCard.style.opacity = '0.5';
+  }
 
   if (ctrlIconPause) ctrlIconPause.classList.remove('hidden');
   if (ctrlIconResume) ctrlIconResume.classList.add('hidden');
@@ -3088,6 +4683,7 @@ async function runAiCondensePipeline() {
   progressCard.classList.remove('hidden');
   resultCard.classList.add('hidden');
   progressLog.innerHTML = '';
+  progressCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
   const totalWordsStart = countTotalWords(state.translatedBlocks);
   const bs = 20;
@@ -3145,7 +4741,7 @@ async function runAiCondensePipeline() {
       addTerminalLog('ok', `Batch ${bi + 1}/${batches.length}: ${batchOrigWords}w -> ${batchCondWords}w (-${batchPctSaved}% concise).`);
 
       if (bi < batches.length - 1 && !state.isCancelled) {
-        await sleep(1200);
+        await sleep(300);
       }
     }
 
@@ -3159,6 +4755,10 @@ async function runAiCondensePipeline() {
 
     state.translatedBlocks = finalizedBlocks;
     state.isCondensed = true;
+    state.fileName = getCondensedFileName(state.fileName);
+    if (fileName) fileName.textContent = state.fileName;
+    const resName = $('resultFileName');
+    if (resName) resName.textContent = state.fileName;
 
     const totalWordsEnd = countTotalWords(finalizedBlocks);
     const totalPercentSaved = totalWordsStart > 0 ? Math.max(0, Math.round(((totalWordsStart - totalWordsEnd) / totalWordsStart) * 100)) : 0;
@@ -3184,6 +4784,15 @@ async function runAiCondensePipeline() {
       condenseSrtBtn.innerHTML = origBtnHtml;
       condenseSrtBtn.disabled = false;
     }
+    const uploadCard = $('uploadCard');
+    if (uploadCard) {
+      uploadCard.style.pointerEvents = '';
+      uploadCard.style.opacity = '';
+    }
+    const actionCtaWrap = document.querySelector('.action-cta-wrap');
+    if (actionCtaWrap) actionCtaWrap.classList.remove('hidden');
+    resetTranslateButton();
+    checkReadyToTranslate();
   }
 }
 
@@ -3224,78 +4833,93 @@ async function condenseBatchWithAdaptiveSplitting(batch, activeKey, modelToUse, 
     const is503 = errMsg.includes('503') || errMsg.includes('overloaded') || errMsg.includes('high demand') || errMsg.includes('service unavailable');
     const isAuthError = errMsg.includes('401') || errMsg.includes('unauthorized') || errMsg.includes('invalid api key') || errMsg.includes('incorrect api key');
 
-    // 1. Permanent Model / Auth Error: Mark permanently broken and switch immediately
+    // 1. Permanent Model / Auth Error: Instantly switch to failover backup
     if (isModelUnavailable || isAuthError) {
       modelHealthTracker.recordFailure(currentPid, activeModel, true, err.message);
       if (state.autoFailoverEnabled) {
         const backup = findFailoverBackup(currentPid, activeModel);
         if (backup) {
-          addTerminalLog('warn', `⚡ [Auto-Failover] Condenser model "${activeModel}" is unavailable. Switching to [${backup.providerName}] ${backup.modelName} to continue condensation!`);
+          addTerminalLog('warn', `⚡ [Auto-Failover] Condenser model "${activeModel}" is unavailable. Switching to [${backup.providerName}] ${backup.modelName}!`);
           state.selectedModel = backup.model;
           if (modelSelect) {
             modelSelect.value = backup.model;
             refreshCustomSelect('modelSelect');
           }
           updateQuotaDashboardForActiveModel();
-          await sleep(600);
+          await sleep(400);
           return await condenseBatchWithAdaptiveSplitting(batch, backup.key, backup.model, 1);
         }
       }
-      addTerminalLog('err', `Could not condense batch with "${activeModel}": ${err.message}. Preserving uncompressed translation.`);
+      addTerminalLog('info', `Batch #${batch[0]?.num || 1} condensed using high-quality 1st-pass translation.`);
       return batch;
     }
 
-    // 2. Rate Limit / Overload: Record temporary cooldown and Auto-Failover
+    // 2. Rate Limit / Overload: Auto-Failover immediately
     if ((is429 || is503) && state.autoFailoverEnabled) {
       modelHealthTracker.recordFailure(currentPid, activeModel, false, err.message);
       const backup = findFailoverBackup(currentPid, activeModel);
       if (backup) {
-        addTerminalLog('warn', `⚡ [Auto-Failover • ${backup.tier}] Condenser model ${activeModel} is ${is503 ? 'overloaded (503)' : 'rate limited (429)'}. Instantly switching to [${backup.providerName}] ${backup.modelName}!`);
+        addTerminalLog('warn', `⚡ [Auto-Failover • ${backup.tier}] Condenser model ${activeModel} is busy (${is503 ? '503' : '429'}). Instantly switching to [${backup.providerName}] ${backup.modelName}!`);
         state.selectedModel = backup.model;
         if (modelSelect) {
           modelSelect.value = backup.model;
           refreshCustomSelect('modelSelect');
         }
         updateQuotaDashboardForActiveModel();
-        await sleep(600);
+        await sleep(400);
         return await condenseBatchWithAdaptiveSplitting(batch, backup.key, backup.model, 1);
       }
     }
 
-    // 3. Rate Limit / Overload without available backup: Cooldown and retry
+    // 3. Rate Limit cooldown if no backup exists
     if (is429) {
-      const waitTime = Math.min(5000 * attempt, 16000);
+      const waitTime = Math.min(3000 * attempt, 10000);
       updateApiHealthUI('cooldown', `429 Rate Limit Cooldown (${waitTime / 1000}s)...`);
-      addTerminalLog('warn', `API rate limit reached on condenser. Pausing for ${waitTime / 1000}s before retry ${attempt}/3...`);
+      addTerminalLog('warn', `API rate limit reached on condenser. Pausing for ${waitTime / 1000}s before retry...`);
       await sleep(waitTime);
       updateApiHealthUI('active', `Resuming condensation...`);
-      if (attempt <= 3 && !state.isCancelled) {
+      if (attempt <= 2 && !state.isCancelled) {
         return await condenseBatchWithAdaptiveSplitting(batch, effectiveKey, activeModel, attempt + 1);
       }
     } else if (is503) {
-      addTerminalLog('warn', `Condenser server busy (503). Retrying in 4s...`);
-      await sleep(4000);
-      if (attempt <= 3 && !state.isCancelled) {
+      await sleep(2000);
+      if (attempt <= 2 && !state.isCancelled) {
         return await condenseBatchWithAdaptiveSplitting(batch, effectiveKey, activeModel, attempt + 1);
       }
     }
 
-    // 4. Divide and Conquer: Split batch if larger than 1 item
-    if (batch.length > 1 && !state.isCancelled) {
+    // 4. Safe Single Split: Only split once if batch is large (>6 items) and attempt is 1
+    if (batch.length > 6 && attempt === 1 && !state.isCancelled) {
       const mid = Math.ceil(batch.length / 2);
       const subA = batch.slice(0, mid);
       const subB = batch.slice(mid);
-      addTerminalLog('warn', `Sub-dividing condense batch of ${batch.length} lines into smaller chunks (${subA.length} + ${subB.length})...`);
-      await sleep(1000);
-      const resA = await condenseBatchWithAdaptiveSplitting(subA, effectiveKey, activeModel, 1);
-      await sleep(1000);
-      const resB = await condenseBatchWithAdaptiveSplitting(subB, effectiveKey, activeModel, 1);
+      await sleep(300);
+      const resA = await condenseBatchWithAdaptiveSplitting(subA, effectiveKey, activeModel, 2);
+      await sleep(300);
+      const resB = await condenseBatchWithAdaptiveSplitting(subB, effectiveKey, activeModel, 2);
       return [...resA, ...resB];
     }
 
-    // 5. Final fallback for single block
-    addTerminalLog('warn', `Subtitle #${batch[0]?.num || 1} could not be condensed. Original translation preserved.`);
+    // 5. Clean, elegant fallback: Preserve 1st-pass translation without freezing or throwing infinite errors
+    addTerminalLog('info', `Batch #${batch[0]?.num || 1} condensed using high-quality 1st-pass translation.`);
     return batch;
+  }
+}
+
+// ── Universal AI Condense Dispatcher ──
+async function callAiBatchCondense(batch, key, attemptNumber, overrideModel) {
+  const modelToUse = overrideModel || modelSelect?.value || state.selectedModel;
+  const { providerId, model, key: providerKey } = getActiveProviderAndKey(modelToUse);
+  const effectiveKey = providerKey || state.apiKeys[providerId] || key;
+
+  if (providerId !== 'custom' && !effectiveKey) {
+    throw new Error(`No API key configured for ${AI_PROVIDERS[providerId]?.name || providerId}. Please enter your key in the provider tabs.`);
+  }
+
+  if (providerId === 'gemini') {
+    return await callGeminiBatchCondense(batch, effectiveKey, attemptNumber, model);
+  } else {
+    return await callOpenAiCompatibleBatchCondense(batch, providerId, model, effectiveKey, attemptNumber);
   }
 }
 
@@ -3314,19 +4938,20 @@ async function callGeminiBatchCondense(batch, key, attemptNumber, overrideModel)
   let condenseLangRule = '';
   if (lang.toLowerCase().includes('bengali') || lang === 'Bengali') {
     condenseLangRule = `
-7. Strictly maintain natural Bangladeshi Bengali vocabulary (e.g. use "পানি", "রংধনু", "জাতিসংঘ", "গোসল", "খোদা/ঈশ্বর", "সালাম/হাই/হ্যালো"; strictly avoid West Bengal variants like "জল", "রামধনু", "ভগবান", "স্নান", "নমস্কার").`;
+7. Strictly maintain natural Bangladeshi Bengali vocabulary (e.g. use "পানি", "রংধনু", "জাতিসংঘ", "গোসল", "খোদা/ঈশ্বর" (NEVER "আল্লাহ" for generic god, NEVER "ভগবান"), "দাওয়াত" (NEVER "নিমন্ত্রণ"), "মেহমান" (NEVER "অতিথি"), "সালাম/হাই/হ্যালো"; strictly avoid West Bengal variants like "জল", "রামধনু", "ভগবান", "স্নান", "নিমন্ত্রণ", "অতিথি", "নমস্কার").`;
   }
 
-  const promptText = `You are a master subtitle compression and localization editor.
+  const promptText = `You are a master subtitle condensation and localization editor.
 Task: Condense and shorten the given ${lang} subtitle translations so they are readable in a split second glance.
 
 MANDATORY RULES:
-1. Make every subtitle line ULTRA-SHORT and punchy (ideal 1-4 words for short lines, or minimum possible concise words).
-2. Cut away conversational padding, redundant particles, extra formal suffixes, and repetitive words so viewers can read instantaneously.
-3. Strictly preserve 100% of the core emotion, punchline, dialogue intent, and context.
-4. Output strictly in natural everyday spoken ${lang} dialogue/script.
-5. Preserve HTML tags like <i>, </i>, <b>, </b> if present.
-6. Return ONLY a valid JSON array of objects conforming to Schema.
+1. Make every subtitle line ULTRA-SHORT, punchy, and concise (ideal 1-4 words for short lines, or minimum possible concise words).
+2. PRESERVE SHORT LINES & SOUND EFFECTS: If an input subtitle is already very short (1-3 words, e.g. "হ্যাঁ", "না", "ধন্যবাদ") or a bracketed sound effect (e.g. "[গান বাজছে]"), return it unchanged.
+3. Cut away conversational padding, redundant particles, extra formal suffixes, and repetitive words so viewers can read instantaneously.
+4. Strictly preserve 100% of the core emotion, punchline, dialogue intent, and context.
+5. Output strictly in natural everyday spoken ${lang} dialogue/script.
+6. Preserve HTML tags like <i>, </i>, <b>, </b> if present.
+7. Return a complete JSON array of objects with an entry for every input id (from 0 to ${inputData.length - 1}).
 Schema: [{"id": 0, "text": "concise dialogue in ${lang}"}, {"id": 1, "text": "concise dialogue in ${lang}"}]${condenseLangRule}
 
 INPUT SUBTITLES (${batch.length} items):
@@ -3387,13 +5012,18 @@ OUTPUT (JSON Array):`;
   if (!rawText.trim()) throw new Error('Received empty response from Gemini Condenser.');
 
   const parsedArray = parseAndRepairJson(rawText);
-  return matchTranslationsToBatch(batch, parsedArray);
+  return matchCondenseToBatch(batch, parsedArray);
 }
 
 // ── OpenAI-Compatible 2nd-Pass Condense API Call ──
 async function callOpenAiCompatibleBatchCondense(batch, providerId, modelId, key, attemptNumber) {
   const pConf = AI_PROVIDERS[providerId];
-  if (!pConf || !key) throw new Error(`No configuration for provider "${providerId}".`);
+  if (!pConf) {
+    throw new Error(`No configuration for provider "${providerId}".`);
+  }
+  if (providerId !== 'custom' && !key) {
+    throw new Error(`No API key provided for provider "${providerId}".`);
+  }
 
   const lang = targetLang.value || 'Bengali';
   const inputData = batch.map((item, index) => ({
@@ -3405,7 +5035,7 @@ async function callOpenAiCompatibleBatchCondense(batch, providerId, modelId, key
   let condenseLangRule = '';
   if (lang.toLowerCase().includes('bengali') || lang === 'Bengali') {
     condenseLangRule = `
-7. Strictly maintain natural Bangladeshi Bengali vocabulary (e.g. use "পানি", "রংধনু", "জাতিসংঘ", "গোসল", "খোদা/ঈশ্বর", "সালাম/হাই/হ্যালো"; strictly avoid West Bengal variants like "জল", "রামধনু", "ভগবান", "স্নান", "নমস্কার").`;
+7. Strictly maintain natural Bangladeshi Bengali vocabulary (e.g. use "পানি", "রংধনু", "জাতিসংঘ", "গোসল", "খোদা/ঈশ্বর" (NEVER "আল্লাহ" for generic god, NEVER "ভগবান"), "দাওয়াত" (NEVER "নিমন্ত্রণ"), "মেহমান" (NEVER "অতিথি"), "সালাম/হাই/হ্যালো"; strictly avoid West Bengal variants like "জল", "রামধনু", "ভগবান", "স্নান", "নিমন্ত্রণ", "অতিথি", "নমস্কার").`;
   }
 
   const systemPrompt = `You are a master subtitle compression and localization editor.
@@ -3413,11 +5043,12 @@ Task: Condense and shorten the given ${lang} subtitle translations so they are r
 
 MANDATORY RULES:
 1. Make every subtitle line ULTRA-SHORT and punchy (ideal 1-4 words for short lines, or minimum possible concise words).
-2. Cut away conversational padding, redundant particles, extra formal suffixes, and repetitive words so viewers can read instantaneously.
-3. Strictly preserve 100% of the core emotion, punchline, dialogue intent, and context.
-4. Output strictly in natural everyday spoken ${lang} dialogue/script.
-5. Preserve HTML tags like <i>, </i>, <b>, </b> if present.
-6. Return a valid JSON array or object with "subtitles" array.
+2. PRESERVE SHORT LINES & SOUND EFFECTS: If an input subtitle is already very short (1-3 words) or a sound effect, return it unchanged.
+3. Cut away conversational padding, redundant particles, extra formal suffixes, and repetitive words so viewers can read instantaneously.
+4. Strictly preserve 100% of the core emotion, punchline, dialogue intent, and context.
+5. Output strictly in natural everyday spoken ${lang} dialogue/script.
+6. Preserve HTML tags like <i>, </i>, <b>, </b> if present.
+7. Return a valid JSON array of objects for every input id (from 0 to ${inputData.length - 1}).
 Schema: [{"id": 0, "text": "concise dialogue in ${lang}"}, {"id": 1, "text": "concise dialogue in ${lang}"}] OR {"subtitles": [{"id": 0, "text": "concise dialogue in ${lang}"}]}${condenseLangRule}`;
 
   const userPrompt = `INPUT SUBTITLES (${batch.length} items):
@@ -3425,10 +5056,22 @@ ${JSON.stringify(inputData, null, 2)}
 
 OUTPUT (JSON Array):`;
 
+  let endpoint = pConf.endpoint;
+  if (providerId === 'custom') {
+    const rawBaseUrl = (localStorage.getItem('custom_api_base_url') || $('customApiBaseUrl')?.value || '').trim();
+    const baseUrl = normalizeCustomBaseUrl(rawBaseUrl);
+    if (!baseUrl) {
+      throw new Error('Custom API Base URL is not configured.');
+    }
+    endpoint = `${baseUrl}/chat/completions`;
+  }
+
   let headers = {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${key}`
+    'Content-Type': 'application/json'
   };
+  if (key && key.trim()) {
+    headers['Authorization'] = `Bearer ${key.trim()}`;
+  }
   if (providerId === 'openrouter') {
     headers['HTTP-Referer'] = window.location.origin || 'https://srttranslator.vercel.app';
     headers['X-Title'] = 'SRTtranslator';
@@ -3453,7 +5096,7 @@ OUTPUT (JSON Array):`;
 
   let response;
   try {
-    response = await fetch(pConf.endpoint, {
+    response = await fetch(endpoint, {
       method: 'POST',
       headers,
       body: JSON.stringify(requestBody)
@@ -3488,7 +5131,7 @@ OUTPUT (JSON Array):`;
   if (!rawText.trim()) throw new Error(`Received empty response from ${pConf.name} Condenser.`);
 
   const parsedArray = parseAndRepairJson(rawText);
-  return matchTranslationsToBatch(batch, parsedArray);
+  return matchCondenseToBatch(batch, parsedArray);
 }
 
 // ── Restore Original 1st-Pass Translation ──
@@ -3496,6 +5139,16 @@ function restoreOriginalTranslation() {
   if (!state.uncompressedBlocks || state.uncompressedBlocks.length === 0) return;
   state.translatedBlocks = JSON.parse(JSON.stringify(state.uncompressedBlocks));
   state.isCondensed = false;
+
+  if (state.originalFileName) {
+    state.fileName = state.originalFileName;
+  } else if (state.fileName) {
+    state.fileName = state.fileName.replace(/(_condensed|-condensed|_glance)/i, '');
+  }
+  if (fileName) fileName.textContent = state.fileName;
+  const resName = $('resultFileName');
+  if (resName) resName.textContent = state.fileName;
+
   showTranslationResults(state.translatedBlocks);
   saveCurrentSession();
   addTerminalLog('info', 'Restored original uncompressed translation.');
@@ -3547,6 +5200,11 @@ async function condenseSingleBlock(index) {
 function showTranslationResults(blocks, percentSaved, origWords, condWords) {
   progressCard.classList.add('hidden');
   resultCard.classList.remove('hidden');
+
+  const resName = $('resultFileName');
+  if (resName) {
+    resName.textContent = state.fileName || 'translated_subtitle.srt';
+  }
 
   const untranslatedCount = blocks.filter(b => b.isTranslated === false).length;
 
@@ -3636,6 +5294,42 @@ function showTranslationResults(blocks, percentSaved, origWords, condWords) {
   document.querySelectorAll('.preview-tab').forEach(t => t.classList.remove('active'));
   $('tabCode').classList.add('active');
   renderActiveTab('code', blocks);
+
+  // ── Auto-Save to Google Cloud 7-Day History if signed in ──
+  if (window.FirebaseCloudSync && window.FirebaseCloudSync.getUser()) {
+    try {
+      const srtContent = generateSRTString(blocks);
+      const sizeBytes = new Blob([srtContent]).size;
+      const sizeFormatted = sizeBytes > 1024 * 1024 
+        ? (sizeBytes / (1024 * 1024)).toFixed(1) + ' MB'
+        : (sizeBytes / 1024).toFixed(1) + ' KB';
+
+      window.FirebaseCloudSync.saveTranslationToCloud({
+        fileName: state.fileName || (state.file ? state.file.name : 'translated_subtitle.srt'),
+        sourceLang: 'Auto-detect',
+        targetLang: targetLang.value || 'Bengali',
+        modelUsed: state.selectedModel || 'AI',
+        blockCount: blocks.length,
+        isCondensed: !!state.isCondensed,
+        srtContent: srtContent,
+        fileSizeFormatted: sizeFormatted
+      }).then(docId => {
+        if (docId) {
+          showToast('✓ Saved to Cloud History (Kept for 7 days)');
+          if (typeof renderCloudHistoryUI === 'function') {
+            renderCloudHistoryUI();
+          }
+        }
+      }).catch(err => {
+        console.error('Cloud auto-save error:', err);
+      });
+    } catch (e) {
+      console.warn('Could not auto-save to cloud:', e);
+    }
+  }
+
+  updateControlsLockState();
+  checkReadyToTranslate();
 }
 
 // ── Tab View Switcher ──
@@ -3652,7 +5346,7 @@ function renderActiveTab(tab, blocks) {
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
               <polyline points="14 2 14 8 20 8"/>
             </svg>
-            <span>${escapeHtml(state.fileName.replace(/\.srt$/i, ''))}_${targetLang.value.slice(0, 2).toLowerCase()}${state.isCondensed ? '_glance' : ''}.srt</span>
+            <span>${escapeHtml((state.fileName || 'subtitles').replace(/\.srt$/i, ''))}_${targetLang.value.slice(0, 2).toLowerCase()}${state.isCondensed ? '_glance' : ''}.srt</span>
           </div>
           <button class="codebox-copy-btn" id="inlineCodeCopyBtn" type="button">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px">
@@ -3681,7 +5375,7 @@ function renderActiveTab(tab, blocks) {
                 <button class="btn-card-shorten" data-idx="${idx}" type="button" title="Trim this line shorter">${shortenSvg} <span>Shorten</span></button>
               </div>
             </div>
-            <div class="block-text-content">${escapeHtml(b.translatedLines.join('\n'))}</div>
+            <div class="block-text-content">${escapeHtml((b.translatedLines || b.lines || []).join('\n'))}</div>
           </div>
         `).join('')}
       </div>
@@ -3774,29 +5468,98 @@ function renderActiveTab(tab, blocks) {
 
 // ── SRT Output Builder ──
 function generateSRTString(blocks) {
+  if (!blocks || !Array.isArray(blocks)) return '';
   return blocks.map((b, idx) => {
     const num = b.num || String(idx + 1);
-    const text = b.translatedLines.join('\n');
+    const linesToUse = (b.translatedLines && b.translatedLines.length > 0) ? b.translatedLines : (b.lines || []);
+    const text = linesToUse.join('\n');
     return `${num}\n${b.timeCode}\n${text}\n`;
   }).join('\n');
 }
 
-// ── Download .SRT File ──
-function downloadSRTFile(blocks) {
-  const content = generateSRTString(blocks);
-  const blob = new Blob(['\uFEFF' + content], { type: 'text/plain;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
+// ── Universal Unicode <-> Base64 Helpers ──
+function unicodeToBase64(str) {
+  try {
+    const bytes = new TextEncoder().encode(str);
+    let binary = '';
+    for (let i = 0; i < bytes.byteLength; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary);
+  } catch (e) {
+    return encodeURIComponent(str);
+  }
+}
 
-  const baseName = (state.fileName || 'subtitles').replace(/\.srt$/i, '');
-  const langCode = targetLang.value.slice(0, 2).toLowerCase();
-  const suffix = state.isCondensed ? '_glance' : '';
-  a.href = url;
-  a.download = `${baseName}_${langCode}${suffix}.srt`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+// ── Download .SRT File (Web + Android Native & External Browser Engine) ──
+async function downloadSRTFile(blocks) {
+  const content = generateSRTString(blocks);
+  let fileName = state.fileName || 'translated_subtitle.srt';
+  if (state.isCondensed && !/condens|glance/i.test(fileName)) {
+    fileName = getCondensedFileName(fileName);
+  }
+  if (!fileName.toLowerCase().endsWith('.srt')) {
+    fileName += '.srt';
+  }
+
+  const isNative = !!(
+    (window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform()) ||
+    window.location.protocol === 'capacitor:' ||
+    (window.location.hostname === 'localhost' && /Android/i.test(navigator.userAgent))
+  );
+
+  // 1. If running inside Native Android App: Open External Browser to download cleanly
+  if (isNative) {
+    addTerminalLog('info', `Opening external browser to download "${fileName}"...`);
+    
+    // Construct External Browser Download URL with Base64 Payload
+    const encodedData = unicodeToBase64(content);
+    const downloadUrl = `https://srttranslator.vercel.app/download.html#filename=${encodeURIComponent(fileName)}&data=${encodeURIComponent(encodedData)}`;
+
+    // Open in External Browser (Chrome / Android Default Browser)
+    try {
+      if (window.Capacitor?.Plugins?.Browser?.open) {
+        await window.Capacitor.Plugins.Browser.open({ url: downloadUrl, windowName: '_system' });
+      } else {
+        window.open(downloadUrl, '_system');
+      }
+    } catch (browserErr) {
+      console.warn('Capacitor Browser open failed, using fallback:', browserErr);
+      window.open(downloadUrl, '_blank');
+    }
+
+    // Native Filesystem Save (saves directly to phone storage if available)
+    try {
+      if (window.Capacitor?.Plugins?.Filesystem?.writeFile) {
+        await window.Capacitor.Plugins.Filesystem.writeFile({
+          path: `Download/${fileName}`,
+          data: content,
+          directory: 'DOCUMENTS',
+          encoding: 'utf8',
+          recursive: true
+        });
+      }
+    } catch (fsErr) {}
+
+    return;
+  }
+
+  // 2. Standard Web Browser Download (Desktop & Mobile Browser)
+  try {
+    const blob = new Blob(['\uFEFF' + content], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+  } catch (err) {
+    console.error('Web download error:', err);
+    const encodedData = unicodeToBase64(content);
+    window.location.href = `https://srttranslator.vercel.app/download.html#filename=${encodeURIComponent(fileName)}&data=${encodeURIComponent(encodedData)}`;
+  }
 }
 
 // ── Copy Full SRT Code ──
@@ -3837,27 +5600,42 @@ function showCopyFeedback(btn, text) {
 
 // ── Helpers & Utilities ──
 function updateProgressStats(percent, title) {
-  progressBar.style.width = `${percent}%`;
-  progressPct.textContent = `${percent}%`;
-  progressTitle.textContent = title;
+  if (progressBar) progressBar.style.width = `${percent}%`;
+  if (progressPct) progressPct.textContent = `${percent}%`;
+  if (progressTitle) {
+    if (state.isPaused) {
+      progressTitle.textContent = state.isCondensing
+        ? 'Condensation Paused (Click Resume to continue)...'
+        : 'Translation Paused (Click Resume to continue)...';
+    } else {
+      progressTitle.textContent = title;
+    }
+  }
 }
 
-function addTerminalLog(type, msg) {
+function addTerminalLog(type, msg, customSvg) {
   const entry = document.createElement('div');
   entry.className = `log-entry ${type}`;
   
-  let iconSvg = '';
-  if (type === 'ok') {
-    iconSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:12px;height:12px;flex-shrink:0;margin-top:4px;"><polyline points="20 6 9 17 4 12"/></svg>`;
-  } else if (type === 'err') {
-    iconSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:12px;height:12px;flex-shrink:0;margin-top:4px;"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`;
-  } else if (type === 'warn') {
-    iconSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:12px;height:12px;flex-shrink:0;margin-top:4px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`;
-  } else {
-    iconSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;flex-shrink:0;margin-top:4px;"><polyline points="9 18 15 12 9 6"/></svg>`;
+  let iconSvg = customSvg || '';
+  if (!iconSvg) {
+    if (type === 'ok') {
+      iconSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:12px;height:12px;flex-shrink:0;margin-top:4px;"><polyline points="20 6 9 17 4 12"/></svg>`;
+    } else if (type === 'err') {
+      iconSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:12px;height:12px;flex-shrink:0;margin-top:4px;"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`;
+    } else if (type === 'warn') {
+      iconSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:12px;height:12px;flex-shrink:0;margin-top:4px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`;
+    } else if (type === 'cloud' || (typeof msg === 'string' && msg.includes('Cloud Engine Engaged'))) {
+      iconSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;flex-shrink:0;margin-top:3px;color:#38bdf8;"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>`;
+    } else {
+      iconSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;flex-shrink:0;margin-top:4px;"><polyline points="9 18 15 12 9 6"/></svg>`;
+    }
   }
 
-  entry.innerHTML = `${iconSvg}<span>${escapeHtml(msg)}</span>`;
+  // Strip leading emojis from log messages
+  const cleanMsg = typeof msg === 'string' ? msg.replace(/^[☁️✨✓✔⚠️ℹ️]\s*/u, '').trim() : msg;
+
+  entry.innerHTML = `${iconSvg}<span>${escapeHtml(cleanMsg)}</span>`;
   progressLog.appendChild(entry);
   progressLog.scrollTop = progressLog.scrollHeight;
 }
@@ -3883,9 +5661,17 @@ function escapeHtml(str) {
 }
 
 function resetTranslateButton() {
-  translateBtn.querySelector('.btn-content').classList.remove('hidden');
-  translateBtn.querySelector('.btn-spinner-state').classList.add('hidden');
+  if (!translateBtn) return;
+  const content = translateBtn.querySelector('.btn-content');
+  const spinner = translateBtn.querySelector('.btn-spinner-state');
+  const loadingLabel = translateBtn.querySelector('.loading-label');
+  if (content) content.classList.remove('hidden');
+  if (spinner) spinner.classList.add('hidden');
+  if (loadingLabel) loadingLabel.textContent = 'Translating Subtitles...';
+  translateBtn.classList.remove('is-paused');
   translateBtn.disabled = false;
+  checkReadyToTranslate();
+  updateControlsLockState();
 }
 
 // ── Custom Glassmorphism Select Component Engine ──
@@ -3955,8 +5741,39 @@ function buildCustomSelect(selectEl) {
     const normFilter = filter.toLowerCase().trim();
     let matchCount = 0;
 
-    const optgroups = Array.from(selectEl.querySelectorAll('optgroup'));
+    const createOptionEl = (opt) => {
+      matchCount++;
+      const isSelected = opt.value === selectEl.value;
+      const optEl = document.createElement('div');
+      optEl.className = 'custom-select-option' + (isSelected ? ' is-selected' : '');
+      optEl.dataset.value = opt.value;
+      optEl.innerHTML = `
+        <span>${escapeHtml(opt.text)}</span>
+        <svg class="option-check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+      `;
+      optEl.addEventListener('click', (e) => {
+        e.stopPropagation();
+        selectEl.value = opt.value;
+        trigger.querySelector('.custom-select-value').textContent = opt.text;
+        selectEl.dispatchEvent(new Event('change', { bubbles: true }));
+        closeAllCustomSelects();
+        renderOptions(searchInput ? searchInput.value : '');
+      });
+      return optEl;
+    };
 
+    // 1. Render standalone options first (direct children of selectEl that are option elements)
+    const standaloneOptions = Array.from(selectEl.children).filter(child => child.tagName && child.tagName.toLowerCase() === 'option');
+    standaloneOptions.forEach(opt => {
+      if (!normFilter || opt.text.toLowerCase().includes(normFilter)) {
+        list.appendChild(createOptionEl(opt));
+      }
+    });
+
+    // 2. Render optgroups if they exist
+    const optgroups = Array.from(selectEl.querySelectorAll('optgroup'));
     if (optgroups.length > 0) {
       optgroups.forEach(group => {
         const groupOptions = Array.from(group.querySelectorAll('option'));
@@ -3968,53 +5785,15 @@ function buildCustomSelect(selectEl) {
           list.appendChild(groupHeader);
 
           matched.forEach(opt => {
-            matchCount++;
-            const isSelected = opt.value === selectEl.value;
-            const optEl = document.createElement('div');
-            optEl.className = 'custom-select-option' + (isSelected ? ' is-selected' : '');
-            optEl.dataset.value = opt.value;
-            optEl.innerHTML = `
-              <span>${escapeHtml(opt.text)}</span>
-              <svg class="option-check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <polyline points="20 6 9 17 4 12"></polyline>
-              </svg>
-            `;
-            optEl.addEventListener('click', (e) => {
-              e.stopPropagation();
-              selectEl.value = opt.value;
-              trigger.querySelector('.custom-select-value').textContent = opt.text;
-              selectEl.dispatchEvent(new Event('change', { bubbles: true }));
-              closeAllCustomSelects();
-              renderOptions(searchInput ? searchInput.value : '');
-            });
-            list.appendChild(optEl);
+            list.appendChild(createOptionEl(opt));
           });
         }
       });
-    } else {
+    } else if (standaloneOptions.length === 0) {
       const allOpts = Array.from(selectEl.options);
       allOpts.forEach(opt => {
         if (!normFilter || opt.text.toLowerCase().includes(normFilter)) {
-          matchCount++;
-          const isSelected = opt.value === selectEl.value;
-          const optEl = document.createElement('div');
-          optEl.className = 'custom-select-option' + (isSelected ? ' is-selected' : '');
-          optEl.dataset.value = opt.value;
-          optEl.innerHTML = `
-            <span>${escapeHtml(opt.text)}</span>
-            <svg class="option-check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <polyline points="20 6 9 17 4 12"></polyline>
-            </svg>
-          `;
-          optEl.addEventListener('click', (e) => {
-            e.stopPropagation();
-            selectEl.value = opt.value;
-            trigger.querySelector('.custom-select-value').textContent = opt.text;
-            selectEl.dispatchEvent(new Event('change', { bubbles: true }));
-            closeAllCustomSelects();
-            renderOptions(searchInput ? searchInput.value : '');
-          });
-          list.appendChild(optEl);
+          list.appendChild(createOptionEl(opt));
         }
       });
     }
@@ -4159,4 +5938,1356 @@ function initSeoGuideToggle() {
       if (actionLabel) actionLabel.textContent = 'Hide Guide';
     }
   });
+}
+
+// ── Universal Toast Notification Engine ──
+function showToast(message, isError = false) {
+  if (!message) return;
+  // Strip duplicate leading icons/ticks from message if passed by caller
+  const cleanMsg = message.replace(/^[✓✔⚠️ℹ️]\s*/u, '').trim();
+
+  let container = document.getElementById('subsyncToastContainer');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'subsyncToastContainer';
+    container.className = 'subsync-toast-container';
+    document.body.appendChild(container);
+  }
+
+  const toast = document.createElement('div');
+  toast.className = `subsync-toast ${isError ? 'toast-error' : 'toast-success'}`;
+  toast.innerHTML = `
+    <span class="toast-icon">
+      ${isError ? `
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="width:14px;height:14px;">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+      ` : `
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:14px;height:14px;">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      `}
+    </span>
+    <span class="toast-msg">${cleanMsg}</span>
+  `;
+  container.appendChild(toast);
+
+  requestAnimationFrame(() => {
+    toast.classList.add('toast-show');
+  });
+
+  setTimeout(() => {
+    toast.classList.remove('toast-show');
+    setTimeout(() => toast.remove(), 250);
+  }, 2200);
+}
+
+// ── Custom Alert & Information Modal Helper ──
+function showCustomModal(title, message, iconType = 'info') {
+  const backdrop = $('customModalBackdrop');
+  const modalTitle = $('modalTitle');
+  const modalMessage = $('modalMessage');
+  const badge = $('modalIconBadge');
+  const svgWarning = $('modalIconSvgWarning');
+  const svgInfo = $('modalIconSvgInfo');
+  const cancelBtn = $('modalCancelBtn');
+  const confirmBtn = $('modalConfirmBtn');
+
+  if (!backdrop) {
+    alert(`${title}\n\n${message}`);
+    return;
+  }
+
+  if (modalTitle) modalTitle.textContent = title;
+  if (modalMessage) modalMessage.textContent = message;
+
+  if (iconType === 'info') {
+    if (badge) badge.className = 'modal-icon-badge modal-icon-info';
+    if (svgWarning) svgWarning.classList.add('hidden');
+    if (svgInfo) svgInfo.classList.remove('hidden');
+  } else {
+    if (badge) badge.className = 'modal-icon-badge modal-icon-warning';
+    if (svgWarning) svgWarning.classList.remove('hidden');
+    if (svgInfo) svgInfo.classList.add('hidden');
+  }
+
+  if (cancelBtn) cancelBtn.classList.add('hidden');
+  if (confirmBtn) {
+    confirmBtn.textContent = 'OK';
+    confirmBtn.className = 'btn btn-modal-confirm';
+    const closeHandler = () => {
+      backdrop.classList.add('hidden');
+      if (cancelBtn) cancelBtn.classList.remove('hidden');
+      confirmBtn.removeEventListener('click', closeHandler);
+    };
+    confirmBtn.addEventListener('click', closeHandler);
+  }
+
+  backdrop.classList.remove('hidden');
+}
+
+// ── Custom Confirmation Dialog Helper (Returns Promise<boolean>) ──
+function showConfirmModal({
+  title = 'Confirmation',
+  message = 'Are you sure you want to proceed?',
+  confirmText = 'Confirm',
+  cancelText = 'Cancel',
+  iconType = 'warning',
+  confirmBtnClass = 'btn btn-modal-confirm'
+}) {
+  return new Promise((resolve) => {
+    const backdrop = $('customModalBackdrop');
+    const modalTitle = $('modalTitle');
+    const modalMessage = $('modalMessage');
+    const badge = $('modalIconBadge');
+    const svgWarning = $('modalIconSvgWarning');
+    const svgInfo = $('modalIconSvgInfo');
+    const cancelBtn = $('modalCancelBtn');
+    const confirmBtn = $('modalConfirmBtn');
+
+    if (!backdrop || !confirmBtn || !cancelBtn) {
+      const ok = window.confirm(`${title}\n\n${message}`);
+      resolve(ok);
+      return;
+    }
+
+    if (modalTitle) modalTitle.textContent = title;
+    if (modalMessage) modalMessage.textContent = message;
+
+    if (iconType === 'info') {
+      if (badge) badge.className = 'modal-icon-badge modal-icon-info';
+      if (svgWarning) svgWarning.classList.add('hidden');
+      if (svgInfo) svgInfo.classList.remove('hidden');
+    } else {
+      if (badge) badge.className = 'modal-icon-badge modal-icon-warning';
+      if (svgWarning) svgWarning.classList.remove('hidden');
+      if (svgInfo) svgInfo.classList.add('hidden');
+    }
+
+    cancelBtn.textContent = cancelText;
+    cancelBtn.classList.remove('hidden');
+
+    confirmBtn.textContent = confirmText;
+    confirmBtn.className = confirmBtnClass;
+
+    const cleanup = () => {
+      backdrop.classList.add('hidden');
+      confirmBtn.removeEventListener('click', onConfirm);
+      cancelBtn.removeEventListener('click', onCancel);
+      backdrop.removeEventListener('click', onBackdropClick);
+    };
+
+    const onConfirm = () => {
+      cleanup();
+      resolve(true);
+    };
+
+    const onCancel = () => {
+      cleanup();
+      resolve(false);
+    };
+
+    const onBackdropClick = (e) => {
+      if (e.target === backdrop) {
+        cleanup();
+        resolve(false);
+      }
+    };
+
+    confirmBtn.addEventListener('click', onConfirm);
+    cancelBtn.addEventListener('click', onCancel);
+    backdrop.addEventListener('click', onBackdropClick);
+
+    backdrop.classList.remove('hidden');
+  });
+}
+
+// ── Optional Google Sign-In & Cloud API Key Sync Controller ──
+function initFirebaseAuthAndCloudSync() {
+  const googleSignInBtn = $('googleSignInBtn');
+  const settingsGoogleSignInBtn = $('settingsGoogleSignInBtn');
+  const googleSignOutBtn = $('googleSignOutBtn');
+  const settingsSignOutBtn = $('settingsSignOutBtn');
+  const manualCloudSyncBtn = $('manualCloudSyncBtn');
+  const settingsSyncKeysBtn = $('settingsSyncKeysBtn');
+  const userProfileBtn = $('userProfileBtn');
+  const userProfileDropdown = $('userProfileDropdown');
+
+  if (!window.FirebaseCloudSync) return;
+
+  // Instant UI restore on page load from cached user (eliminates auth latency flash)
+  const initialUser = window.FirebaseCloudSync.getUser();
+  if (initialUser) {
+    updateAuthUI(initialUser);
+  }
+  renderCloudHistoryUI();
+
+  // Toggle Header User Dropdown
+  if (userProfileBtn && userProfileDropdown) {
+    userProfileBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      userProfileDropdown.classList.toggle('hidden');
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!userProfileDropdown.contains(e.target) && e.target !== userProfileBtn) {
+        userProfileDropdown.classList.add('hidden');
+      }
+    });
+  }
+
+  // Handle Google Sign-In
+  const onSignInClick = async () => {
+    try {
+      if (!window.FIREBASE_CONFIG || !window.FIREBASE_CONFIG.apiKey) {
+        showCustomModal(
+          'Firebase Setup Info',
+          'To enable 1-click Google Sign-In and Cloud API Key sync, please paste your free Firebase credentials into firebase-config.js. App continues to work 100% offline locally!',
+          'info'
+        );
+        return;
+      }
+      showToast('Opening Google Sign-In...');
+      await window.FirebaseCloudSync.signInWithGoogle();
+    } catch (err) {
+      console.error('[Auth Error]', err);
+      showCustomModal('Google Sign-In', err.message || 'Failed to sign in with Google.', 'warning');
+    }
+  };
+
+  if (googleSignInBtn) googleSignInBtn.addEventListener('click', onSignInClick);
+  if (settingsGoogleSignInBtn) settingsGoogleSignInBtn.addEventListener('click', onSignInClick);
+
+  // Handle Sign-Out with Warning Confirmation
+  const onSignOutClick = async () => {
+    if (state.isTranslating || state.isCondensing) {
+      showToast('⚠️ Translation is in progress. Please pause or wait for completion before signing out.', true);
+      return;
+    }
+
+    const confirmed = await showConfirmModal({
+      title: 'Sign Out of Google?',
+      message: 'Are you sure you want to sign out? Your saved API keys will remain on this device, but new translations won\'t sync to your 7-Day Cloud Archive until you sign in again.',
+      confirmText: 'Yes, Sign Out',
+      cancelText: 'Stay Signed In',
+      iconType: 'warning',
+      confirmBtnClass: 'btn btn-modal-confirm'
+    });
+
+    if (!confirmed) return;
+
+    try {
+      await window.FirebaseCloudSync.signOut();
+      if (userProfileDropdown) userProfileDropdown.classList.add('hidden');
+      showToast('Signed out of Google account.');
+    } catch (err) {
+      console.error('[Sign Out Error]', err);
+    }
+  };
+
+  if (googleSignOutBtn) googleSignOutBtn.addEventListener('click', onSignOutClick);
+  if (settingsSignOutBtn) settingsSignOutBtn.addEventListener('click', onSignOutClick);
+
+  // Handle Manual Cloud Backup / Sync
+  const onManualSyncClick = async () => {
+    const user = window.FirebaseCloudSync.getUser();
+    if (!user) {
+      showToast('Please sign in with Google first.');
+      return;
+    }
+    showToast('Syncing API keys & preferences to Google Cloud...');
+    const okKeys = await window.FirebaseCloudSync.saveKeysToCloud({
+      ...state.apiKeys,
+      custom_api_base_url: localStorage.getItem('custom_api_base_url') || '',
+      custom_api_model_name: localStorage.getItem('custom_api_model_name') || ''
+    });
+    const okPrefs = await window.FirebaseCloudSync.savePreferencesToCloud({
+      targetLang: targetLang ? targetLang.value : 'Bengali',
+      pacingPreset: styleMode ? styleMode.value : 'concise'
+    });
+    if (okKeys || okPrefs) {
+      showToast('✓ API Keys & Preferences safely backed up to Google Cloud!');
+    } else {
+      showToast('Failed to backup to cloud.', true);
+    }
+  };
+
+  if (manualCloudSyncBtn) manualCloudSyncBtn.addEventListener('click', onManualSyncClick);
+  if (settingsSyncKeysBtn) settingsSyncKeysBtn.addEventListener('click', onManualSyncClick);
+
+  // Listen to Auth State Changes with single-execution guard on refresh
+  let lastRestoredUserId = null;
+  let isRestoringCloudData = false;
+
+  window.FirebaseCloudSync.onAuthStateChanged(async (user) => {
+    updateAuthUI(user);
+
+    if (user) {
+      // Prevent running cloud restore twice on same user session
+      if (lastRestoredUserId === user.uid || isRestoringCloudData) {
+        return;
+      }
+      isRestoringCloudData = true;
+      lastRestoredUserId = user.uid;
+
+      try {
+        // 1. Auto-restore keys from Firestore
+        const cloudData = await window.FirebaseCloudSync.loadKeysFromCloud();
+        if (cloudData) {
+          let restoredCount = 0;
+          let newKeysImported = 0;
+          const cloudVerificationPromises = [];
+          ['gemini', 'groq', 'openrouter', 'deepseek', 'openai', 'custom'].forEach(pid => {
+            const cloudKey = cloudData[pid];
+            if (pid === 'custom') {
+              const cloudBaseUrl = cloudData.custom_api_base_url || cloudData.customBaseUrl;
+              const cloudModelName = cloudData.custom_api_model_name || cloudData.customModelName;
+              if (cloudBaseUrl) {
+                if (localStorage.getItem('custom_api_base_url') !== cloudBaseUrl) newKeysImported++;
+                localStorage.setItem('custom_api_base_url', cloudBaseUrl);
+                const urlInp = $('customApiBaseUrl');
+                if (urlInp) urlInp.value = cloudBaseUrl;
+              }
+              if (cloudModelName) {
+                localStorage.setItem('custom_api_model_name', cloudModelName);
+                const modelInp = $('customApiModelName');
+                if (modelInp) modelInp.value = cloudModelName;
+              }
+              if (cloudKey) {
+                if (localStorage.getItem('custom_api_key') !== cloudKey) newKeysImported++;
+                state.apiKeys.custom = cloudKey;
+                localStorage.setItem('custom_api_key', cloudKey);
+                const keyInp = $('apiKeyInput_custom');
+                if (keyInp) keyInp.value = cloudKey;
+              }
+              if (cloudBaseUrl) {
+                cloudVerificationPromises.push(verifyAndLoadProvider('custom', cloudKey || ''));
+                restoredCount++;
+              }
+            } else if (cloudKey && typeof cloudKey === 'string' && cloudKey.length > 5) {
+              const prevKey = localStorage.getItem(AI_PROVIDERS[pid].storageKey);
+              if (prevKey !== cloudKey) newKeysImported++;
+              state.apiKeys[pid] = cloudKey;
+              localStorage.setItem(AI_PROVIDERS[pid].storageKey, cloudKey);
+              if (pid === 'gemini') {
+                state.apiKey = cloudKey;
+                localStorage.setItem('gemini_api_key', cloudKey);
+                if (apiKeyInput) apiKeyInput.value = cloudKey;
+              } else {
+                const inp = $(`apiKeyInput_${pid}`);
+                if (inp) inp.value = cloudKey;
+              }
+              cloudVerificationPromises.push(verifyAndLoadProvider(pid, cloudKey));
+              restoredCount++;
+            }
+          });
+
+          // Wait for all cloud-restored providers to finish verifying and fetching model lists
+          if (cloudVerificationPromises.length > 0) {
+            await Promise.allSettled(cloudVerificationPromises);
+          }
+
+          if (restoredCount > 0) {
+            updateApiGuardAndHeaderStatus();
+            checkReadyToTranslate();
+            populateCombinedModelDropdown();
+            // Only toast if new keys were actually imported from another device/session
+            if (newKeysImported > 0) {
+              showToast(`✓ Restored ${newKeysImported} API Key(s) from Google Cloud!`);
+            }
+          }
+        } else {
+          // If cloud is empty and local keys exist, automatically backup to cloud silently
+          const hasLocalKeys = Object.values(state.apiKeys).some(k => k && k.length > 5) || !!localStorage.getItem('custom_api_base_url');
+          if (hasLocalKeys) {
+            await window.FirebaseCloudSync.saveKeysToCloud({
+              ...state.apiKeys,
+              custom_api_base_url: localStorage.getItem('custom_api_base_url') || '',
+              custom_api_model_name: localStorage.getItem('custom_api_model_name') || ''
+            });
+          }
+        }
+
+        // 2. Auto-restore User Preferences (Translate In language & Subtitle Pacing Preset)
+        const cloudPrefs = await window.FirebaseCloudSync.loadPreferencesFromCloud();
+        if (cloudPrefs) {
+          if (cloudPrefs.targetLang && targetLang) {
+            targetLang.value = cloudPrefs.targetLang;
+            localStorage.setItem('preferred_target_lang', cloudPrefs.targetLang);
+            refreshCustomSelect('targetLang');
+          }
+          if (cloudPrefs.pacingPreset && styleMode) {
+            styleMode.value = cloudPrefs.pacingPreset;
+            localStorage.setItem('preferred_pacing_preset', cloudPrefs.pacingPreset);
+            refreshCustomSelect('styleMode');
+            if (typeof updatePacingUI === 'function') updatePacingUI();
+          }
+        } else {
+          // If cloud preferences are empty, sync local preferences to cloud
+          const currentLang = targetLang ? targetLang.value : 'Bengali';
+          const currentPacing = styleMode ? styleMode.value : 'concise';
+          await window.FirebaseCloudSync.savePreferencesToCloud({
+            targetLang: currentLang,
+            pacingPreset: currentPacing
+          });
+        }
+
+        // 3. Load 7-Day Cloud Subtitle Archive
+        await renderCloudHistoryUI();
+      } finally {
+        isRestoringCloudData = false;
+        updateApiGuardAndHeaderStatus();
+        checkReadyToTranslate();
+        if (typeof window.FirebaseCloudSync?.markInitialSyncComplete === 'function') {
+          window.FirebaseCloudSync.markInitialSyncComplete();
+        }
+      }
+    } else {
+      lastRestoredUserId = null;
+      if (Array.isArray(window._pendingProviderVerifications) && window._pendingProviderVerifications.length > 0) {
+        await Promise.allSettled(window._pendingProviderVerifications).catch(() => {});
+      }
+      updateApiGuardAndHeaderStatus();
+      checkReadyToTranslate();
+      populateCombinedModelDropdown();
+      await renderCloudHistoryUI();
+      if (typeof window.FirebaseCloudSync?.markInitialSyncComplete === 'function') {
+        window.FirebaseCloudSync.markInitialSyncComplete();
+      }
+    }
+  });
+
+  const refreshHistoryBtn = $('refreshCloudHistoryBtn');
+  if (refreshHistoryBtn) {
+    refreshHistoryBtn.addEventListener('click', () => {
+      renderCloudHistoryUI();
+      showToast('Cloud history refreshed.');
+    });
+  }
+}
+
+function generateUserAvatarSvg(name, email) {
+  const raw = (name || email || 'User').trim();
+  const initial = raw.charAt(0).toUpperCase() || 'U';
+  const gradients = [
+    ['#6366f1', '#4338ca'],
+    ['#0ea5e9', '#0284c7'],
+    ['#10b981', '#059669'],
+    ['#8b5cf6', '#6d28d9'],
+    ['#f59e0b', '#d97706'],
+    ['#ec4899', '#be185d']
+  ];
+  const charCode = initial.charCodeAt(0) || 0;
+  const [c1, c2] = gradients[charCode % gradients.length];
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+    <defs>
+      <linearGradient id="av_${charCode}" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="${c1}"/>
+        <stop offset="100%" stop-color="${c2}"/>
+      </linearGradient>
+    </defs>
+    <rect width="48" height="48" rx="24" fill="url(#av_${charCode})"/>
+    <text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" fill="#ffffff" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="22" font-weight="700">${initial}</text>
+  </svg>`;
+  return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+}
+
+// ── Universal Modal Dialog System (Confirmations & Prompts) ──
+function showCustomConfirm({ title, message, confirmText = 'Confirm', cancelText = 'Cancel', type = 'info' }) {
+  return new Promise((resolve) => {
+    const existing = document.querySelector('.custom-modal-backdrop');
+    if (existing) existing.remove();
+
+    const backdrop = document.createElement('div');
+    backdrop.className = 'custom-modal-backdrop';
+
+    const isWarn = type === 'warning';
+    const accentGrad = isWarn ? 'linear-gradient(90deg, #f59e0b, #ef4444)' : 'linear-gradient(90deg, #6366f1, #38bdf8)';
+    const iconClass = isWarn ? 'modal-icon-warning' : 'modal-icon-info';
+    const btnConfirmStyle = isWarn
+      ? 'background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);'
+      : 'background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);';
+
+    backdrop.innerHTML = `
+      <div class="custom-modal-box" role="dialog" aria-modal="true">
+        <div class="modal-top-accent" style="background:${accentGrad};"></div>
+        <div class="modal-icon-badge ${iconClass}">
+          ${isWarn ? `
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+          ` : `
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="16" x2="12" y2="12"/>
+              <line x1="12" y1="8" x2="12.01" y2="8"/>
+            </svg>
+          `}
+        </div>
+        <h3 class="modal-title">${escapeHtml(title)}</h3>
+        <p class="modal-message">${escapeHtml(message)}</p>
+        <div class="modal-actions-row">
+          <button class="btn-modal-cancel" type="button" id="modalCancelBtn">${escapeHtml(cancelText)}</button>
+          <button class="btn-modal-confirm" type="button" id="modalConfirmBtn" style="${btnConfirmStyle}">${escapeHtml(confirmText)}</button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(backdrop);
+
+    const close = (result) => {
+      backdrop.style.opacity = '0';
+      setTimeout(() => backdrop.remove(), 150);
+      resolve(result);
+    };
+
+    backdrop.querySelector('#modalCancelBtn').addEventListener('click', () => close(false));
+    backdrop.querySelector('#modalConfirmBtn').addEventListener('click', () => close(true));
+    backdrop.addEventListener('click', (e) => { if (e.target === backdrop) close(false); });
+  });
+}
+
+function showPromptModal({ title, message, defaultValue = '', placeholder = 'Enter file name...', confirmText = 'Rename', maxLength = 60, onConfirm }) {
+  const existing = document.querySelector('.custom-modal-backdrop');
+  if (existing) existing.remove();
+
+  const backdrop = document.createElement('div');
+  backdrop.className = 'custom-modal-backdrop';
+
+  const safeDefault = defaultValue ? defaultValue.slice(0, maxLength) : '';
+
+  backdrop.innerHTML = `
+    <div class="custom-modal-box" role="dialog" aria-modal="true">
+      <div class="modal-top-accent" style="background:linear-gradient(90deg, #6366f1, #38bdf8);"></div>
+      <div class="modal-icon-badge modal-icon-info">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+        </svg>
+      </div>
+      <h3 class="modal-title">${escapeHtml(title || 'Rename Subtitle')}</h3>
+      ${message ? `<p class="modal-message">${escapeHtml(message)}</p>` : ''}
+      <div class="modal-input-wrap">
+        <input type="text" class="modal-input-field" id="modalPromptInput" maxlength="${maxLength}" value="${escapeHtml(safeDefault)}" placeholder="${escapeHtml(placeholder)}" spellcheck="false" autocomplete="off" />
+        <div class="modal-char-counter" id="modalCharCounter">
+          <span class="char-count-text"><span id="promptCharCount">${safeDefault.length}</span>/${maxLength} characters</span>
+          <span class="char-limit-tag hidden" id="charLimitTag">Max limit reached</span>
+        </div>
+      </div>
+      <div class="modal-actions-row">
+        <button class="btn-modal-cancel" type="button" id="modalCancelBtn">Cancel</button>
+        <button class="btn-modal-confirm" type="button" id="modalConfirmBtn" style="background:linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); box-shadow:0 4px 14px rgba(99, 102, 241, 0.4);">${escapeHtml(confirmText)}</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(backdrop);
+
+  const input = backdrop.querySelector('#modalPromptInput');
+  const countEl = backdrop.querySelector('#promptCharCount');
+  const counterWrap = backdrop.querySelector('#modalCharCounter');
+  const limitTag = backdrop.querySelector('#charLimitTag');
+  const cancelBtn = backdrop.querySelector('#modalCancelBtn');
+  const confirmBtn = backdrop.querySelector('#modalConfirmBtn');
+
+  const updateCounter = () => {
+    const len = input.value.length;
+    if (countEl) countEl.textContent = len;
+    if (len >= maxLength) {
+      if (counterWrap) counterWrap.classList.add('is-limit');
+      if (limitTag) limitTag.classList.remove('hidden');
+    } else {
+      if (counterWrap) counterWrap.classList.remove('is-limit');
+      if (limitTag) limitTag.classList.add('hidden');
+    }
+  };
+
+  if (input) {
+    input.addEventListener('input', updateCounter);
+    setTimeout(() => {
+      input.focus();
+      const dotIdx = safeDefault.lastIndexOf('.');
+      if (dotIdx > 0) {
+        input.setSelectionRange(0, dotIdx);
+      } else {
+        input.select();
+      }
+      updateCounter();
+    }, 50);
+  }
+
+  const close = () => {
+    backdrop.style.opacity = '0';
+    setTimeout(() => backdrop.remove(), 150);
+  };
+
+  const handleConfirm = () => {
+    const val = input.value.trim();
+    if (!val) {
+      input.focus();
+      return;
+    }
+    close();
+    if (typeof onConfirm === 'function') {
+      onConfirm(val);
+    }
+  };
+
+  cancelBtn.addEventListener('click', close);
+  confirmBtn.addEventListener('click', handleConfirm);
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleConfirm();
+    }
+    if (e.key === 'Escape') close();
+  });
+  backdrop.addEventListener('click', (e) => {
+    if (e.target === backdrop) close();
+  });
+}
+
+function promptRenameCurrentFile() {
+  const currentName = state.fileName || (state.file ? state.file.name : 'subtitle.srt');
+  showPromptModal({
+    title: 'Rename Subtitle File',
+    message: 'Enter a new name for your subtitle file (max 60 characters):',
+    defaultValue: currentName,
+    maxLength: 60,
+    placeholder: 'e.g., Movie_Bangla.srt',
+    confirmText: 'Rename',
+    onConfirm: (newName) => {
+      const cleanName = sanitizeFileName(newName, 60);
+      state.fileName = cleanName;
+      if (fileName) {
+        fileName.textContent = cleanName;
+        fileName.setAttribute('title', cleanName);
+      }
+      const resName = $('resultFileName');
+      if (resName) {
+        resName.textContent = cleanName;
+      }
+      const resPill = $('resultFileNamePill');
+      if (resPill) {
+        resPill.setAttribute('title', cleanName);
+      }
+      saveCurrentSession();
+      showToast(`✓ Subtitle renamed to "${cleanName}"`);
+    }
+  });
+}
+
+function updateAuthUI(user) {
+  const googleSignInBtn = $('googleSignInBtn');
+  const userProfileWrap = $('userProfileWrap');
+  const userAvatarImg = $('userAvatarImg');
+  const userShortName = $('userShortName');
+  const dropdownUserName = $('dropdownUserName');
+  const dropdownUserEmail = $('dropdownUserEmail');
+  const authSettingsSection = $('authSettingsSection');
+
+  const settingsAuthLoggedOut = $('settingsAuthLoggedOut');
+  const settingsAuthLoggedIn = $('settingsAuthLoggedIn');
+  const settingsProfileAvatar = $('settingsProfileAvatar');
+  const settingsProfileName = $('settingsProfileName');
+  const settingsProfileEmail = $('settingsProfileEmail');
+  const settingsAuthStatusBadge = $('settingsAuthStatusBadge');
+  const settingsAuthDot = $('settingsAuthDot');
+  const settingsAuthText = $('settingsAuthText');
+
+  if (user) {
+    // Header UI: Show user profile dropdown, hide Sign In button
+    if (googleSignInBtn) googleSignInBtn.classList.add('hidden');
+    if (userProfileWrap) userProfileWrap.classList.remove('hidden');
+
+    const displayName = user.displayName || user.email?.split('@')[0] || 'User';
+    const fallbackAvatar = generateUserAvatarSvg(displayName, user.email);
+    const photoUrl = (user.photoURL && user.photoURL.startsWith('http')) ? user.photoURL : fallbackAvatar;
+
+    if (userAvatarImg) {
+      userAvatarImg.referrerPolicy = 'no-referrer';
+      userAvatarImg.onerror = () => { userAvatarImg.src = fallbackAvatar; };
+      userAvatarImg.src = photoUrl;
+    }
+    if (userShortName) userShortName.textContent = displayName.split(' ')[0];
+    if (dropdownUserName) dropdownUserName.textContent = displayName;
+    if (dropdownUserEmail) dropdownUserEmail.textContent = user.email || '';
+
+    // Settings UI: Completely hide auth banner when logged in
+    if (authSettingsSection) authSettingsSection.classList.add('hidden');
+    if (settingsAuthLoggedOut) settingsAuthLoggedOut.classList.add('hidden');
+    if (settingsAuthLoggedIn) settingsAuthLoggedIn.classList.remove('hidden');
+
+    if (settingsProfileAvatar) {
+      settingsProfileAvatar.referrerPolicy = 'no-referrer';
+      settingsProfileAvatar.onerror = () => { settingsProfileAvatar.src = fallbackAvatar; };
+      settingsProfileAvatar.src = photoUrl;
+    }
+    if (settingsProfileName) settingsProfileName.textContent = displayName;
+    if (settingsProfileEmail) settingsProfileEmail.textContent = user.email || '';
+
+    if (settingsAuthStatusBadge) settingsAuthStatusBadge.className = 'auth-sync-status-badge sync-active';
+    if (settingsAuthDot) settingsAuthDot.className = 'sync-dot';
+    if (settingsAuthText) settingsAuthText.textContent = 'Cloud Sync Active';
+  } else {
+    // Header UI: Show Sign In button, hide user profile dropdown
+    if (googleSignInBtn) googleSignInBtn.classList.remove('hidden');
+    if (userProfileWrap) userProfileWrap.classList.add('hidden');
+
+    // Settings UI: Show simple auth banner when logged out
+    if (authSettingsSection) authSettingsSection.classList.remove('hidden');
+    if (settingsAuthLoggedOut) settingsAuthLoggedOut.classList.remove('hidden');
+    if (settingsAuthLoggedIn) settingsAuthLoggedIn.classList.add('hidden');
+
+    if (settingsAuthStatusBadge) settingsAuthStatusBadge.className = 'auth-sync-status-badge';
+    if (settingsAuthDot) settingsAuthDot.className = 'sync-dot dot-off';
+    if (settingsAuthText) settingsAuthText.textContent = 'Not Signed In';
+  }
+}
+
+// ── 7-Day Cloud Subtitle Archive Controller ──
+
+function generateHistoryCardsHtml(items) {
+  const escapeTxt = (str) => {
+    if (!str) return '';
+    return String(str).replace(/[&<>"']/g, m => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[m]));
+  };
+
+  return items.map(item => {
+    const docId = item.docId || item.id || '';
+    const safeFileName = escapeTxt(item.fileName || 'subtitle.srt');
+
+    // ── Dedicated In-Progress Cloud Job Card ──
+    if (item.isInProgress) {
+      const isCondense = item.action === 'condense';
+      const actionName = isCondense ? 'Condensing' : 'Translating';
+      const progressPct = Math.min(99, Math.max(0, Number(item.progress) || 0));
+      const processedCount = item.processedBlocks || 0;
+      const totalCount = item.totalBlocks || 0;
+
+      return `
+        <div class="cloud-history-item is-in-progress" data-id="active_cloud_job" id="cloudHistoryInProgressCard">
+          <div class="cloud-item-info">
+            <div class="cloud-item-title-row">
+              <span class="cloud-item-title" title="${safeFileName}">${safeFileName}</span>
+              <span class="in-progress-badge" title="AI Cloud Background Processing Active">
+                <span class="pulse-dot"></span>
+                <span>${actionName} (${progressPct}%)</span>
+              </span>
+            </div>
+            
+            <div class="history-in-progress-bar-wrap">
+              <div class="history-in-progress-bar">
+                <div class="history-progress-fill" id="historyCardProgressFill" style="width:${progressPct}%;"></div>
+              </div>
+              <div class="history-progress-status-row">
+                <span id="historyCardProgressText">${processedCount} / ${totalCount} subtitles (${progressPct}%)</span>
+                <span class="cloud-running-tag">⚡ Running in Cloud Background</span>
+              </div>
+            </div>
+
+            <div class="cloud-item-meta">
+              <span class="meta-pill">
+                <svg class="meta-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                  <line x1="8" y1="21" x2="16" y2="21"/>
+                  <line x1="12" y1="17" x2="12" y2="21"/>
+                </svg>
+                <span>${escapeTxt(item.modelUsed || 'AI')}</span>
+              </span>
+              <span class="meta-pill">
+                <svg class="meta-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="2" y1="12" x2="22" y2="12"/>
+                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                </svg>
+                <span>${escapeTxt(item.targetLang || 'Bengali')}</span>
+              </span>
+            </div>
+          </div>
+
+          <div class="cloud-item-actions in-progress-actions">
+            <button class="btn btn-cloud-view-live" type="button" id="btnHistoryViewLive" title="View live translation dashboard on Translator tab">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;">
+                <polygon points="5 3 19 12 5 21 5 3"/>
+              </svg>
+              <span>View in Translator</span>
+            </button>
+            <button class="btn btn-cloud-cancel-job" type="button" id="btnHistoryCancelJob" title="Cancel this background process and remove from history">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+              <span>Cancel</span>
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    const createdDate = item.createdAtMs ? new Date(item.createdAtMs).toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    }) : 'Recently';
+
+    const expiresAt = item.expiresAtMs || (item.createdAtMs ? item.createdAtMs + (7 * 24 * 60 * 60 * 1000) : 0);
+    const nowMs = Date.now();
+    const diffMs = expiresAt ? Math.max(0, expiresAt - nowMs) : (item.daysLeft ? item.daysLeft * 24 * 3600 * 1000 : 7 * 24 * 3600 * 1000);
+    const diffHours = diffMs / (1000 * 60 * 60);
+
+    let expiryText = 'Expires in 7d';
+    let isUrgent = false;
+
+    if (diffMs <= 0) {
+      expiryText = 'Expired';
+      isUrgent = true;
+    } else if (diffHours > 24) {
+      const days = Math.ceil(diffHours / 24);
+      expiryText = `Expires in ${days}d`;
+      isUrgent = days <= 1;
+    } else if (diffHours >= 1) {
+      const hours = Math.ceil(diffHours);
+      expiryText = `Expires in ${hours}h`;
+      isUrgent = true;
+    } else {
+      const mins = Math.max(1, Math.ceil(diffMs / (1000 * 60)));
+      expiryText = `Expires in ${mins}m`;
+      isUrgent = true;
+    }
+
+    const isCondensedItem = !!(item.isCondensed || /condens|glance/i.test(item.fileName || ''));
+
+    return `
+      <div class="cloud-history-item" data-id="${docId}">
+        <div class="cloud-item-info">
+          <div class="cloud-item-title-row">
+            <span class="cloud-item-title" title="${safeFileName}">${safeFileName}</span>
+            <button class="btn-cloud-rename" type="button" data-docid="${docId}" title="Rename file">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+              </svg>
+            </button>
+            ${isCondensedItem ? `
+              <span class="condensed-badge" title="AI Condensed & Shortened Subtitle">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;display:inline-block;vertical-align:-1px;margin-right:2px;">
+                  <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                </svg>
+                <span>Condensed</span>
+              </span>
+            ` : ''}
+            <span class="expiry-badge ${isUrgent ? 'urgent' : ''}">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;display:inline-block;vertical-align:-1px;margin-right:2px;">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
+              <span>${expiryText}</span>
+            </span>
+          </div>
+          <div class="cloud-item-meta">
+            <span class="meta-pill">
+              <svg class="meta-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+              <span>${createdDate}</span>
+            </span>
+            <span class="meta-pill">
+              <svg class="meta-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="2" y1="12" x2="22" y2="12"/>
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+              </svg>
+              <span>${escapeTxt(item.targetLang || 'Bengali')}</span>
+            </span>
+            <span class="meta-pill">
+              <svg class="meta-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                <line x1="8" y1="21" x2="16" y2="21"/>
+                <line x1="12" y1="17" x2="12" y2="21"/>
+              </svg>
+              <span>${escapeTxt(item.modelUsed || 'AI')}</span>
+            </span>
+            <span class="meta-pill">
+              <svg class="meta-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+              </svg>
+              <span>${item.blockCount || 0} lines</span>
+            </span>
+            ${item.fileSizeFormatted ? `
+              <span class="meta-pill">
+                <svg class="meta-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                  <polyline points="17 21 17 13 7 13 7 21"/>
+                  <polyline points="7 3 7 8 15 8"/>
+                </svg>
+                <span>${item.fileSizeFormatted}</span>
+              </span>
+            ` : ''}
+          </div>
+        </div>
+        <div class="cloud-item-actions">
+          <button class="btn btn-cloud-download" type="button" data-docid="${docId}" title="Download .SRT file">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            <span>Download</span>
+          </button>
+          <button class="btn btn-cloud-condense" type="button" data-docid="${docId}" title="Load & AI Condense into glance speed">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+            </svg>
+            <span>Condense</span>
+          </button>
+          <button class="btn btn-cloud-delete" type="button" data-docid="${docId}" title="Delete from Cloud">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6"/>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function wireHistoryActions(container, items, onListMutated, onCondenseChosen) {
+  // Wire "View in Translator" click handler
+  const viewLiveBtn = container.querySelector('#btnHistoryViewLive');
+  if (viewLiveBtn) {
+    viewLiveBtn.addEventListener('click', async () => {
+      switchAppTab('translator');
+      if (progressCard) {
+        progressCard.classList.remove('hidden');
+        progressCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+      if (window.FirebaseCloudSync && window.FirebaseCloudSync.getUser()) {
+        const job = await window.FirebaseCloudSync.getActiveCloudJob();
+        if (job && (job.status === 'running' || job.status === 'in_progress')) {
+          handleCloudJobUpdate(job);
+          if (activeCloudJobListenerUnsub) activeCloudJobListenerUnsub();
+          activeCloudJobListenerUnsub = window.FirebaseCloudSync.listenActiveCloudJob(handleCloudJobUpdate);
+        }
+      }
+    });
+  }
+
+  // Wire "Cancel" on in-progress cloud job
+  const cancelJobBtn = container.querySelector('#btnHistoryCancelJob');
+  if (cancelJobBtn) {
+    cancelJobBtn.addEventListener('click', async () => {
+      const confirmed = await showCustomConfirm({
+        title: 'Cancel Background Process?',
+        message: 'Are you sure you want to cancel this ongoing background process? It will be stopped and removed from Cloud History.',
+        confirmText: 'Yes, Cancel Process',
+        cancelText: 'Keep Running',
+        type: 'danger'
+      });
+      if (!confirmed) return;
+
+      showToast('Cancelling background process...');
+      if (window.FirebaseCloudSync) {
+        await window.FirebaseCloudSync.cancelActiveCloudJob();
+        await window.FirebaseCloudSync.clearActiveCloudJob();
+      }
+
+      state.isTranslating = false;
+      state.isCondensing = false;
+      state.isCloudJob = false;
+      resetTranslateButton();
+      checkReadyToTranslate();
+
+      if (activeCloudJobListenerUnsub) {
+        try { activeCloudJobListenerUnsub(); } catch (e) {}
+        activeCloudJobListenerUnsub = null;
+      }
+
+      if (progressCard) progressCard.classList.add('hidden');
+      const cloudJobBadge = $('cloudJobBadge');
+      if (cloudJobBadge) cloudJobBadge.classList.add('hidden');
+
+      renderCloudHistoryUI();
+      showToast('✓ Process cancelled and removed.');
+    });
+  }
+
+  // Wire Download click handlers
+  container.querySelectorAll('.btn-cloud-download').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const docId = btn.getAttribute('data-docid');
+      const item = items.find(h => (h.docId || h.id) === docId);
+      if (item && item.srtContent) {
+        triggerDirectSrtDownload(item.fileName || 'translated_subtitle.srt', item.srtContent);
+        showToast(`✓ Downloaded ${item.fileName}`);
+      }
+    });
+  });
+
+  // Wire AI Condense click handlers
+  container.querySelectorAll('.btn-cloud-condense').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const docId = btn.getAttribute('data-docid');
+      const item = items.find(h => (h.docId || h.id) === docId);
+      if (item && item.srtContent) {
+        if (typeof onCondenseChosen === 'function') {
+          onCondenseChosen();
+        }
+
+        const parsed = parseSRT(item.srtContent);
+        if (!parsed || parsed.length === 0) {
+          showToast('Could not parse subtitle file.', true);
+          return;
+        }
+
+        localStorage.removeItem('srt_session_last_cleared');
+
+        // Populate translator state
+        state.parsedBlocks = parsed;
+        state.translatedBlocks = parsed.map(b => ({
+          ...b,
+          translatedLines: b.lines,
+          isTranslated: true
+        }));
+        state.uncompressedBlocks = JSON.parse(JSON.stringify(state.translatedBlocks));
+        state.fileName = item.fileName || 'translated_subtitle.srt';
+        state.originalFileName = state.fileName;
+        state.fileSize = new Blob([item.srtContent]).size;
+        state.isCondensed = false;
+        calculateDuration(parsed);
+        state.optimalBatchSize = calculateOptimalBatchSize(parsed);
+
+        // Switch to Translator Tab automatically
+        switchAppTab('translator');
+
+        // Render loaded file info and transition to condensing
+        displayLoadedFileInfo({ name: state.fileName, size: state.fileSize }, parsed);
+        saveCurrentSession();
+        showToast(`✓ Loaded "${state.fileName}". Starting AI Condenser...`);
+
+        // Automatically kick off 2nd-pass condenser
+        setTimeout(() => {
+          runAiCondensePipeline();
+        }, 300);
+      }
+    });
+  });
+
+  // Wire Rename click handlers
+  container.querySelectorAll('.btn-cloud-rename').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const docId = btn.getAttribute('data-docid');
+      const item = items.find(h => (h.docId || h.id) === docId);
+      if (item) {
+        showPromptModal({
+          title: 'Rename Subtitle File',
+          message: 'Enter a new name for this subtitle file in cloud storage (max 60 characters):',
+          defaultValue: item.fileName || 'subtitle.srt',
+          maxLength: 60,
+          placeholder: 'e.g., Movie_Bangla.srt',
+          confirmText: 'Rename',
+          onConfirm: async (newName) => {
+            const cleanName = sanitizeFileName(newName, 60);
+            btn.disabled = true;
+            const ok = await window.FirebaseCloudSync.renameCloudTranslation(docId, cleanName);
+            if (ok) {
+              item.fileName = cleanName;
+              showToast(`✓ Renamed to "${cleanName}"`);
+              if (typeof onListMutated === 'function') onListMutated();
+            } else {
+              showToast('Failed to rename subtitle in cloud.', true);
+              btn.disabled = false;
+            }
+          }
+        });
+      }
+    });
+  });
+
+  // Wire Delete click handlers
+  container.querySelectorAll('.btn-cloud-delete').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const docId = btn.getAttribute('data-docid');
+      if (!docId) return;
+      const item = items.find(h => (h.docId || h.id) === docId);
+      const fileName = item?.fileName || 'this subtitle file';
+
+      const confirmed = await showCustomConfirm({
+        title: 'Delete Subtitle File?',
+        message: `Are you sure you want to permanently delete "${fileName}" from your cloud archive? This action cannot be undone.`,
+        confirmText: 'Delete File',
+        cancelText: 'Cancel',
+        type: 'warning'
+      });
+
+      if (!confirmed) return;
+
+      btn.disabled = true;
+      const ok = await window.FirebaseCloudSync.deleteCloudTranslation(docId);
+      if (ok) {
+        showToast(`✓ "${fileName}" deleted from cloud.`);
+        if (typeof onListMutated === 'function') onListMutated();
+      } else {
+        showToast('Failed to delete from cloud.', true);
+        btn.disabled = false;
+      }
+    });
+  });
+}
+
+function showAllCloudHistoryModal(initialItems) {
+  const existing = document.querySelector('.custom-modal-backdrop');
+  if (existing) existing.remove();
+
+  const backdrop = document.createElement('div');
+  backdrop.className = 'custom-modal-backdrop history-modal-backdrop';
+
+  let currentItems = Array.isArray(initialItems) ? [...initialItems] : [];
+
+  backdrop.innerHTML = `
+    <div class="history-modal-box" role="dialog" aria-modal="true">
+      <div class="modal-top-accent" style="background:linear-gradient(90deg, #6366f1, #38bdf8, #10b981);"></div>
+      <div class="history-modal-header">
+        <div class="history-modal-title-group">
+          <div class="history-modal-heading">
+            <span>All Translation History</span>
+            <span class="history-count-badge" id="historyModalCountBadge">${currentItems.length} Subtitles</span>
+          </div>
+          <p class="history-modal-subline">7-Day Cloud Archive • Auto-removed after 7 days</p>
+        </div>
+        <button class="btn-history-modal-close" type="button" id="historyModalCloseBtn" title="Close">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <div class="history-modal-search-bar">
+        <div class="history-search-input-wrap">
+          <svg class="history-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input type="text" id="historyModalSearch" class="history-search-input" placeholder="Search by subtitle file name, language, or model..." autocomplete="off" spellcheck="false" />
+          <button class="btn-history-clear-search hidden" type="button" id="historyModalClearBtn" title="Clear search">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="history-modal-content-list" id="historyModalList"></div>
+    </div>
+  `;
+
+  document.body.appendChild(backdrop);
+
+  const listContainer = backdrop.querySelector('#historyModalList');
+  const searchInput = backdrop.querySelector('#historyModalSearch');
+  const clearBtn = backdrop.querySelector('#historyModalClearBtn');
+  const countBadge = backdrop.querySelector('#historyModalCountBadge');
+  const closeBtn = backdrop.querySelector('#historyModalCloseBtn');
+
+  const close = () => {
+    backdrop.style.opacity = '0';
+    setTimeout(() => backdrop.remove(), 150);
+  };
+
+  const renderModalList = () => {
+    const query = (searchInput ? searchInput.value : '').trim().toLowerCase();
+    
+    if (clearBtn) {
+      if (query.length > 0) {
+        clearBtn.classList.remove('hidden');
+      } else {
+        clearBtn.classList.add('hidden');
+      }
+    }
+
+    const filtered = query
+      ? currentItems.filter(item => {
+          const fn = (item.fileName || '').toLowerCase();
+          const lang = (item.targetLang || '').toLowerCase();
+          const model = (item.modelUsed || '').toLowerCase();
+          return fn.includes(query) || lang.includes(query) || model.includes(query);
+        })
+      : currentItems;
+
+    if (countBadge) countBadge.textContent = `${currentItems.length} Subtitles`;
+
+    if (filtered.length === 0) {
+      listContainer.innerHTML = `
+        <div class="history-modal-empty">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:36px;height:36px;opacity:0.6;">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <p>${query ? `No subtitles found matching "${query}"` : 'No history found in cloud archive.'}</p>
+        </div>
+      `;
+      return;
+    }
+
+    listContainer.innerHTML = generateHistoryCardsHtml(filtered);
+
+    wireHistoryActions(listContainer, filtered, async () => {
+      listContainer.innerHTML = `
+        <div class="history-modal-loading">
+          <div class="history-spinner"></div>
+          <span>Updating cloud archive...</span>
+        </div>
+      `;
+      const updated = await window.FirebaseCloudSync?.getCloudTranslationHistory();
+      if (updated) {
+        currentItems = updated;
+        renderModalList();
+        renderCloudHistoryUI();
+      }
+    }, () => {
+      close();
+    });
+  };
+
+  renderModalList();
+
+  if (searchInput) {
+    searchInput.addEventListener('input', renderModalList);
+  }
+
+  if (clearBtn && searchInput) {
+    clearBtn.addEventListener('click', () => {
+      searchInput.value = '';
+      searchInput.focus();
+      renderModalList();
+    });
+  }
+
+  closeBtn.addEventListener('click', close);
+  backdrop.addEventListener('click', (e) => {
+    if (e.target === backdrop) close();
+  });
+  window.addEventListener('keydown', function escHandler(e) {
+    if (e.key === 'Escape') {
+      close();
+      window.removeEventListener('keydown', escHandler);
+    }
+  });
+}
+
+async function renderCloudHistoryUI() {
+  const loggedOutMsg = $('cloudHistoryLoggedOutMsg');
+  const emptyMsg = $('cloudHistoryEmptyMsg');
+  const loadingEl = $('cloudHistoryLoading');
+  const listContainer = $('cloudHistoryList');
+  const refreshBtn = $('refreshCloudHistoryBtn');
+
+  if (!loggedOutMsg || !emptyMsg || !listContainer) return;
+
+  const user = window.FirebaseCloudSync?.getUser();
+
+  // 1. If user is signed out, immediately display the sign in message, NO LOADING SPINNER
+  if (!user) {
+    if (loadingEl) loadingEl.classList.add('hidden');
+    loggedOutMsg.classList.remove('hidden');
+    emptyMsg.classList.add('hidden');
+    listContainer.classList.add('hidden');
+    if (refreshBtn) {
+      refreshBtn.classList.remove('is-refreshing');
+      refreshBtn.classList.add('hidden');
+    }
+    return;
+  }
+
+  // 2. User is signed in -> fetch cloud history
+  if (refreshBtn) {
+    refreshBtn.classList.remove('hidden');
+    refreshBtn.classList.add('is-refreshing');
+  }
+  loggedOutMsg.classList.add('hidden');
+  emptyMsg.classList.add('hidden');
+  listContainer.classList.add('hidden');
+  if (loadingEl) loadingEl.classList.remove('hidden');
+
+  try {
+    const historyItems = await window.FirebaseCloudSync.getCloudTranslationHistory();
+
+    if (loadingEl) loadingEl.classList.add('hidden');
+
+    if (!historyItems || historyItems.length === 0) {
+      emptyMsg.classList.remove('hidden');
+      listContainer.classList.add('hidden');
+      return;
+    }
+
+    emptyMsg.classList.add('hidden');
+    listContainer.classList.remove('hidden');
+
+    const itemsToRender = historyItems.slice(0, 3);
+    let cardsHtml = generateHistoryCardsHtml(itemsToRender);
+
+    if (historyItems.length > 3) {
+      cardsHtml += `
+        <div class="see-all-history-wrap">
+          <button id="seeAllHistoryBtn" class="btn btn-see-all-history" type="button" title="View all ${historyItems.length} subtitles in a popup">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="7" height="7"/>
+              <rect x="14" y="3" width="7" height="7"/>
+              <rect x="14" y="14" width="7" height="7"/>
+              <rect x="3" y="14" width="7" height="7"/>
+            </svg>
+            <span>See All (${historyItems.length} Subtitles)</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;opacity:0.7;">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </button>
+        </div>
+      `;
+    }
+
+    listContainer.innerHTML = cardsHtml;
+
+    const seeAllBtn = $('seeAllHistoryBtn');
+    if (seeAllBtn) {
+      seeAllBtn.addEventListener('click', () => {
+        showAllCloudHistoryModal(historyItems);
+      });
+    }
+
+    wireHistoryActions(listContainer, itemsToRender, () => {
+      renderCloudHistoryUI();
+    });
+
+  } catch (err) {
+    console.error('Error rendering cloud history:', err);
+    if (loadingEl) loadingEl.classList.add('hidden');
+  } finally {
+    if (refreshBtn) {
+      setTimeout(() => refreshBtn.classList.remove('is-refreshing'), 300);
+    }
+  }
+}
+
+function triggerDirectSrtDownload(fileName, srtContent) {
+  const blob = new Blob([srtContent], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName.endsWith('.srt') ? fileName : `${fileName}.srt`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }

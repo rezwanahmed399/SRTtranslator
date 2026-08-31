@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "122691330852",
+    "project_id": "srt-translator-eaa94",
+    "storage_bucket": "srt-translator-eaa94.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:122691330852:android:fcaa9fbb28cba8924689b1",
+        "android_client_info": {
+          "package_name": "com.soptosur.srttranslator",
+          "certificate_hash": "f46d27b2bad6f92fe1fb76a66a558f6d8f8d29f4"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBtTO_i4qeRTrRu0UJJpBTZx3DjfCz_QwI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

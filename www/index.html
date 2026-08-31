@@ -24,20 +24,106 @@
   <meta name="twitter:title" content="SRTtranslator — Free AI SRT Subtitle Translator Online" />
   <meta name="twitter:description" content="Translate movie &amp; video subtitles with 100% timecode sync, zero overlap, adaptive fast-reading pacing, and instant 1-click SRT export." />
 
+  <!-- Google Site Verification -->
+  <meta name="google-site-verification" content="56417e4931d45822" />
+
+  <!-- Schema.org Structured Data for WebApplication & FAQ -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebApplication",
+        "@id": "https://srttranslator.vercel.app/#webapp",
+        "name": "SRTtranslator",
+        "url": "https://srttranslator.vercel.app/",
+        "description": "Free online AI subtitle translator for SRT files. Localize movie and video subtitles with 100% timecode sync, zero overlap, adaptive glance-speed pacing, and instant SRT export.",
+        "applicationCategory": "MultimediaApplication",
+        "operatingSystem": "All (Web, Android, iOS, Windows, macOS, Linux)",
+        "browserRequirements": "Requires JavaScript. Requires HTML5.",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "featureList": [
+          "100% Timecode and Subtitle Synchronized Translation",
+          "Zero Overlap & Timing Gap Correction Engine",
+          "Multi-AI Model Auto Failover (Gemini, OpenRouter, Groq, DeepSeek, OpenAI)",
+          "Adaptive Pacing Presets (Glance-Speed, Concise, Balanced, Detailed)",
+          "2nd-Pass AI Subtitle Condenser",
+          "7-Day Cloud Subtitle Archive & History",
+          "100% Client-Side Privacy"
+        ]
+      },
+      {
+        "@type": "FAQPage",
+        "@id": "https://srttranslator.vercel.app/#faq",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "How to translate an SRT subtitle file online for free?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Upload your .SRT subtitle file to SRTtranslator, select your target language and preferred pacing style, connect your free AI API key, and click 'Translate Subtitles'. The translated SRT file will be ready for 1-click download with 100% timecode synchronization."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does SRTtranslator keep original subtitle timecodes synchronized?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. SRTtranslator features a deterministic timecode matcher and overlap resolution engine that ensures zero subtitle shifting, preserving 100% frame-perfect synchronization with your video."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is my subtitle data private and secure?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. All subtitle parsing and processing is performed client-side directly in your browser or local device. No subtitle files are permanently retained on third-party servers."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet" />
   
-  <link rel="stylesheet" href="style.css?v=4.0.0" />
+  <link rel="stylesheet" href="style.css?v=5.6.0" />
   <script>
     (function() {
-      const savedTheme = localStorage.getItem('srt_theme') || 'dark';
+      const savedTheme = localStorage.getItem('srt_theme') || 'light';
       document.documentElement.setAttribute('data-theme', savedTheme);
     })();
   </script>
 </head>
 <body>
+  <!-- Initial Minimalistic Fast App Loader (Prevents Layout Shifts & Flashing) -->
+  <div id="appInitialLoader" class="app-initial-loader" aria-hidden="true">
+    <div class="loader-inner">
+      <div class="loader-logo-wrap">
+        <div class="loader-logo-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 6h16M4 12h10M4 18h14"/>
+            <circle cx="19" cy="12" r="3" fill="currentColor" stroke="none" opacity="0.3"/>
+            <path d="M19 9v6M16 12h6"/>
+          </svg>
+        </div>
+        <div class="loader-spinner-ring"></div>
+      </div>
+      <div class="loader-brand-title">SRTtranslator</div>
+      <div class="loader-progress-bar">
+        <div class="loader-progress-fill"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- Ambient background glow -->
   <div class="glow-bg">
     <div class="glow-orb orb-primary"></div>
@@ -58,14 +144,15 @@
           </svg>
         </div>
         <div>
-          <div class="brand-title">
+          <h1 class="brand-title">
             <span>SRTtranslator</span>
-          </div>
+            <span class="sr-only">— Free AI SRT Subtitle Translator Online (100% Timing Sync)</span>
+          </h1>
         </div>
       </div>
 
-      <!-- 2-Tab Navigation Switcher -->
-      <nav class="app-main-tabs" role="tablist" aria-label="Main Navigation">
+      <!-- Desktop 2-Tab Navigation Switcher (Hidden on Mobile in favor of Bottom Nav) -->
+      <nav class="app-main-tabs desktop-tabs" role="tablist" aria-label="Main Navigation">
         <button type="button" class="app-tab-btn active" id="tabBtnTranslator" role="tab" aria-selected="true" aria-controls="viewTranslator">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="10"/>
@@ -85,9 +172,60 @@
       </nav>
       
       <div class="nav-badges">
-        <div class="header-ai-status-badge badge-off" id="headerAiBadge">
+        <a href="SRTtranslator-latest.apk" download="SRTtranslator-latest.apk" class="header-apk-btn" id="headerApkBtn" title="Download Standalone Android App (APK)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+          </svg>
+          <span>Get APK</span>
+        </a>
+
+        <div class="header-ai-status-badge badge-off" id="headerAiBadge" title="AI Connection Status">
           <span class="status-indicator-dot"></span>
           <span class="status-text" id="headerAiStatusText">No API Key</span>
+        </div>
+
+        <!-- Optional Google Account & Cloud Sync -->
+        <div class="user-auth-badge" id="userAuthBadge">
+          <button id="googleSignInBtn" class="btn-google-sign-in" type="button" title="Sign in with Google to backup & sync API keys">
+            <svg viewBox="0 0 24 24" width="14" height="14">
+              <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
+              <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.36 24 12 24z"/>
+              <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
+              <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.36 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+            </svg>
+            <span>Sign In</span>
+          </button>
+
+          <div id="userProfileWrap" class="user-profile-wrap hidden">
+            <button id="userProfileBtn" class="user-profile-btn" type="button" title="Google Account & Cloud Sync">
+              <img id="userAvatarImg" class="user-avatar-img" src="" alt="" referrerpolicy="no-referrer" crossorigin="anonymous" />
+              <span id="userShortName" class="user-short-name"></span>
+            </button>
+            <div id="userProfileDropdown" class="user-profile-dropdown hidden">
+              <div class="dropdown-user-info">
+                <strong id="dropdownUserName">Google User</strong>
+                <span id="dropdownUserEmail" class="dropdown-user-email"></span>
+              </div>
+              <div class="dropdown-sync-indicator">
+                <span class="sync-dot"></span>
+                <span>Cloud Sync Active</span>
+              </div>
+              <button id="manualCloudSyncBtn" class="dropdown-btn-item" type="button">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+                </svg>
+                <span>Backup Keys to Cloud</span>
+              </button>
+              <button id="googleSignOutBtn" class="dropdown-btn-item item-logout" type="button">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                  <polyline points="16 17 21 12 16 7"/>
+                  <line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
+                <span>Sign Out</span>
+              </button>
+            </div>
+          </div>
         </div>
 
         <button id="themeToggleBtn" class="theme-toggle-btn" type="button" title="Toggle Light / Dark Mode" aria-label="Toggle theme">
@@ -118,33 +256,52 @@
       <!-- ============================================== -->
       <div class="app-view active" id="viewTranslator">
 
-        <!-- Mandatory API Key Lockout Guard (Visible when NO key is connected) -->
-        <div class="translator-lock-guard hidden" id="translatorLockGuard">
-          <div class="lock-guard-card">
-            <div class="lock-icon-orb">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-              </svg>
-            </div>
-            <h3 class="lock-title">AI API Key Required</h3>
-            <p class="lock-desc">
-              To translate subtitles with zero-cost AI models (Google Gemini, Groq, OpenRouter, DeepSeek, or OpenAI), please connect your free API key in <strong>Settings</strong> first.
-            </p>
-            <div class="lock-actions">
-              <button type="button" class="btn btn-primary btn-lock-cta" id="lockGoToSettingsBtn">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="12" cy="12" r="3"/>
-                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-                </svg>
-                <span>Go to Settings &amp; Connect API Key</span>
-              </button>
-            </div>
+        <!-- Top Red Warning Alert Banner when API Keys are Missing -->
+        <div id="topApiKeyAlertBanner" class="top-api-key-alert-banner hidden">
+          <div class="top-alert-content">
+            <svg class="top-alert-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            <span class="top-alert-text">AI API key is not connected. Please connect your API keys to enable subtitle translation.</span>
+            <button class="top-alert-btn" type="button" id="topAlertConnectBtn">Connect API Keys &rarr;</button>
           </div>
         </div>
 
-        <!-- Settings Grid (Language, Model, Pacing, Context) -->
-        <section class="glass-card settings-section" id="settingsSection">
+        <!-- Translator Sub-Tabs Switcher (Translation Setting vs Translate) -->
+        <div class="sub-tabs-container">
+          <div class="sub-tabs-bar" role="tablist" aria-label="Translator Navigation">
+            <button type="button" class="sub-tab-pill active" id="subTabBtnEngineSettings" role="tab" aria-selected="true" aria-controls="subViewEngineSettings">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="4" y1="21" x2="4" y2="14"/>
+                <line x1="4" y1="10" x2="4" y2="3"/>
+                <line x1="12" y1="21" x2="12" y2="12"/>
+                <line x1="12" y1="8" x2="12" y2="3"/>
+                <line x1="20" y1="21" x2="20" y2="16"/>
+                <line x1="20" y1="12" x2="20" y2="3"/>
+                <line x1="1" y1="14" x2="7" y2="14"/>
+                <line x1="9" y1="8" x2="15" y2="8"/>
+                <line x1="17" y1="16" x2="23" y2="16"/>
+              </svg>
+              <span>Translation Setting</span>
+            </button>
+            <button type="button" class="sub-tab-pill" id="subTabBtnWorkspace" role="tab" aria-selected="false" aria-controls="subViewWorkspace">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="5 3 19 12 5 21 5 3"/>
+              </svg>
+              <span>Translate</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Translator Workspace Content -->
+        <div class="translator-content-body" id="translatorContentBody">
+
+        <!-- SUB-PANEL 1: Engine Settings -->
+        <div class="sub-view-panel active" id="subViewEngineSettings">
+          <!-- Settings Grid (Language, Model, Pacing, Context) -->
+          <section class="glass-card settings-section" id="settingsSection">
           <div class="card-header">
             <div class="title-with-icon">
               <div class="icon-wrap config-icon">
@@ -162,13 +319,13 @@
               </div>
               <div>
                 <h3>Translation Engine Settings</h3>
-                <p class="desc">Target language, AI models (auto-loaded live), and pacing presets.</p>
+                <p class="desc">Translate In language, AI models (auto-loaded live), and pacing presets.</p>
               </div>
             </div>
           </div>
 
           <div class="settings-grid">
-            <!-- Target Language -->
+            <!-- Translate In Language -->
             <div class="field-item field-card">
               <label for="targetLang">
                 <span class="field-label-group">
@@ -177,7 +334,7 @@
                     <line x1="2" y1="12" x2="22" y2="12"/>
                     <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
                   </svg>
-                  <span>Target Language</span>
+                  <span>Translate In</span>
                 </span>
                 <span class="hint-tag">40+ Global</span>
               </label>
@@ -233,24 +390,24 @@
               </div>
             </div>
 
-            <!-- AI Model (Auto-fetched from API only) -->
+            <!-- AI Model Selection (Auto-fetched from live APIs) -->
             <div class="field-item field-card">
               <label for="modelSelect">
                 <span class="field-label-group">
                   <svg class="field-icon icon-ai" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
                   </svg>
-                  <span>Google Gemini Model</span>
+                  <span>AI Model Selection</span>
                 </span>
-                <span class="hint-tag active-tag" id="modelLiveBadge">Awaiting API Key</span>
+                <span class="hint-tag active-tag" id="modelLiveBadge">Awaiting API Keys</span>
               </label>
               <div class="select-wrapper">
                 <select id="modelSelect" disabled>
-                  <option value="" disabled selected>Enter &amp; Save API key in Settings to load models live...</option>
+                  <option value="" disabled selected>Connect API keys in Settings to load models...</option>
                 </select>
               </div>
               <div class="field-footer-info">
-                <span class="field-micro-hint">Ranked by version • Flash recommended for high speed</span>
+                <span class="field-micro-hint">Auto Select dynamically probes and uses the fastest AI</span>
               </div>
             </div>
 
@@ -325,24 +482,27 @@
               </div>
             </div>
           </div>
-        </section>
+          </section>
+        </div> <!-- /#subViewEngineSettings -->
 
-        <!-- Upload Zone -->
-        <section class="glass-card upload-section" id="uploadCard">
-          <div class="drop-zone" id="dropZone">
-            <div class="drop-icon-anim">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                <polyline points="17 8 12 3 7 8"/>
-                <line x1="12" y1="3" x2="12" y2="15"/>
-              </svg>
-            </div>
-            <div class="drop-text-group">
-              <h4 class="drop-headline">Drop your SRT subtitle file here</h4>
-              <p class="drop-subline">or click to browse from your computer (.srt format supported)</p>
-            </div>
-            <input type="file" id="fileInput" accept=".srt" hidden />
-            <button class="btn btn-primary" id="browseBtn" type="button">
+        <!-- SUB-PANEL 2: Translate Workspace -->
+        <div class="sub-view-panel" id="subViewWorkspace">
+          <!-- Upload Zone -->
+          <section class="glass-card upload-section" id="uploadCard">
+            <div class="drop-zone" id="dropZone">
+              <div class="drop-icon-anim">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="17 8 12 3 7 8"/>
+                  <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+              </div>
+              <div class="drop-text-group">
+                <h4 class="drop-headline">Drop your SRT subtitle file here</h4>
+                <p class="drop-subline">or click to browse from your computer (.srt format supported)</p>
+              </div>
+              <input type="file" id="fileInput" accept=".srt" hidden />
+              <button class="btn btn-primary" id="browseBtn" type="button">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M12 5v14M5 12h14"/>
               </svg>
@@ -363,7 +523,14 @@
                 </svg>
               </div>
               <div class="file-info-text">
-                <div class="file-title" id="fileName">sample.srt</div>
+                <div class="file-title-group">
+                  <div class="file-title" id="fileName" title="Click to rename subtitle file">sample.srt</div>
+                  <button class="btn-rename-trigger" id="renameLoadedFileBtn" type="button" title="Rename subtitle file">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+                    </svg>
+                  </button>
+                </div>
                 <div class="file-stats-pills" id="fileStats">
                   <span class="pill-metric" id="fileCountBadge">0 Subtitles</span>
                   <span class="pill-metric" id="fileSizeBadge">0 KB</span>
@@ -488,6 +655,20 @@
               <div>
                 <h3>Translation Completed Perfectly!</h3>
                 <p class="result-sub-info" id="resultStats">SRT generated with 100% synchronized timecodes</p>
+                <div class="result-file-pill-row">
+                  <span class="result-file-pill" id="resultFileNamePill" title="Click to rename output subtitle file">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;color:var(--brand-primary-light);">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                      <polyline points="14 2 14 8 20 8"/>
+                    </svg>
+                    <span id="resultFileName">sample.srt</span>
+                  </span>
+                  <button class="btn-rename-trigger" id="renameResultFileBtn" type="button" title="Rename output subtitle file">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+                    </svg>
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -600,6 +781,10 @@
           </div>
         </section>
 
+        </div> <!-- /#subViewWorkspace -->
+
+        </div> <!-- /#translatorContentBody -->
+
       </div> <!-- /#viewTranslator -->
 
 
@@ -608,19 +793,70 @@
       <!-- ============================================== -->
       <div class="app-view" id="viewSettings">
 
-        <!-- Multi-AI Provider Hub & Key Management -->
+        <!-- Settings Sub-Tabs Switcher (API Keys vs History) -->
+        <div class="sub-tabs-container">
+          <div class="sub-tabs-bar" role="tablist" aria-label="Settings Navigation">
+            <button type="button" class="sub-tab-pill active" id="subTabBtnApiKeys" role="tab" aria-selected="true" aria-controls="subViewApiKeys">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 18v3c0 .6.4 1 1 1h4v-3h3v-3h2l1.4-1.4a6.5 6.5 0 1 0-4-4Z"/>
+                <circle cx="16.5" cy="7.5" r=".75" fill="currentColor"/>
+              </svg>
+              <span>API Keys</span>
+            </button>
+            <button type="button" class="sub-tab-pill" id="subTabBtnHistory" role="tab" aria-selected="false" aria-controls="subViewHistory">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9z"/>
+              </svg>
+              <span>History</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- SUB-PANEL 1: API Keys (Default Active) -->
+        <div class="sub-view-panel active" id="subViewApiKeys">
+
+        <!-- Google Cloud Account & API Key Sync Banner (Shown ONLY when not signed in) -->
+        <section class="glass-card auth-card-section" id="authSettingsSection">
+          <div class="auth-sync-banner-simple">
+            <div class="auth-banner-text-group">
+              <div class="icon-wrap google-icon-wrap">
+                <svg viewBox="0 0 24 24" width="20" height="20">
+                  <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
+                  <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.36 24 12 24z"/>
+                  <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
+                  <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.36 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+                </svg>
+              </div>
+              <div class="auth-banner-copy">
+                <h3>Google Cloud Sync</h3>
+                <p>Sign in to sync API keys and backup your subtitle history across devices.</p>
+              </div>
+            </div>
+            <button id="settingsGoogleSignInBtn" class="btn btn-google-connect" type="button">
+              <svg viewBox="0 0 24 24" width="18" height="18">
+                <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
+                <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.36 24 12 24z"/>
+                <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
+                <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.36 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+              </svg>
+              <span>Sign in with Google</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- Multi-AI Provider Hub & Key Management (AT THE TOP) -->
         <section class="glass-card api-section" id="apiSection">
           <div class="card-header">
             <div class="title-with-icon">
               <div class="icon-wrap key-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M21 2l-2 2m-1.5 1.5L14 9l-3-3 2.5-2.5a2.121 2.121 0 0 1 3 0l4.5 4.5z"/>
-                  <path d="M9 15l-4.5 4.5A2.121 2.121 0 0 1 1.5 18V15h3v-3h3v-3l4.5-4.5"/>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M2 18v3c0 .6.4 1 1 1h4v-3h3v-3h2l1.4-1.4a6.5 6.5 0 1 0-4-4Z"/>
+                  <circle cx="16.5" cy="7.5" r=".75" fill="currentColor"/>
                 </svg>
               </div>
               <div>
-                <h3>AI Providers &amp; API Keys (Mandatory)</h3>
-                <p class="desc">Connect Gemini, Groq, OpenRouter, DeepSeek or OpenAI. Auto-failover seamlessly switches models if limits are reached.</p>
+                <h3>AI Providers &amp; API Keys (Required)</h3>
+                <p class="desc">Connect API keys to enable translation with auto-failover resilience.</p>
               </div>
             </div>
             
@@ -644,20 +880,21 @@
                 </svg>
                 <span>Select AI Provider to Configure</span>
               </span>
-              <span class="hint-tag active-tag" id="providerSelectedTag">Google Gemini</span>
+              <span class="hint-tag active-tag" id="providerSelectedTag">Google Gemini (Required)</span>
             </label>
             <div class="select-wrapper">
               <select id="providerSelect">
-                <option value="gemini" selected>Google Gemini</option>
+                <option value="gemini" selected>Google Gemini (Required)</option>
+                <option value="openrouter">OpenRouter (Required)</option>
                 <option value="groq">Groq</option>
-                <option value="openrouter">OpenRouter</option>
                 <option value="deepseek">DeepSeek</option>
                 <option value="openai">OpenAI</option>
+                <option value="custom">Custom API</option>
               </select>
             </div>
           </div>
 
-          <!-- Provider Panel: Gemini -->
+          <!-- Provider Panel: Gemini (Required) -->
           <div class="provider-panel active" id="panel_gemini">
             <div class="api-form-row">
               <div class="input-glow-wrapper">
@@ -665,7 +902,7 @@
                   type="password"
                   id="apiKeyInput"
                   placeholder="Paste your Google Gemini API key"
-                  autocomplete="off"
+                  autocomplete="new-password"
                   spellcheck="false"
                 />
                 <button id="toggleApiKey" class="input-action-btn" title="Show or hide key" type="button">
@@ -677,6 +914,15 @@
               </div>
               <button id="saveApiKey" class="btn btn-save" type="button">
                 <span>Connect Gemini</span>
+              </button>
+              <button id="removeApiKey_gemini" class="btn btn-remove-key" title="Remove Gemini API Key" type="button" style="display:none;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  <line x1="10" y1="11" x2="10" y2="17"></line>
+                  <line x1="14" y1="11" x2="14" y2="17"></line>
+                </svg>
+                <span>Disconnect</span>
               </button>
               <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener" class="provider-get-key-btn">
                 <span>Get Free Key</span>
@@ -692,42 +938,7 @@
             </div>
           </div>
 
-          <!-- Provider Panel: Groq -->
-          <div class="provider-panel" id="panel_groq">
-            <div class="api-form-row">
-              <div class="input-glow-wrapper">
-                <input
-                  type="password"
-                  id="apiKeyInput_groq"
-                  placeholder="Paste your Groq API key"
-                  autocomplete="off"
-                  spellcheck="false"
-                />
-                <button id="toggleApiKey_groq" class="input-action-btn" title="Show or hide key" type="button">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                    <circle cx="12" cy="12" r="3"/>
-                  </svg>
-                </button>
-              </div>
-              <button id="saveApiKey_groq" class="btn btn-save" type="button">
-                <span>Connect Groq</span>
-              </button>
-              <a href="https://console.groq.com/keys" target="_blank" rel="noopener" class="provider-get-key-btn">
-                <span>Get Free Key</span>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-                  <polyline points="15 3 21 3 21 9"/>
-                  <line x1="10" y1="14" x2="21" y2="3"/>
-                </svg>
-              </a>
-            </div>
-            <div class="api-feedback-row">
-              <div id="apiStatus_groq" class="api-feedback"></div>
-            </div>
-          </div>
-
-          <!-- Provider Panel: OpenRouter -->
+          <!-- Provider Panel: OpenRouter (Required) -->
           <div class="provider-panel" id="panel_openrouter">
             <div class="api-form-row">
               <div class="input-glow-wrapper">
@@ -735,7 +946,7 @@
                   type="password"
                   id="apiKeyInput_openrouter"
                   placeholder="Paste your OpenRouter API key"
-                  autocomplete="off"
+                  autocomplete="new-password"
                   spellcheck="false"
                 />
                 <button id="toggleApiKey_openrouter" class="input-action-btn" title="Show or hide key" type="button">
@@ -747,6 +958,15 @@
               </div>
               <button id="saveApiKey_openrouter" class="btn btn-save" type="button">
                 <span>Connect OpenRouter</span>
+              </button>
+              <button id="removeApiKey_openrouter" class="btn btn-remove-key" title="Remove OpenRouter API Key" type="button" style="display:none;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  <line x1="10" y1="11" x2="10" y2="17"></line>
+                  <line x1="14" y1="11" x2="14" y2="17"></line>
+                </svg>
+                <span>Disconnect</span>
               </button>
               <a href="https://openrouter.ai/keys" target="_blank" rel="noopener" class="provider-get-key-btn">
                 <span>Get Key</span>
@@ -762,6 +982,50 @@
             </div>
           </div>
 
+          <!-- Provider Panel: Groq -->
+          <div class="provider-panel" id="panel_groq">
+            <div class="api-form-row">
+              <div class="input-glow-wrapper">
+                <input
+                  type="password"
+                  id="apiKeyInput_groq"
+                  placeholder="Paste your Groq API key"
+                  autocomplete="new-password"
+                  spellcheck="false"
+                />
+                <button id="toggleApiKey_groq" class="input-action-btn" title="Show or hide key" type="button">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                </button>
+              </div>
+              <button id="saveApiKey_groq" class="btn btn-save" type="button">
+                <span>Connect Groq</span>
+              </button>
+              <button id="removeApiKey_groq" class="btn btn-remove-key" title="Remove Groq API Key" type="button" style="display:none;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  <line x1="10" y1="11" x2="10" y2="17"></line>
+                  <line x1="14" y1="11" x2="14" y2="17"></line>
+                </svg>
+                <span>Disconnect</span>
+              </button>
+              <a href="https://console.groq.com/keys" target="_blank" rel="noopener" class="provider-get-key-btn">
+                <span>Get Free Key</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                  <polyline points="15 3 21 3 21 9"/>
+                  <line x1="10" y1="14" x2="21" y2="3"/>
+                </svg>
+              </a>
+            </div>
+            <div class="api-feedback-row">
+              <div id="apiStatus_groq" class="api-feedback"></div>
+            </div>
+          </div>
+
           <!-- Provider Panel: DeepSeek -->
           <div class="provider-panel" id="panel_deepseek">
             <div class="api-form-row">
@@ -770,7 +1034,7 @@
                   type="password"
                   id="apiKeyInput_deepseek"
                   placeholder="Paste your DeepSeek API key"
-                  autocomplete="off"
+                  autocomplete="new-password"
                   spellcheck="false"
                 />
                 <button id="toggleApiKey_deepseek" class="input-action-btn" title="Show or hide key" type="button">
@@ -782,6 +1046,15 @@
               </div>
               <button id="saveApiKey_deepseek" class="btn btn-save" type="button">
                 <span>Connect DeepSeek</span>
+              </button>
+              <button id="removeApiKey_deepseek" class="btn btn-remove-key" title="Remove DeepSeek API Key" type="button" style="display:none;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  <line x1="10" y1="11" x2="10" y2="17"></line>
+                  <line x1="14" y1="11" x2="14" y2="17"></line>
+                </svg>
+                <span>Disconnect</span>
               </button>
               <a href="https://platform.deepseek.com/api_keys" target="_blank" rel="noopener" class="provider-get-key-btn">
                 <span>Get Key</span>
@@ -805,7 +1078,7 @@
                   type="password"
                   id="apiKeyInput_openai"
                   placeholder="Paste your OpenAI API key"
-                  autocomplete="off"
+                  autocomplete="new-password"
                   spellcheck="false"
                 />
                 <button id="toggleApiKey_openai" class="input-action-btn" title="Show or hide key" type="button">
@@ -818,6 +1091,15 @@
               <button id="saveApiKey_openai" class="btn btn-save" type="button">
                 <span>Connect OpenAI</span>
               </button>
+              <button id="removeApiKey_openai" class="btn btn-remove-key" title="Remove OpenAI API Key" type="button" style="display:none;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  <line x1="10" y1="11" x2="10" y2="17"></line>
+                  <line x1="14" y1="11" x2="14" y2="17"></line>
+                </svg>
+                <span>Disconnect</span>
+              </button>
               <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener" class="provider-get-key-btn">
                 <span>Get Key</span>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -829,6 +1111,117 @@
             </div>
             <div class="api-feedback-row">
               <div id="apiStatus_openai" class="api-feedback"></div>
+            </div>
+          </div>
+
+          <!-- Provider Panel: Custom API (OpenAI-Compatible / Ollama / LM Studio / Together / Mistral etc.) -->
+          <div class="provider-panel" id="panel_custom">
+
+            <!-- Custom API Form Grid -->
+            <div class="custom-api-grid">
+              <div class="custom-api-field">
+                <label for="customApiBaseUrl" class="custom-field-label">
+                  <span>API Base URL / Endpoint (OpenAI Compatible)</span>
+                  <span class="custom-field-hint">e.g. https://api.together.xyz/v1, https://api.mistral.ai/v1, or http://localhost:11434/v1</span>
+                </label>
+                <div class="input-glow-wrapper">
+                  <input
+                    type="url"
+                    id="customApiBaseUrl"
+                    placeholder="https://api.example.com/v1"
+                    autocomplete="off"
+                    spellcheck="false"
+                  />
+                </div>
+              </div>
+
+              <div class="custom-api-field">
+                <label for="customApiModelName" class="custom-field-label">
+                  <span>Default Model ID / Name</span>
+                  <span class="custom-field-hint">e.g. meta-llama/Llama-3.3-70B-Instruct, mistral-large-latest, or qwen2.5:7b</span>
+                </label>
+                <div class="input-glow-wrapper">
+                  <input
+                    type="text"
+                    id="customApiModelName"
+                    placeholder="e.g. meta-llama/Llama-3.3-70B-Instruct"
+                    autocomplete="off"
+                    spellcheck="false"
+                  />
+                </div>
+              </div>
+
+              <div class="custom-api-field">
+                <label for="apiKeyInput_custom" class="custom-field-label">
+                  <span>API Key / Bearer Token</span>
+                  <span class="custom-field-hint">Optional: Leave blank for local offline AI (Ollama / LM Studio / LocalAI)</span>
+                </label>
+                <div class="input-glow-wrapper">
+                  <input
+                    type="password"
+                    id="apiKeyInput_custom"
+                    placeholder="Paste your Custom API key (or leave empty if local)"
+                    autocomplete="new-password"
+                    spellcheck="false"
+                  />
+                  <button id="toggleApiKey_custom" class="input-action-btn" title="Show or hide key" type="button">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                      <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Discovered Models Container (Auto-populated if /models responds) -->
+            <div id="customDetectedModelsBox" class="custom-detected-models-box hidden">
+              <div class="detected-models-header">
+                <span class="detected-models-title">Detected Models from Endpoint:</span>
+                <span class="detected-models-count" id="customDetectedCount">0 models</span>
+              </div>
+              <div class="detected-models-list" id="customDetectedModelsList"></div>
+            </div>
+
+            <!-- Action Buttons Row -->
+            <div class="api-form-row custom-actions-row">
+              <button id="saveApiKey_custom" class="btn btn-save" type="button">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;display:inline-block;margin-right:4px;vertical-align:-2px;">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span>Connect &amp; Verify Custom API</span>
+              </button>
+              <button id="testPing_custom" class="btn btn-secondary btn-test-ping" type="button" title="Test endpoint latency without saving">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;display:inline-block;margin-right:4px;vertical-align:-2px;">
+                  <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                </svg>
+                <span>Test Ping</span>
+              </button>
+              <button id="removeApiKey_custom" class="btn btn-remove-key" title="Remove Custom API" type="button" style="display:none;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  <line x1="10" y1="11" x2="10" y2="17"></line>
+                  <line x1="14" y1="11" x2="14" y2="17"></line>
+                </svg>
+                <span>Disconnect</span>
+              </button>
+            </div>
+
+            <div class="api-feedback-row">
+              <div id="apiStatus_custom" class="api-feedback"></div>
+            </div>
+
+            <!-- Local AI / CORS Tip -->
+            <div class="custom-api-tip-card">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="tip-icon">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+              <div class="tip-content">
+                <strong>Local AI &amp; Offline Tip:</strong> Ollama and LM Studio work without requiring an API key. If connecting to Ollama from web browser, launch it with <code class="code-pill">OLLAMA_ORIGINS="*" ollama serve</code> to enable browser CORS access. On Android APK app, local IP endpoints work directly!
+              </div>
             </div>
           </div>
 
@@ -897,6 +1290,60 @@
               </div>
             </div>
           </div>
+
+          <!-- Compact Required API Keys Status Checklist -->
+          <div class="api-required-checklist compact-checklist" id="apiRequiredChecklist">
+            <div class="compact-checklist-header">
+              <div class="compact-header-left">
+                <svg class="compact-header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M9 11l3 3L22 4"/>
+                  <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                </svg>
+                <span class="checklist-title">Required AI Keys Status</span>
+              </div>
+              <span class="checklist-status-badge badge-none" id="checklistOverallBadge">0/2 Connected</span>
+            </div>
+            
+            <div class="compact-checklist-grid">
+              <div class="checklist-item is-missing" id="checkItemGemini" data-provider="gemini" title="Click to configure Google Gemini API key">
+                <div class="checklist-item-left">
+                  <span class="checklist-status-icon status-missing" id="checkIconGemini">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <line x1="18" y1="6" x2="6" y2="18"></line>
+                      <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                  </span>
+                  <div class="checklist-name-group">
+                    <span class="checklist-item-name">Google Gemini</span>
+                    <span class="checklist-badge-required">Required</span>
+                  </div>
+                </div>
+                <div class="checklist-item-right">
+                  <span class="checklist-item-status-text status-missing" id="checkStatusTextGemini">Not Connected</span>
+                  <button type="button" class="checklist-action-btn" id="checkActionGemini" data-provider="gemini">Configure &rarr;</button>
+                </div>
+              </div>
+
+              <div class="checklist-item is-missing" id="checkItemOpenRouter" data-provider="openrouter" title="Click to configure OpenRouter API key">
+                <div class="checklist-item-left">
+                  <span class="checklist-status-icon status-missing" id="checkIconOpenRouter">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <line x1="18" y1="6" x2="6" y2="18"></line>
+                      <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                  </span>
+                  <div class="checklist-name-group">
+                    <span class="checklist-item-name">OpenRouter</span>
+                    <span class="checklist-badge-required">Required</span>
+                  </div>
+                </div>
+                <div class="checklist-item-right">
+                  <span class="checklist-item-status-text status-missing" id="checkStatusTextOpenRouter">Not Connected</span>
+                  <button type="button" class="checklist-action-btn" id="checkActionOpenRouter" data-provider="openrouter">Configure &rarr;</button>
+                </div>
+              </div>
+            </div>
+          </div>
         </section>
 
         <!-- App Info & System Preferences Card -->
@@ -947,6 +1394,82 @@
           </div>
         </section>
 
+        </div> <!-- /#subViewApiKeys -->
+
+        <!-- SUB-PANEL 2: History (Cloud Subtitle Archive) -->
+        <div class="sub-view-panel" id="subViewHistory">
+
+        <!-- Cloud Subtitle History & Auto-Archive (7 Days) -->
+        <section class="glass-card cloud-history-section" id="cloudHistorySection">
+          <div class="card-header">
+            <div class="title-with-icon">
+              <div class="icon-wrap cloud-icon-wrap">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9z"/>
+                </svg>
+              </div>
+              <div>
+                <h3>Cloud Subtitle Archive</h3>
+                <p class="desc">Translated subtitles are saved for 7 days.</p>
+              </div>
+            </div>
+            <div class="cloud-history-actions">
+              <button id="refreshCloudHistoryBtn" class="btn btn-refresh-history hidden" type="button" title="Refresh Cloud History">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="23 4 23 10 17 10"/>
+                  <polyline points="1 20 1 14 7 14"/>
+                  <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                </svg>
+                <span>Refresh</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="cloud-history-content">
+            <div id="cloudHistoryLoggedOutMsg" class="cloud-history-empty">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                <polyline points="17 21 17 13 7 13 7 21"/>
+                <polyline points="7 3 7 8 15 8"/>
+              </svg>
+              <p>Please sign in to view and access your 7-day cloud subtitle history.</p>
+            </div>
+
+            <div id="cloudHistoryLoading" class="cloud-history-loading hidden">
+              <div class="cloud-loading-spinner-row">
+                <div class="history-spinner"></div>
+                <span>Loading your cloud subtitle archive...</span>
+              </div>
+              <div class="cloud-history-skeleton-list">
+                <div class="history-skeleton-card">
+                  <div class="skeleton-shimmer skeleton-title"></div>
+                  <div class="skeleton-shimmer skeleton-meta"></div>
+                </div>
+                <div class="history-skeleton-card">
+                  <div class="skeleton-shimmer skeleton-title" style="width:55%;"></div>
+                  <div class="skeleton-shimmer skeleton-meta" style="width:65%;"></div>
+                </div>
+              </div>
+            </div>
+
+            <div id="cloudHistoryEmptyMsg" class="cloud-history-empty hidden">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="12" y1="18" x2="12" y2="12"/>
+                <line x1="9" y1="15" x2="15" y2="15"/>
+              </svg>
+              <p>No subtitles found in cloud storage. New translations will automatically be archived here.</p>
+            </div>
+
+            <div id="cloudHistoryList" class="cloud-history-list hidden">
+              <!-- Dynamically populated history cards -->
+            </div>
+          </div>
+        </section>
+
+        </div> <!-- /#subViewHistory -->
+
       </div> <!-- /#viewSettings -->
 
     </main>
@@ -977,6 +1500,41 @@
     </div>
   </div>
 
-  <script src="app.js?v=4.0.0"></script>
+  <!-- Native Mobile Floating Bottom Navigation Bar (Mobile / App Viewports) -->
+  <nav class="native-bottom-nav" id="nativeBottomNav" role="navigation" aria-label="Mobile Navigation">
+    <div class="bottom-nav-container">
+      <button type="button" class="bottom-nav-btn active" id="bottomTabBtnTranslator" aria-label="Translator Tab">
+        <div class="bottom-nav-icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="2" y1="12" x2="22" y2="12"/>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+          </svg>
+          <span class="bottom-nav-glow"></span>
+        </div>
+        <span class="bottom-nav-label">Translator</span>
+      </button>
+
+      <button type="button" class="bottom-nav-btn" id="bottomTabBtnSettings" aria-label="Settings Tab">
+        <div class="bottom-nav-icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+          <span class="bottom-nav-dot dot-off" id="bottomNavDot"></span>
+          <span class="bottom-nav-glow"></span>
+        </div>
+        <span class="bottom-nav-label">Settings</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Firebase SDK (Optional Google Sign-In & Cloud API Key Sync) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js?v=5.5.0"></script>
+  <script src="firebase-sync.js?v=5.5.0"></script>
+  <script src="app.js?v=5.5.0"></script>
 </body>
 </html>
