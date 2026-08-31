@@ -3220,6 +3220,25 @@ function setupEventListeners() {
   if (modelSelect) {
     modelSelect.addEventListener('change', () => {
       state.selectedModel = modelSelect.value;
+
+      // If user deliberately changed model during an active or paused session:
+      const targetVal = modelSelect.value;
+      if (targetVal && targetVal !== 'auto') {
+        const { providerId, model } = getActiveProviderAndKey(targetVal);
+        // Clear any previous failure block for this specific model so the user's manual choice is respected
+        const cleanId = (model || '').replace(/^models\//, '').trim().toLowerCase();
+        const key = `${providerId}:${cleanId}`;
+        modelHealthTracker.sessionFailedModels.delete(key);
+        modelHealthTracker.failures.delete(key);
+      }
+
+      if (state.isPaused && (state.isTranslating || state.isCondensing)) {
+        const desc = getSelectedModelFriendlyDescription();
+        const isCondense = !!state.isCondensing;
+        addTerminalLog('info', `AI Model switched to "${desc}". Resuming will continue ${isCondense ? 'condensation' : 'translation'} with this model.`);
+        showToast(`Model set to "${desc}". Click Resume to continue.`, 'info');
+      }
+
       updateQuotaDashboardForActiveModel();
       checkReadyToTranslate();
     });
