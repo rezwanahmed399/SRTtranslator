@@ -1442,35 +1442,36 @@ async function verifyAndLoadProvider(providerId, key) {
         throw new Error('No compatible translation models available for this Gemini API Key.');
       }
 
-      // Dynamic real-time sorting: Flash & next-gen models at top
+      // Dynamic real-time sorting by mathematical version number descending (e.g. 10.0 > 6.0 > 5.0 > 4.5 > 4.0 > 3.5 > 3.0)
       textModels.sort((a, b) => {
         const idA = a.name.replace(/^models\//, '').toLowerCase();
         const idB = b.name.replace(/^models\//, '').toLowerCase();
-        if (idA.includes('2.5-flash')) return -1;
-        if (idB.includes('2.5-flash')) return 1;
-        if (idA.includes('2.0-flash') && !idA.includes('lite')) return -1;
-        if (idB.includes('2.0-flash') && !idB.includes('lite')) return 1;
-        if (idA.includes('2.0-flash-lite')) return -1;
-        if (idB.includes('2.0-flash-lite')) return 1;
-        if (idA.includes('1.5-flash')) return -1;
-        if (idB.includes('1.5-flash')) return 1;
-        return idA.localeCompare(idB);
+        const vA = getGeminiVersionNumber(idA);
+        const vB = getGeminiVersionNumber(idB);
+        if (vB !== vA) return vB - vA;
+        const score = (id) => {
+          if (id.includes('pro')) return 3;
+          if (id.includes('flash') && !id.includes('lite')) return 2;
+          if (id.includes('lite')) return 1;
+          return 0;
+        };
+        return score(idB) - score(idA);
       });
 
       loadedModels = textModels.map(m => {
         const id = m.name.replace(/^models\//, '');
+        const verNum = getGeminiVersionNumber(id);
         const isPro = id.includes('pro');
-        const is25 = id.includes('2.5');
-        const is20 = id.includes('2.0');
+        const isLite = id.includes('lite');
         return {
           id,
           displayName: m.displayName || id,
-          version: m.version || (is25 ? '2.5' : is20 ? '2.0' : '1.5'),
+          version: verNum > 0 ? `${verNum}` : (m.version || 'Google AI'),
           inputTokens: m.inputTokenLimit || 1048576,
           outputTokens: m.outputTokenLimit || 8192,
-          rpm: isPro ? '2 RPM' : '15 RPM',
-          rpd: isPro ? '50 RPD' : '1,500 RPD',
-          desc: m.description || (isPro ? 'Pro Deep Reasoning' : 'Fast Production Model'),
+          rpm: isLite ? '30 RPM' : (isPro ? '5 RPM' : '15 RPM'),
+          rpd: isPro ? '1,000 RPD' : '1,500 RPD',
+          desc: m.description || (isLite ? 'Gemini Ultra-Fast Lite' : (isPro ? 'Pro Deep Reasoning' : 'Fast Production Model')),
           providerId: 'gemini',
           livePingMs: probeMs
         };
@@ -2146,11 +2147,8 @@ function isGeminiLite(providerId, modelId) {
 function getAllGeminiProFlashModels(providerId = 'gemini') {
   const liveList = (state.providerStatus[providerId]?.models || []).map(m => typeof m === 'string' ? m : m.id);
   const presetList = (AI_PROVIDERS[providerId]?.models || []).map(m => m.id);
-  const baseOrder = providerId === 'gemini' 
-    ? ['gemini-3.5-pro', 'gemini-3.5-flash', 'gemini-3.1-pro', 'gemini-3.1-flash', 'gemini-3.0-pro', 'gemini-3.0-flash']
-    : ['google/gemini-3.5-pro', 'google/gemini-3.5-flash', 'google/gemini-3.0-flash', 'google/gemini-3.0-pro'];
   
-  const combined = Array.from(new Set([...liveList, ...presetList, ...baseOrder]));
+  const combined = Array.from(new Set([...liveList, ...presetList]));
   return combined
     .filter(mId => isGeminiProOrFlash(providerId, mId))
     .sort((a, b) => {
@@ -2165,11 +2163,8 @@ function getAllGeminiProFlashModels(providerId = 'gemini') {
 function getAllGeminiLiteModels(providerId = 'gemini') {
   const liveList = (state.providerStatus[providerId]?.models || []).map(m => typeof m === 'string' ? m : m.id);
   const presetList = (AI_PROVIDERS[providerId]?.models || []).map(m => m.id);
-  const baseOrder = providerId === 'gemini'
-    ? ['gemini-3.5-flash-lite', 'gemini-3.1-flash-lite', 'gemini-3.0-flash-lite']
-    : ['google/gemini-3.5-flash-lite', 'google/gemini-3.0-flash-lite'];
   
-  const combined = Array.from(new Set([...liveList, ...presetList, ...baseOrder]));
+  const combined = Array.from(new Set([...liveList, ...presetList]));
   return combined
     .filter(mId => isGeminiLite(providerId, mId))
     .sort((a, b) => getGeminiVersionNumber(b) - getGeminiVersionNumber(a));
