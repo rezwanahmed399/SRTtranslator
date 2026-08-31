@@ -3970,7 +3970,7 @@ async function runTranslationPipeline() {
     concise: 'Fast Reading & Concise (Recommended • Streamlined)',
     balanced: 'Balanced & Natural (Standard Cinema Cadence)',
     detailed: 'Detailed & Complete (Full Unabridged • Literal)',
-    micro_limit: 'Ultra-Short with Word Limit (Strict 1–4 Words, Max 5 if essential)',
+    micro_limit: 'Ultra-Short with Word Limit (Strict 1–4 Words, Max 5)',
     concise_limit: 'Concise with Word Limit (Strict 4–7 Words Limit)',
     balanced_limit: 'Balanced with Word Limit (Strict 7–12 Words Limit)'
   };
@@ -4314,24 +4314,24 @@ ${isBn ? `  * Side-by-Side Reference:
 
   // ── 2. STRICT WORD-LIMIT MODES (With Explicit Word Count Quotas & Conversion Charts) ──
   if (pace === 'micro_limit') {
-    return `SUBTITLE PACING PRESET: [ ULTRA-SHORT (STRICT WORD LIMIT: 1 TO 4 WORDS, MAX 5 ONLY IF ESSENTIAL) ]
-- TARGET LENGTH: Strict 1 to 4 words max per subtitle line (up to 5 words permitted ONLY when absolutely necessary for essential meaning/plot).
+    return `SUBTITLE PACING PRESET: [ ULTRA-SHORT (STRICT WORD LIMIT: 1 TO 4 WORDS, MAX 5) ]
+- TARGET LENGTH: Strict 1 to 4 words max per subtitle line (maximum 5 words ceiling).
 - WORD LIMIT CONVERSION CHART:
   * 1-2 words source -> 1-3 words target
   * 3-6 words source -> 2-4 words target
-  * 7-12 words source -> 3-4 words target (distill to core punchline; maximum 5 words if crucial)
+  * 7-12 words source -> 3-4 words target (distill to core punchline; maximum 5 words)
 - HOW TO TRANSLATE UNDER THIS WORD LIMIT:
   * Drop all conversational filler words (drop "আসলে", "সত্যি বলতে", "তোমাকে বলছি", "আমার মনে হয়", "এখন").
   * Drop redundant subject pronouns (drop "আমি", "তুমি", "সে") when verb indicates person.
   * Turn questions into direct inflection with "?" without question words.
-  * Keep strictly within 1-4 words; allow a 5th word only when omitting it would break crucial meaning.
+  * Keep strictly within 1-4 words (absolute maximum 5 words).
 ${isBn ? `  * Side-by-Side Reference with Word Counts:
     - Input: "What are you doing over there right now?" -> Ultra-Short: "কী করছ ওখানে?" (3 words) [NEVER write 6+ words]
     - Input: "I really don't think we should be doing this at all." -> Ultra-Short: "এটা করা ঠিক না।" (4 words)
     - Input: "Are you sure you want to go inside that room?" -> Ultra-Short: "ভিতরে যাবে নিশ্চিত?" (3 words)
     - Input: "I'm telling you, he is not going to listen to anything you say." -> Ultra-Short: "ও শুনবে না।" (3 words)
     - Input: "Let me know as soon as you find anything suspicious." -> Ultra-Short: "সন্দেহজনক কিছু পেলেই জানিও।" (4 words)` : ''}
-- STRICT NEGATIVE CONSTRAINT: Keep strictly within 1-4 words (absolute ceiling of 5 words ONLY if meaning demands it). DO NOT output 6+ words under any circumstances!`;
+- STRICT NEGATIVE CONSTRAINT: Keep strictly within 1-4 words (maximum ceiling of 5 words). DO NOT output 6+ words under any circumstances!`;
   }
 
   if (pace === 'concise_limit') {
