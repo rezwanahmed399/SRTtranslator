@@ -4198,54 +4198,52 @@ function getSubtitlePacingPrompt(pace, lang = 'Bengali') {
   const isBn = (lang || '').toLowerCase().includes('bengali') || lang === 'Bengali';
 
   if (pace === 'micro' || pace === 'ultra_short' || pace === 'ultra_concise') {
-    return `SUBTITLE PACING PRESET: [ ULTRA-SHORT / GLANCE SPEED ] (STRICT MINIMALIST COMPRESSION)
-- TARGET LENGTH: Strictly 2 to 4 words per line (Simple dialogue: 2-3 words; Compound dialogue: max 4-5 words).
-- CORE GOAL: Ultra-compact, punchy lines that viewers can read in a 0.3-0.5s glance without looking away from the action.
+    return `SUBTITLE PACING PRESET: [ ULTRA-SHORT / GLANCE SPEED ] (MINIMALIST & PUNCHY PHRASING)
+- CORE GOAL: Ultra-compact, punchy lines that viewers can read in a split-second glance without looking away from the action.
 - HOW TO TRANSLATE IN THIS MODE:
   * Cut all conversational filler words and padding (drop "আসলে", "সত্যি বলতে", "তোমাকে বলছি", "আমার মনে হয়", "এখন", "এখানে").
   * Drop redundant pronouns & subjects when the spoken verb already implies the person (drop "আমি", "তুমি", "সে", "আমরা").
-  * Turn questions into direct, punchy inflection with "?" (avoid "তুমি কি", "নাকি", "কিনা").
-  * Use punchy, active spoken verbs and core keywords.
+  * Turn questions into direct, punchy inflection with "?" (avoid formal "তুমি কি", "নাকি", "কিনা").
+  * Use punchy, active spoken verbs and core direct keywords.
 ${isBn ? `  * Side-by-Side Reference:
-    - Input: "What are you doing over there right now?" -> Ultra-Short: "কী করছ ওখানে?" (3 words) [NEVER write 5+ words]
-    - Input: "I really don't think we should be doing this at all." -> Ultra-Short: "এটা করা ঠিক না।" (4 words)
-    - Input: "Are you sure you want to go inside that room?" -> Ultra-Short: "ভিতরে যাবে নিশ্চিত?" (3 words)
-    - Input: "I'm telling you, he is not going to listen to anything you say." -> Ultra-Short: "ও শুনবে না।" (3 words)
-    - Input: "Let me know as soon as you find anything suspicious." -> Ultra-Short: "সন্দেহজনক কিছু পেলেই জানিও।" (4 words)` : ''}
-- STRICT NEGATIVE CONSTRAINT: DO NOT output full-length multi-clause sentences or polite conversational scaffolding. If your line exceeds 4-5 words for ordinary dialogue, you are FAILING this preset! Keep it visibly short, punchy, and minimal!`;
+    - Input: "What are you doing over there right now?" -> Ultra-Short: "কী করছ ওখানে?"
+    - Input: "I really don't think we should be doing this at all." -> Ultra-Short: "এটা করা ঠিক না।" / "না করাই ভালো।"
+    - Input: "Are you sure you want to go inside that room?" -> Ultra-Short: "ভিতরে যাবে নিশ্চিত?"
+    - Input: "I'm telling you, he is not going to listen to anything you say." -> Ultra-Short: "ও কোনো কথাই শুনবে না।" / "ও শুনবে না।"
+    - Input: "Wait a minute, where do you think you are going?" -> Ultra-Short: "দাঁড়াও, কোথায় যাচ্ছ?"
+    - Input: "Let me know as soon as you find anything suspicious." -> Ultra-Short: "সন্দেহজনক কিছু পেলেই জানিও।"` : ''}
+- STRICT NEGATIVE CONSTRAINT: DO NOT output full-length multi-clause narrative sentences or polite conversational scaffolding. Keep it visibly short, punchy, direct, and minimal!`;
   }
 
   if (pace === 'concise') {
     return `SUBTITLE PACING PRESET: [ FAST READING & CONCISE ] (STANDARD STREAMLINED)
-- TARGET LENGTH: Clean 4 to 7 words per line.
-- CORE GOAL: Fast, effortless reading with standard short sentence structure (Subject + Object + Verb).
+- CORE GOAL: Fast, effortless reading with clean, standard short sentence structure (Subject + Object + Verb).
 - HOW TO TRANSLATE IN THIS MODE:
   * Keep short, crisp conversational sentences without rambling clauses or excessive adjectives.
   * Retain complete short dialogue structure while eliminating conversational disfluencies.
 ${isBn ? `  * Side-by-Side Reference:
-    - Input: "What are you doing over there right now?" -> Concise: "তুমি ওখানে এখন কী করছ?" (5 words)
-    - Input: "I really don't think we should be doing this at all." -> Concise: "আমাদের এটা করা ঠিক হবে না।" (6 words)
-    - Input: "Are you sure you want to go inside that room?" -> Concise: "তুমি কি নিশ্চিত ওই ঘরে যাবে?" (6 words)
-    - Input: "I'm telling you, he is not going to listen to anything you say." -> Concise: "তোমাকে বলছি, ও তোমার কথা শুনবে না।" (7 words)` : ''}
+    - Input: "What are you doing over there right now?" -> Concise: "তুমি ওখানে এখন কী করছ?"
+    - Input: "I really don't think we should be doing this at all." -> Concise: "আমাদের এটা করা ঠিক হবে না।"
+    - Input: "Are you sure you want to go inside that room?" -> Concise: "তুমি কি নিশ্চিত ওই ঘরে যাবে?"
+    - Input: "I'm telling you, he is not going to listen to anything you say." -> Concise: "তোমাকে বলছি, ও তোমার কথা শুনবে না।"
+    - Input: "Wait a minute, where do you think you are going?" -> Concise: "একটু দাঁড়াও, তুমি কোথায় যাচ্ছ?"` : ''}
 - Keep translations crisp, natural, and comfortably readable within standard subtitle display time.`;
   }
 
   if (pace === 'balanced') {
     return `SUBTITLE PACING PRESET: [ BALANCED & NATURAL ] (CINEMATIC CADENCE)
-- TARGET LENGTH: Natural 7 to 12 words per line.
 - CORE GOAL: Full cinematic dubbing flow matching the natural voiceover cadence, natural tone markers, and emotional warmth.
 - HOW TO TRANSLATE IN THIS MODE:
   * Do NOT artificially compress dialogue. Translate with full natural spoken conversational flow (চলতি কথ্য ভাষা).
 ${isBn ? `  * Side-by-Side Reference:
-    - Input: "What are you doing over there right now?" -> Balanced: "তুমি এখন ওই দিকটাতে গিয়ে কী করছ বলো তো?" (9 words)
-    - Input: "I really don't think we should be doing this at all." -> Balanced: "আমার মনে হয় না আমাদের এখন এই কাজটা করা কোনোভাবেই ঠিক হবে।" (11 words)
-    - Input: "Are you sure you want to go inside that room?" -> Balanced: "তুমি কি সত্যিই নিশ্চিত যে তুমি ওই রুমটার ভেতরে যেতে চাও?" (11 words)` : ''}`;
+    - Input: "What are you doing over there right now?" -> Balanced: "তুমি এখন ওই দিকটাতে গিয়ে কী করছ বলো তো?"
+    - Input: "I really don't think we should be doing this at all." -> Balanced: "আমার মনে হয় না আমাদের এখন এই কাজটা করা কোনোভাবেই ঠিক হবে।"
+    - Input: "Are you sure you want to go inside that room?" -> Balanced: "তুমি কি সত্যিই নিশ্চিত যে তুমি ওই রুমটার ভেতরে যেতে চাও?"` : ''}`;
   }
 
   // detailed
   return `SUBTITLE PACING PRESET: [ DETAILED & COMPLETE ] (UNABRIDGED LITERAL)
-- TARGET LENGTH: Full unabridged translation with zero length constraints.
-- CORE GOAL: 100% comprehensive literal translation capturing every descriptive adjective, honorific, sub-clause, qualifier, and narrative detail.`;
+- CORE GOAL: 100% comprehensive literal translation capturing every descriptive adjective, honorific, sub-clause, qualifier, and narrative detail without omitting or summarizing anything.`;
 }
 
 // ── Google Gemini Translation Engine ──
