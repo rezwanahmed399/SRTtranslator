@@ -1222,6 +1222,277 @@ function switchProviderTab(providerId) {
   });
 }
 
+// ── IP Geolocation & Locale-Based Intelligent Target Language Detection ──
+const GEO_COUNTRY_TO_LANG = {
+  // South Asia
+  'BD': 'Bengali',
+  'PK': 'Urdu',
+  'NP': 'Nepali',
+  'LK': 'Sinhala',
+  'AF': 'Pashto',
+  'MM': 'Burmese',
+
+  // Middle East & North Africa (Arabic)
+  'SA': 'Arabic', 'AE': 'Arabic', 'EG': 'Arabic', 'QA': 'Arabic', 'KW': 'Arabic',
+  'OM': 'Arabic', 'BH': 'Arabic', 'JO': 'Arabic', 'IQ': 'Arabic', 'LB': 'Arabic',
+  'SY': 'Arabic', 'YE': 'Arabic', 'DZ': 'Arabic', 'MA': 'Arabic', 'TN': 'Arabic',
+  'LY': 'Arabic', 'SD': 'Arabic', 'PS': 'Arabic', 'MR': 'Arabic', 'DJ': 'Arabic',
+
+  // East & Southeast Asia
+  'JP': 'Japanese',
+  'KR': 'Korean',
+  'CN': 'Chinese (Simplified)',
+  'SG': 'Chinese (Simplified)',
+  'TW': 'Chinese (Traditional)',
+  'HK': 'Chinese (Traditional)',
+  'MO': 'Chinese (Traditional)',
+  'ID': 'Indonesian',
+  'MY': 'Malay',
+  'BN': 'Malay',
+  'TH': 'Thai',
+  'VN': 'Vietnamese',
+  'PH': 'Filipino / Tagalog',
+  'KH': 'Khmer',
+
+  // Central Asia & Middle East Other
+  'IR': 'Persian',
+  'TJ': 'Persian',
+  'TR': 'Turkish',
+  'AZ': 'Azerbaijani',
+  'KZ': 'Kazakh',
+  'UZ': 'Uzbek',
+  'IL': 'Hebrew',
+
+  // Latin America & Iberia (Spanish & Portuguese)
+  'ES': 'Spanish', 'MX': 'Spanish', 'AR': 'Spanish', 'CO': 'Spanish', 'PE': 'Spanish',
+  'CL': 'Spanish', 'EC': 'Spanish', 'GT': 'Spanish', 'CU': 'Spanish', 'BO': 'Spanish',
+  'DO': 'Spanish', 'HN': 'Spanish', 'PY': 'Spanish', 'SV': 'Spanish', 'NI': 'Spanish',
+  'CR': 'Spanish', 'PA': 'Spanish', 'UY': 'Spanish', 'PR': 'Spanish', 'VE': 'Spanish',
+  'BR': 'Portuguese', 'PT': 'Portuguese', 'AO': 'Portuguese', 'MZ': 'Portuguese',
+
+  // Europe
+  'FR': 'French',
+  'DE': 'German', 'AT': 'German', 'LI': 'German',
+  'IT': 'Italian', 'SM': 'Italian', 'VA': 'Italian',
+  'RU': 'Russian', 'BY': 'Russian',
+  'UA': 'Ukrainian',
+  'PL': 'Polish',
+  'NL': 'Dutch',
+  'SE': 'Swedish',
+  'NO': 'Norwegian',
+  'DK': 'Danish',
+  'FI': 'Finnish',
+  'GR': 'Greek', 'CY': 'Greek',
+  'CZ': 'Czech',
+  'RO': 'Romanian', 'MD': 'Romanian',
+  'HU': 'Hungarian',
+  'HR': 'Croatian', 'BA': 'Croatian',
+  'RS': 'Serbian', 'ME': 'Serbian',
+  'SK': 'Slovak',
+  'BG': 'Bulgarian',
+
+  // Africa
+  'ET': 'Amharic',
+  'NG': 'Hausa', 'NE': 'Hausa',
+  'KE': 'Swahili', 'TZ': 'Swahili', 'UG': 'Swahili', 'RW': 'Swahili',
+
+  // English-speaking
+  'US': 'English', 'GB': 'English', 'AU': 'English', 'CA': 'English',
+  'NZ': 'English', 'IE': 'English', 'ZA': 'English'
+};
+
+// India Region / State Sub-Mapping
+const INDIA_REGION_TO_LANG = {
+  'WB': 'Bengali', 'WEST BENGAL': 'Bengali',
+  'TR': 'Bengali', 'TRIPURA': 'Bengali',
+  'MH': 'Marathi', 'MAHARASHTRA': 'Marathi',
+  'GJ': 'Gujarati', 'GUJARAT': 'Gujarati',
+  'TN': 'Tamil', 'TAMIL NADU': 'Tamil',
+  'KA': 'Kannada', 'KARNATAKA': 'Kannada',
+  'KL': 'Malayalam', 'KERALA': 'Malayalam',
+  'AP': 'Telugu', 'ANDHRA PRADESH': 'Telugu',
+  'TG': 'Telugu', 'TS': 'Telugu', 'TELANGANA': 'Telugu',
+  'PB': 'Punjabi', 'PUNJAB': 'Punjabi',
+  'OD': 'Odia', 'OR': 'Odia', 'ODISHA': 'Odia', 'ORISSA': 'Odia'
+};
+
+// Device / Browser Locale Prefix Mapping
+const LOCALE_PREFIX_TO_LANG = {
+  'bn': 'Bengali',
+  'hi': 'Hindi',
+  'ur': 'Urdu',
+  'ar': 'Arabic',
+  'es': 'Spanish',
+  'pt': 'Portuguese',
+  'fr': 'French',
+  'de': 'German',
+  'it': 'Italian',
+  'ru': 'Russian',
+  'ja': 'Japanese',
+  'ko': 'Korean',
+  'zh-tw': 'Chinese (Traditional)',
+  'zh-hk': 'Chinese (Traditional)',
+  'zh-mo': 'Chinese (Traditional)',
+  'zh-hant': 'Chinese (Traditional)',
+  'zh': 'Chinese (Simplified)',
+  'id': 'Indonesian',
+  'tr': 'Turkish',
+  'vi': 'Vietnamese',
+  'th': 'Thai',
+  'fil': 'Filipino / Tagalog',
+  'tl': 'Filipino / Tagalog',
+  'ms': 'Malay',
+  'my': 'Burmese',
+  'ne': 'Nepali',
+  'si': 'Sinhala',
+  'am': 'Amharic',
+  'ha': 'Hausa',
+  'sw': 'Swahili',
+  'pl': 'Polish',
+  'uk': 'Ukrainian',
+  'nl': 'Dutch',
+  'sv': 'Swedish',
+  'no': 'Norwegian',
+  'nb': 'Norwegian',
+  'nn': 'Norwegian',
+  'da': 'Danish',
+  'fi': 'Finnish',
+  'el': 'Greek',
+  'cs': 'Czech',
+  'ro': 'Romanian',
+  'hu': 'Hungarian',
+  'hr': 'Croatian',
+  'sr': 'Serbian',
+  'sk': 'Slovak',
+  'bg': 'Bulgarian',
+  'az': 'Azerbaijani',
+  'kk': 'Kazakh',
+  'uz': 'Uzbek',
+  'he': 'Hebrew',
+  'iw': 'Hebrew',
+  'fa': 'Persian',
+  'ps': 'Pashto',
+  'mr': 'Marathi',
+  'gu': 'Gujarati',
+  'ta': 'Tamil',
+  'te': 'Telugu',
+  'kn': 'Kannada',
+  'ml': 'Malayalam',
+  'pa': 'Punjabi',
+  'or': 'Odia',
+  'en': 'English'
+};
+
+function getDeviceLocaleLanguage() {
+  const navLangs = navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || 'en'];
+  for (const rawLoc of navLangs) {
+    if (!rawLoc) continue;
+    const clean = rawLoc.toLowerCase().trim();
+    if (LOCALE_PREFIX_TO_LANG[clean]) return LOCALE_PREFIX_TO_LANG[clean];
+    const base2 = clean.split('-')[0].split('_')[0];
+    if (LOCALE_PREFIX_TO_LANG[base2]) return LOCALE_PREFIX_TO_LANG[base2];
+  }
+  return null;
+}
+
+async function detectAndApplyGeoLanguage() {
+  // If user has ever manually chosen a language, ALWAYS preserve it
+  if (localStorage.getItem('preferred_target_lang')) {
+    return;
+  }
+
+  // 1. Check if we already detected and cached geo language for this browser session
+  const cachedGeo = sessionStorage.getItem('subsync_auto_geo_lang');
+  if (cachedGeo && targetLang) {
+    targetLang.value = cachedGeo;
+    refreshCustomSelect('targetLang');
+    return;
+  }
+
+  // 2. Set instantaneous fast default from device/browser locale first (no latency)
+  const deviceLang = getDeviceLocaleLanguage();
+  if (deviceLang && targetLang) {
+    targetLang.value = deviceLang;
+    refreshCustomSelect('targetLang');
+  }
+
+  // 3. Query IP Geolocation API in background to refine with exact Country / State location
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 2800);
+
+    let countryCode = '';
+    let regionCode = '';
+    let regionName = '';
+
+    // Primary: ipapi.co
+    try {
+      const res = await fetch('https://ipapi.co/json/', { signal: controller.signal });
+      if (res.ok) {
+        const data = await res.json();
+        countryCode = (data.country_code || '').toUpperCase();
+        regionCode = (data.region_code || '').toUpperCase();
+        regionName = (data.region || '').toUpperCase();
+      }
+    } catch (e1) {
+      // Fallback 1: api.country.is
+      try {
+        const res2 = await fetch('https://api.country.is', { signal: controller.signal });
+        if (res2.ok) {
+          const data2 = await res2.json();
+          countryCode = (data2.country || '').toUpperCase();
+        }
+      } catch (e2) {
+        // Fallback 2: ipwho.is
+        try {
+          const res3 = await fetch('https://ipwho.is/', { signal: controller.signal });
+          if (res3.ok) {
+            const data3 = await res3.json();
+            countryCode = (data3.country_code || '').toUpperCase();
+            regionName = (data3.region || '').toUpperCase();
+          }
+        } catch (e3) {}
+      }
+    }
+    clearTimeout(timeoutId);
+
+    // If user selected something in the meantime, don't overwrite
+    if (localStorage.getItem('preferred_target_lang')) return;
+
+    let resolvedLang = null;
+
+    // Special India state-level routing
+    if (countryCode === 'IN') {
+      if (regionCode && INDIA_REGION_TO_LANG[regionCode]) {
+        resolvedLang = INDIA_REGION_TO_LANG[regionCode];
+      } else if (regionName && INDIA_REGION_TO_LANG[regionName]) {
+        resolvedLang = INDIA_REGION_TO_LANG[regionName];
+      } else {
+        resolvedLang = deviceLang || 'Hindi';
+      }
+    } else if (countryCode && GEO_COUNTRY_TO_LANG[countryCode]) {
+      resolvedLang = GEO_COUNTRY_TO_LANG[countryCode];
+    } else if (deviceLang) {
+      resolvedLang = deviceLang;
+    }
+
+    if (resolvedLang && targetLang) {
+      const hasOption = Array.from(targetLang.options).some(opt => opt.value === resolvedLang);
+      if (hasOption) {
+        targetLang.value = resolvedLang;
+        sessionStorage.setItem('subsync_auto_geo_lang', resolvedLang);
+        refreshCustomSelect('targetLang');
+        if (typeof checkReadyToTranslate === 'function') checkReadyToTranslate();
+        if (typeof addTerminalLog === 'function') {
+          addTerminalLog('info', `IP location detected (${countryCode}${regionCode ? '-' + regionCode : ''}), auto-set default language to ${resolvedLang}.`);
+        }
+      }
+    }
+  } catch (err) {
+    console.log('[Auto-Geo Language Detection skipped or offline]', err);
+  }
+}
+
 function initMultiProviderHub() {
   // Load Auto-Failover setting
   const savedFailover = localStorage.getItem('auto_failover_enabled');
@@ -1273,6 +1544,9 @@ function initMultiProviderHub() {
   if (savedLang && targetLang) {
     targetLang.value = savedLang;
     refreshCustomSelect('targetLang');
+  } else {
+    // If no user preference saved yet, detect and apply IP/Locale based language
+    detectAndApplyGeoLanguage();
   }
 
   const savedPacing = localStorage.getItem('preferred_pacing_preset');
