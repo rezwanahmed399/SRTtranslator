@@ -5730,7 +5730,7 @@ async function condenseSingleBlock(index) {
     const result = await callAiBatchCondense([block], activeKey, 1, currentModel);
     if (result && result[0]) {
       state.translatedBlocks[index] = result[0];
-      const activeTab = document.querySelector('.preview-tab.active')?.dataset?.tab || 'translated';
+      const activeTab = document.querySelector('.preview-tab.active')?.dataset?.tab || 'code';
       renderActiveTab(activeTab, state.translatedBlocks);
       if (restoreOriginalBtn) restoreOriginalBtn.classList.remove('hidden');
       saveCurrentSession();

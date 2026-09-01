@@ -4140,14 +4140,15 @@ input[type="text"]:focus {
 
 /* Preview Tabs */
 .preview-tabs-nav {
-  display: flex;
+  display: inline-flex;
+  width: fit-content;
+  max-width: 100%;
   gap: 5px;
   background: var(--surface-inner);
-  padding: 4px;
+  padding: 3px 4px;
   border-radius: var(--radius-md);
-  margin-bottom: 12px;
+  margin-bottom: 10px;
   border: 1px solid var(--border-subtle);
-  overflow-x: auto;
 }
 
 .preview-tab {
@@ -4721,15 +4722,11 @@ input[type="text"]:focus {
   }
 
   .preview-tabs-nav {
-    overflow-x: auto;
-    padding: 4px;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
+    display: inline-flex;
+    width: fit-content;
+    padding: 3px 4px;
+    margin-bottom: 10px;
     gap: 4px;
-  }
-
-  .preview-tabs-nav::-webkit-scrollbar {
-    display: none;
   }
 
   .preview-tab {
