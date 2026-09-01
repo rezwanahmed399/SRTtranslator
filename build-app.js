@@ -102,6 +102,25 @@ filesToCopy.forEach(file => {
   }
 });
 
+// Dedicated Clean Output Folder: D:\SRTtranslator APK
+const dedicatedApkDir = 'D:\\SRTtranslator APK';
+try {
+  if (!fs.existsSync(dedicatedApkDir)) {
+    fs.mkdirSync(dedicatedApkDir, { recursive: true });
+  }
+  // Automatically clean up older versions in D:\SRTtranslator APK
+  cleanOldApks(dedicatedApkDir);
+
+  const activeApkSrc = path.join(__dirname, currentApkName);
+  if (fs.existsSync(activeApkSrc)) {
+    const destDedicatedApk = path.join(dedicatedApkDir, currentApkName);
+    fs.copyFileSync(activeApkSrc, destDedicatedApk);
+    console.log(`📁 Synced active APK to clean folder -> ${destDedicatedApk}`);
+  }
+} catch (e) {
+  console.warn(`Could not sync to dedicated APK folder (${dedicatedApkDir}):`, e.message);
+}
+
 console.log(`[Build Complete] Active APK: ${currentApkName}. All previous APK versions cleared.`);
 
 
