@@ -98,8 +98,11 @@
   <link rel="stylesheet" href="style.css?v=5.6.0" />
   <script>
     (function() {
-      const savedTheme = localStorage.getItem('srt_theme') || 'light';
+      const savedTheme = localStorage.getItem('srt_theme') || 'dark';
       document.documentElement.setAttribute('data-theme', savedTheme);
+      if (window.Capacitor || window.innerWidth <= 768 || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+        document.documentElement.classList.add('is-native-app');
+      }
     })();
   </script>
 </head>

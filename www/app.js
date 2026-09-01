@@ -573,77 +573,148 @@ window.addEventListener('beforeunload', e => {
   }
 });
 
-// ── Android Native App Integration (Capacitor) ──
-function initNativeAppIntegrations() {
-  if (typeof window !== 'undefined' && window.Capacitor && window.Capacitor.isNativePlatform()) {
-    console.log('[Native App] Running inside Android via Capacitor.');
-    document.body.classList.add('is-native-app');
-
-    // 1. Android Status Bar Styling
-    if (window.Capacitor.Plugins && window.Capacitor.Plugins.StatusBar) {
+// ── Android Native App & Theme Integration ──
+function updateNativeStatusBar(theme) {
+  try {
+    if (typeof window !== 'undefined' && window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.StatusBar) {
+      const isDark = theme === 'dark';
       window.Capacitor.Plugins.StatusBar.setOverlaysWebView({ overlay: false }).catch(() => {});
-      window.Capacitor.Plugins.StatusBar.setBackgroundColor({ color: '#070a13' }).catch(() => {});
-      window.Capacitor.Plugins.StatusBar.setStyle({ style: 'DARK' }).catch(() => {});
+      window.Capacitor.Plugins.StatusBar.setBackgroundColor({
+        color: isDark ? '#07090e' : '#ffffff'
+      }).catch(() => {});
+      // In Capacitor StatusBar: DARK style means light (white) text/icons, LIGHT style means dark (black) text/icons
+      window.Capacitor.Plugins.StatusBar.setStyle({
+        style: isDark ? 'DARK' : 'LIGHT'
+      }).catch(() => {});
     }
+  } catch (err) {
+    console.warn('[StatusBar] Update failed:', err);
+  }
+}
 
-    let lastBackPressTime = 0;
+function applyTheme(theme) {
+  const safeTheme = theme === 'light' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', safeTheme);
+  localStorage.setItem('srt_theme', safeTheme);
 
-    // 2. Hardware Back Button Handling
-    if (window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
-      window.Capacitor.Plugins.App.addListener('backButton', async () => {
-        // Step 1: If custom modal is open, close it
-        if (customModalBackdrop && !customModalBackdrop.classList.contains('hidden')) {
-          closeCustomModal(false);
-          return;
-        }
+  const themeToggleBtn = $('themeToggleBtn');
+  const themeLabel = $('themeLabelText');
+  if (themeLabel) {
+    themeLabel.textContent = safeTheme === 'dark' ? 'Dark Mode' : 'Light Mode';
+  }
+  if (themeToggleBtn) {
+    themeToggleBtn.setAttribute('title', safeTheme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode');
+  }
+  updateNativeStatusBar(safeTheme);
+}
 
-        // Step 2: If a dropdown / bottom sheet is open, close it
-        const openDropdown = document.querySelector('.custom-select-container.is-open');
-        if (openDropdown) {
-          closeAllCustomSelects();
-          return;
-        }
+function initTheme() {
+  const savedTheme = localStorage.getItem('srt_theme') || 'dark';
+  applyTheme(savedTheme);
 
-        // Step 3: If in a Settings sub-screen, return to Settings Hub
-        if (document.body.classList.contains('in-settings-subscreen')) {
-          closeSettingsSubScreen();
-          return;
-        }
+  const themeToggleBtn = $('themeToggleBtn');
+  if (themeToggleBtn && !themeToggleBtn._hasThemeListener) {
+    themeToggleBtn._hasThemeListener = true;
+    themeToggleBtn.addEventListener('click', () => {
+      triggerHaptic('light');
+      const current = document.documentElement.getAttribute('data-theme') || 'dark';
+      const next = current === 'dark' ? 'light' : 'dark';
+      applyTheme(next);
+      showToast(`Switched to ${next === 'dark' ? 'Dark' : 'Light'} Mode`, 'info');
+    });
+  }
+}
 
-        // Step 4: If on Settings view, switch back to Translator main view
-        const viewSettings = $('viewSettings');
-        if (viewSettings && viewSettings.classList.contains('active')) {
-          switchAppTab('translator');
-          return;
-        }
+function initNativeAppIntegrations() {
+  const isNative = !!(
+    (typeof window !== 'undefined' && window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform()) ||
+    (typeof window !== 'undefined' && window.location.protocol === 'capacitor:') ||
+    (typeof window !== 'undefined' && window.location.hostname === 'localhost' && /Android/i.test(navigator.userAgent))
+  );
 
-        // Step 5: If translation is currently running, ask before exiting
-        if ((state.isTranslating || state.isCondensing) && !state.isCancelled) {
-          const confirmed = await showCustomConfirm({
-            title: 'Exit App?',
-            message: 'Translation is currently in progress. Exiting the app will stop translation. Are you sure you want to exit?',
-            confirmText: 'Exit App',
-            cancelText: 'Keep Running',
-            type: 'warning'
-          });
-          if (confirmed) {
-            state.isCancelled = true;
-            window.Capacitor.Plugins.App.exitApp();
-          }
-          return;
-        }
+  const isMobile = isNative || (typeof window !== 'undefined' && (window.innerWidth <= 768 || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)));
 
-        // Step 6: On Translator root view — Double-tap back within 2s to exit app
-        const now = Date.now();
-        if (now - lastBackPressTime < 2000) {
-          window.Capacitor.Plugins.App.exitApp();
-        } else {
-          lastBackPressTime = now;
-          triggerHaptic('light');
-          showToast('Press back again to exit app');
-        }
+  if (isMobile) {
+    document.documentElement.classList.add('is-native-app');
+    document.body.classList.add('is-native-app');
+  }
+
+  const headerApkBtn = document.getElementById('headerApkBtn') || document.querySelector('.header-apk-btn');
+  if (isNative) {
+    document.body.classList.add('is-native-platform');
+    if (headerApkBtn) headerApkBtn.style.display = 'none';
+  } else if (/Android/i.test(navigator.userAgent)) {
+    if (headerApkBtn) {
+      headerApkBtn.style.display = 'inline-flex';
+      headerApkBtn.addEventListener('click', () => {
+        headerApkBtn.href = `SRTtranslator-latest.apk?t=${Date.now()}`;
       });
     }
+  } else {
+    if (headerApkBtn) headerApkBtn.style.display = 'none';
+  }
+
+  // 1. Android Status Bar Styling
+  const curTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+  updateNativeStatusBar(curTheme);
+
+  let lastBackPressTime = 0;
+
+  // 2. Hardware Back Button Handling
+  if (typeof window !== 'undefined' && window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
+    window.Capacitor.Plugins.App.addListener('backButton', async () => {
+      // Step 1: If custom modal is open, close it
+      if (customModalBackdrop && !customModalBackdrop.classList.contains('hidden')) {
+        closeCustomModal(false);
+        return;
+      }
+
+      // Step 2: If a dropdown / bottom sheet is open, close it
+      const openDropdown = document.querySelector('.custom-select-container.is-open');
+      if (openDropdown) {
+        closeAllCustomSelects();
+        return;
+      }
+
+      // Step 3: If in a Settings sub-screen, return to Settings Hub
+      if (document.body.classList.contains('in-settings-subscreen')) {
+        closeSettingsSubScreen();
+        return;
+      }
+
+      // Step 4: If on Settings view, switch back to Translator main view
+      const viewSettings = $('viewSettings');
+      if (viewSettings && viewSettings.classList.contains('active')) {
+        switchAppTab('translator');
+        return;
+      }
+
+      // Step 5: If translation is currently running, ask before exiting
+      if ((state.isTranslating || state.isCondensing) && !state.isCancelled) {
+        const confirmed = await showCustomConfirm({
+          title: 'Exit App?',
+          message: 'Translation is currently in progress. Exiting the app will stop translation. Are you sure you want to exit?',
+          confirmText: 'Exit App',
+          cancelText: 'Keep Running',
+          type: 'warning'
+        });
+        if (confirmed) {
+          state.isCancelled = true;
+          window.Capacitor.Plugins.App.exitApp();
+        }
+        return;
+      }
+
+      // Step 6: On Translator root view — Double-tap back within 2s to exit app
+      const now = Date.now();
+      if (now - lastBackPressTime < 2000) {
+        window.Capacitor.Plugins.App.exitApp();
+      } else {
+        lastBackPressTime = now;
+        triggerHaptic('light');
+        showToast('Press back again to exit app');
+      }
+    });
   }
 }
 
@@ -835,17 +906,15 @@ async function waitForWebsiteFullLoad() {
 
 window.addEventListener('DOMContentLoaded', () => {
   window._pendingProviderVerifications = [];
-  initTheme();
-  initCustomSelects();
-  initFaqAccordion();
-  initSeoGuideToggle();
-  initMultiProviderHub();
-  setupEventListeners();
-  updateApiGuardAndHeaderStatus();
-  checkReadyToTranslate();
-  restoreSessionIfAvailable();
-  initNativeAppIntegrations();
-  initFirebaseAuthAndCloudSync();
+  try { initTheme(); } catch (e) { console.warn(e); }
+  try { initNativeAppIntegrations(); } catch (e) { console.warn(e); }
+  try { initCustomSelects(); } catch (e) { console.warn(e); }
+  try { initFaqAccordion(); } catch (e) { console.warn(e); }
+  try { initSeoGuideToggle(); } catch (e) { console.warn(e); }
+  try { initFirebaseAuthAndCloudSync(); } catch (e) { console.warn(e); }
+  try { updateApiGuardAndHeaderStatus(); } catch (e) { console.warn(e); }
+  try { checkReadyToTranslate(); } catch (e) { console.warn(e); }
+  try { restoreSessionIfAvailable(); } catch (e) { console.warn(e); }
 
   // Begin monitoring full website load state
   waitForWebsiteFullLoad();
@@ -853,34 +922,6 @@ window.addEventListener('DOMContentLoaded', () => {
 
 // Single global failsafe in case all listeners fail
 setTimeout(dismissInitialLoader, 4000);
-
-// ── Native App Platform & Android Browser Detection ──
-function initNativeAppIntegrations() {
-  const isNative = !!(
-    (window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform()) ||
-    window.location.protocol === 'capacitor:' ||
-    (window.location.hostname === 'localhost' && /Android/i.test(navigator.userAgent))
-  );
-
-  const isAndroidBrowser = /Android/i.test(navigator.userAgent) && !isNative;
-  const headerApkBtn = document.getElementById('headerApkBtn') || document.querySelector('.header-apk-btn');
-
-  if (isNative) {
-    document.body.classList.add('is-native-platform');
-    if (headerApkBtn) headerApkBtn.style.display = 'none';
-  } else if (isAndroidBrowser) {
-    // Show Get APK button ONLY on Android mobile browsers
-    if (headerApkBtn) {
-      headerApkBtn.style.display = 'inline-flex';
-      headerApkBtn.addEventListener('click', () => {
-        headerApkBtn.href = `SRTtranslator-latest.apk?t=${Date.now()}`;
-      });
-    }
-  } else {
-    // Desktop (Windows, Mac, Linux) & iOS (iPhone, iPad): Hide Get APK button completely
-    if (headerApkBtn) headerApkBtn.style.display = 'none';
-  }
-}
 
 // ── 2-Tab Navigation Engine (Translator vs Settings) ──
 function switchAppTab(tabId) {
@@ -927,8 +968,12 @@ function switchAppTab(tabId) {
     if (viewTranslator) viewTranslator.classList.remove('active');
     if (viewSettings) viewSettings.classList.add('active');
 
-    // Default to API Keys sub-tab when entering Settings
-    switchSettingsSubTab('apikeys');
+    // On mobile / native app, start with clean Settings Hub view
+    if (document.body.classList.contains('is-native-app') || window.innerWidth <= 768) {
+      closeSettingsSubScreen();
+    } else {
+      switchSettingsSubTab('apikeys');
+    }
   }
 
   // Smooth scroll to top of view on tab switch
