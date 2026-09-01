@@ -34,7 +34,8 @@ const filesToCopy = [
   'version.json',
   'google56417e4931d45822.html',
   'download.html',
-  'SRTtranslator-latest.apk'
+  'SRTtranslator-latest.apk',
+  'SRTtranslator-v1.6.apk'
 ];
 
 filesToCopy.forEach(file => {
