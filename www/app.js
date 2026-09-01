@@ -820,8 +820,10 @@ function initNativeAppIntegrations() {
     // Show Get APK button ONLY on Android mobile browsers
     if (headerApkBtn) {
       headerApkBtn.style.display = 'inline-flex';
+      headerApkBtn.href = 'SRTtranslator-v1.6.0.apk';
+      headerApkBtn.setAttribute('download', 'SRTtranslator-v1.6.0.apk');
       headerApkBtn.addEventListener('click', () => {
-        headerApkBtn.href = `SRTtranslator-latest.apk?t=${Date.now()}`;
+        headerApkBtn.href = `SRTtranslator-v1.6.0.apk?t=${Date.now()}`;
       });
     }
   } else {

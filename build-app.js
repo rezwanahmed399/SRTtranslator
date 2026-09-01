@@ -8,14 +8,50 @@ if (!fs.existsSync(destDir)) {
   fs.mkdirSync(destDir, { recursive: true });
 }
 
+// Extract current versionName from android/app/build.gradle if available
+let currentVersion = '1.6.0';
+try {
+  const gradlePath = path.join(__dirname, 'android', 'app', 'build.gradle');
+  if (fs.existsSync(gradlePath)) {
+    const gradleContent = fs.readFileSync(gradlePath, 'utf8');
+    const match = gradleContent.match(/versionName\s+["']([^"']+)["']/);
+    if (match && match[1]) {
+      currentVersion = match[1];
+    }
+  }
+} catch (e) {}
+
+const currentApkName = `SRTtranslator-v${currentVersion.replace(/^v/, '')}.apk`;
+
+// Clean up all old/previous APK files from root and www (except current active version)
+const cleanOldApks = (dir) => {
+  if (!fs.existsSync(dir)) return;
+  const files = fs.readdirSync(dir);
+  files.forEach(file => {
+    if (file.endsWith('.apk') && file !== currentApkName) {
+      const filePath = path.join(dir, file);
+      try {
+        fs.unlinkSync(filePath);
+        console.log(`🗑️ Removed old APK: ${file} from ${path.relative(__dirname, dir) || '.'}`);
+      } catch (e) {
+        console.warn(`Could not delete ${filePath}:`, e.message);
+      }
+    }
+  });
+};
+
+cleanOldApks(__dirname);
+cleanOldApks(destDir);
+
 // Generate fresh build metadata in version.json
 const now = new Date();
 const buildVersion = {
-  latestVersion: "1.2.0",
+  latestVersion: currentVersion,
   buildTime: now.toISOString(),
   buildTimestamp: now.getTime(),
   buildDateFormatted: now.toLocaleString('en-US', { timeZone: 'Asia/Dhaka' }),
-  apkFileName: "SRTtranslator-latest.apk",
+  apkFileName: currentApkName,
+  apkUrl: `/${currentApkName}`,
   forceUpdate: false
 };
 fs.writeFileSync(path.join(__dirname, 'version.json'), JSON.stringify(buildVersion, null, 2));
@@ -34,8 +70,7 @@ const filesToCopy = [
   'version.json',
   'google56417e4931d45822.html',
   'download.html',
-  'SRTtranslator-latest.apk',
-  'SRTtranslator-v1.6.apk'
+  currentApkName
 ];
 
 filesToCopy.forEach(file => {
@@ -47,5 +82,6 @@ filesToCopy.forEach(file => {
   }
 });
 
-console.log('[Build Complete] Web assets packaged into www/ directory successfully with fresh build timestamp.');
+console.log(`[Build Complete] Active APK: ${currentApkName}. All previous APK versions cleared.`);
+
 
