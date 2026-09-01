@@ -6197,6 +6197,78 @@ function resetTranslateButton() {
   updateControlsLockState();
 }
 
+// ── Vector Country & Regional Flag SVG Dictionary for Languages ──
+const LANGUAGE_FLAGS_SVG = {
+  'Amharic': '<svg class="lang-flag-svg" viewBox="0 0 36 24"><rect width="36" height="8" fill="#009A44"/><rect y="8" width="36" height="8" fill="#FED100"/><rect y="16" width="36" height="8" fill="#EF3340"/><circle cx="18" cy="12" r="4.5" fill="#0F47AF"/><polygon points="18,8.5 19.1,11.8 22.4,11.8 19.7,13.7 20.8,16.8 18,14.8 15.2,16.8 16.3,13.7 13.6,11.8 16.9,11.8" fill="#FED100"/></svg>',
+  'Arabic': '<svg class="lang-flag-svg" viewBox="0 0 36 24"><rect width="36" height="24" fill="#006C35"/><path d="M7 16h22M25 14l4 2-4 2" stroke="#FFF" stroke-width="1.5" stroke-linecap="round"/><text x="18" y="11" font-size="7" font-weight="bold" fill="#FFF" text-anchor="middle" font-family="sans-serif">العربية</text></svg>',
+  'Azerbaijani': '<svg class="lang-flag-svg" viewBox="0 0 36 24"><rect width="36" height="8" fill="#00B5E2"/><rect y="8" width="36" height="8" fill="#EF3340"/><rect y="16" width="36" height="8" fill="#509E2F"/><path d="M17 12a3 3 0 1 0 3-3 3.5 3.5 0 1 1-3 3z" fill="#FFF"/><polygon points="21,12 21.6,11 22.5,11.5 22.5,12.5 21.6,13" fill="#FFF"/></svg>',
+  'Bengali': '<svg class="lang-flag-svg" viewBox="0 0 36 24"><rect width="36" height="24" fill="#006a4e"/><circle cx="16" cy="12" r="6" fill="#f42a41"/></svg>',
+  'Bulgarian': '<svg class="lang-flag-svg" viewBox="0 0 36 24"><rect width="36" height="8" fill="#FFFFFF"/><rect y="8" width="36" height="8" fill="#00966E"/><rect y="16" width="36" height="8" fill="#D62612"/></svg>',
+  'Burmese': '<svg class="lang-flag-svg" viewBox="0 0 36 24"><rect width="36" height="8" fill="#FECB00"/><rect y="8" width="36" height="8" fill="#34B233"/><rect y="16" width="36" height="8" fill="#EA2839"/><polygon points="18,5 19.8,10.6 25.6,10.6 20.9,14 22.7,19.6 18,16.2 13.3,19.6 15.1,14 10.4,10.6 16.2,10.6" fill="#FFF"/></svg>',
+  'Chinese (Simplified)': '<svg class="lang-flag-svg" viewBox="0 0 36 24"><rect width="36" height="24" fill="#DE2910"/><polygon points="7,4 7.9,6.8 10.8,6.8 8.5,8.5 9.4,11.2 7,9.5 4.6,11.2 5.5,8.5 3.2,6.8 6.1,6.8" fill="#FFDE00"/><polygon points="12,3 12.4,4.2 13.6,4.2 12.6,5 13,6.2 12,5.5 11,6.2 11.4,5 10.4,4.2 11.6,4.2" fill="#FFDE00"/><polygon points="14,6 14.4,7.2 15.6,7.2 14.6,8 15,9.2 14,8.5 13,9.2 13.4,8 12.4,7.2 13.6,7.2" fill="#FFDE00"/><polygon points="14,10 14.4,11.2 15.6,11.2 14.6,12 15,13.2 14,12.5 13,13.2 13.4,12 12.4,11.2 13.6,11.2" fill="#FFDE00"/><polygon points="12,13 12.4,14.2 13.6,14.2 12.6,15 13,16.2 12,15.5 11,16.2 11.4,15 10.4,14.2 11.6,14.2" fill="#FFDE00"/></svg>',
+  'Chinese (Traditional)': '<svg class="lang-flag-svg" viewBox="0 0 36 24"><rect width="36" height="24" fill="#FE0000"/><rect width="18" height="12" fill="#000095"/><circle cx="9" cy="6" r="3.2" fill="#FFF"/><circle cx="9" cy="6" r="2.2" fill="#000095"/><circle cx="9" cy="6" r="1.8" fill="#FFF"/></svg>',
+  'Croatian': '<svg class="lang-flag-svg" viewBox="0 0 36 24"><rect width="36" height="8" fill="#FF0000"/><rect y="8" width="36" height="8" fill="#FFFFFF"/><rect y="16" width="36" height="8" fill="#0000FF"/><rect x="14" y="6" width="8" height="10" rx="1" fill="#FF0000"/><rect x="16" y="6" width="2" height="2" fill="#FFF"/><rect x="20" y="6" width="2" height="2" fill="#FFF"/><rect x="14" y="8" width="2" height="2" fill="#FFF"/><rect x="18" y="8" width="2" height="2" fill="#FFF"/><rect x="16" y="10" width="2" height="2" fill="#FFF"/><rect x="20" y="10" width="2" height="2" fill="#FFF"/></svg>',
+  'Czech': '<svg class="lang-flag-svg" viewBox="0 0 36 24"><rect width="36" height="12" fill="#FFFFFF"/><rect y="12" width="36" height="12" fill="#D7141A"/><polygon points="0,0 18,12 0,24" fill="#11457E"/></svg>',
+  'Danish': '<svg class="lang-flag-svg" viewBox="0 0 36 24"><rect width="36" height="24" fill="#C60C30"/><rect x="10" width="4" height="24" fill="#FFF"/><rect y="10" width="36" height="4" fill="#FFF"/></svg>',
+  'Dutch': '<svg class="lang-flag-svg" viewBox="0 0 36 24"><rect width="36" height="8" fill="#AE1C28"/><rect y="8" width="36" height="8" fill="#FFFFFF"/><rect y="16" width="36" height="8" fill="#21468B"/></svg>',
+  'English': '<svg class="lang-flag-svg" viewBox="0 0 36 24"><rect width="36" height="24" fill="#012169"/><path d="M0,0 L36,24 M36,0 L0,24" stroke="#FFF" stroke-width="4"/><path d="M0,0 L36,24 M36,0 L0,24" stroke="#C8102E" stroke-width="2"/><rect x="15" width="6" height="24" fill="#FFF"/><rect y="9" width="36" height="6" fill="#FFF"/><rect x="16.5" width="3" height="24" fill="#C8102E"/><rect y="10.5" width="36" height="3" fill="#C8102E"/></svg>',
+  'Filipino / Tagalog': '<svg class="lang-flag-svg" viewBox="0 0 36 24"><rect width="36" height="12" fill="#0038A8"/><rect y="12" width="36" height="12" fill="#CE1126"/><polygon points="0,0 18,12 0,24" fill="#FFF"/><circle cx="6" cy="12" r="2.5" fill="#FCD116"/><circle cx="2" cy="4" r="0.8" fill="#FCD116"/><circle cx="2" cy="20" r="0.8" fill="#FCD116"/><circle cx="14" cy="12" r="0.8" fill="#FCD116"/></svg>',
+  'Finnish': '<svg class="lang-flag-svg" viewBox="0 0 36 24"><rect width="36" height="24" fill="#FFFFFF"/><rect x="10" width="5" height="24" fill="#002F6C"/><rect y="9.5" width="36" height="5" fill="#002F6C"/></svg>',
+  'French': '<svg class="lang-flag-svg" viewBox="0 0 36 24"><rect width="12" height="24" fill="#002654"/><rect x="12" width="12" height="24" fill="#FFFFFF"/><rect x="24" width="12" height="24" fill="#ED2939"/></svg>',
+  'German': '<svg class="lang-flag-svg" viewBox="0 0 36 24"><rect width="36" height="8" fill="#000000"/><rect y="8" width="36" height="8" fill="#DD0000"/><rect y="16" width="36" height="8" fill="#FFCE00"/></svg>',
+  'Greek': '<svg class="lang-flag-svg" viewBox="0 0 36 24"><rect width="36" height="24" fill="#0D5EAF"/><rect y="2.67" width="36" height="2.67" fill="#FFF"/><rect y="8" width="36" height="2.67" fill="#FFF"/><rect y="13.33" width="36" height="2.67" fill="#FFF"/><rect y="18.67" width="36" height="2.67" fill="#FFF"/><rect width="13.33" height="13.33" fill="#0D5EAF"/><rect x="4.67" width="4" height="13.33" fill="#FFF"/><rect y="4.67" width="13.33" height="4" fill="#FFF"/></svg>',
+  'Gujarati': '<svg class="lang-flag-svg" viewBox="0 0 36 24"><rect width="36" height="8" fill="#FF9933"/><rect y="8" width="36" height="8" fill="#FFFFFF"/><rect y="16" width="36" height="8" fill="#138808"/><circle cx="18" cy="12" r="3" fill="none" stroke="#000080" stroke-width="0.8"/><circle cx="18" cy="12" r="0.6" fill="#000080"/></svg>',
+  'Hausa': '<svg class="lang-flag-svg" viewBox="0 0 36 24"><rect width="12" height="24" fill="#008751"/><rect x="12" width="12" height="24" fill="#FFFFFF"/><rect x="24" width="12" height="24" fill="#008751"/></svg>',
+  'Hebrew': '<svg class="lang-flag-svg" viewBox="0 0 36 24"><rect width="36" height="24" fill="#FFFFFF"/><rect y="3" width="36" height="3" fill="#0038B8"/><rect y="18" width="36" height="3" fill="#0038B8"/><polygon points="18,7 22,14 14,14" fill="none" stroke="#0038B8" stroke-width="0.8"/><polygon points="18,17 22,10 14,10" fill="none" stroke="#0038B8" stroke-width="0.8"/></svg>',
+  'Hindi': '<svg class="lang-flag-svg" viewBox="0 0 36 24"><rect width="36" height="8" fill="#FF9933"/><rect y="8" width="36" height="8" fill="#FFFFFF"/><rect y="16" width="36" height="8" fill="#138808"/><circle cx="18" cy="12" r="3" fill="none" stroke="#000080" stroke-width="0.8"/><circle cx="18" cy="12" r="0.6" fill="#000080"/></svg>',
+  'Hungarian': '<svg class="lang-flag-svg" viewBox="0 0 36 24"><rect width="36" height="8" fill="#CE2939"/><rect y="8" width="36" height="8" fill="#FFFFFF"/><rect y="16" width="36" height="8" fill="#477050"/></svg>',
+  'Indonesian': '<svg class="lang-flag-svg" viewBox="0 0 36 24"><rect width="36" height="12" fill="#FF0000"/><rect y="12" width="36" height="12" fill="#FFFFFF"/></svg>',
+  'Italian': '<svg class="lang-flag-svg" viewBox="0 0 36 24"><rect width="12" height="24" fill="#009246"/><rect x="12" width="12" height="24" fill="#FFFFFF"/><rect x="24" width="12" height="24" fill="#CE2B37"/></svg>',
+  'Japanese': '<svg class="lang-flag-svg" viewBox="0 0 36 24"><rect width="36" height="24" fill="#FFFFFF"/><circle cx="18" cy="12" r="6" fill="#BC002D"/></svg>',
+  'Kannada': '<svg class="lang-flag-svg" viewBox="0 0 36 24"><rect width="36" height="12" fill="#FDD017"/><rect y="12" width="36" height="12" fill="#E41B17"/></svg>',
+  'Kazakh': '<svg class="lang-flag-svg" viewBox="0 0 36 24"><rect width="36" height="24" fill="#00AFCA"/><circle cx="20" cy="11" r="4" fill="#FECB00"/><path d="M15 17c3-2 7-2 10 0-5-1-6-1-10 0z" fill="#FECB00"/><rect width="3" height="24" fill="#FECB00"/></svg>',
+  'Khmer': '<svg class="lang-flag-svg" viewBox="0 0 36 24"><rect width="36" height="6" fill="#032EA6"/><rect y="6" width="36" height="12" fill="#E00025"/><rect y="18" width="36" height="6" fill="#032EA6"/><path d="M14 15h8v-3h-2v-2h-1v-2h-2v2h-1v2h-2z" fill="#FFF"/></svg>',
+  'Korean': '<svg class="lang-flag-svg" viewBox="0 0 36 24"><rect width="36" height="24" fill="#FFFFFF"/><circle cx="18" cy="12" r="5" fill="#CD2E3A"/><path d="M18,7 A5,5 0 0,0 18,17 A2.5,2.5 0 0,0 18,12 A2.5,2.5 0 0,1 18,7" fill="#0047A0"/><rect x="5" y="4" width="3" height="1" fill="#000"/><rect x="5" y="6" width="3" height="1" fill="#000"/><rect x="28" y="17" width="3" height="1" fill="#000"/><rect x="28" y="19" width="3" height="1" fill="#000"/></svg>',
+  'Malay': '<svg class="lang-flag-svg" viewBox="0 0 36 24"><rect width="36" height="24" fill="#CC0000"/><rect y="3" width="36" height="3" fill="#FFF"/><rect y="9" width="36" height="3" fill="#FFF"/><rect y="15" width="36" height="3" fill="#FFF"/><rect y="21" width="36" height="3" fill="#FFF"/><rect width="18" height="12" fill="#000066"/><circle cx="8" cy="6" r="3.5" fill="#FFCC00"/><circle cx="9.2" cy="6" r="3" fill="#000066"/><polygon points="12,6 12.8,4.5 13.5,6 15,6.5 13.8,7.5 14.5,9 13,8 11.5,9 12.2,7.5 11,6.5" fill="#FFCC00"/></svg>',
+  'Malayalam': '<svg class="lang-flag-svg" viewBox="0 0 36 24"><rect width="36" height="8" fill="#FF9933"/><rect y="8" width="36" height="8" fill="#FFFFFF"/><rect y="16" width="36" height="8" fill="#138808"/><circle cx="18" cy="12" r="3" fill="none" stroke="#000080" stroke-width="0.8"/><circle cx="18" cy="12" r="0.6" fill="#000080"/></svg>',
+  'Marathi': '<svg class="lang-flag-svg" viewBox="0 0 36 24"><rect width="36" height="8" fill="#FF9933"/><rect y="8" width="36" height="8" fill="#FFFFFF"/><rect y="16" width="36" height="8" fill="#138808"/><circle cx="18" cy="12" r="3" fill="none" stroke="#000080" stroke-width="0.8"/><circle cx="18" cy="12" r="0.6" fill="#000080"/></svg>',
+  'Nepali': '<svg class="lang-flag-svg" viewBox="0 0 36 24"><rect width="36" height="24" fill="none"/><polygon points="2,2 24,12 12,12 26,22 2,22" fill="#DC143C" stroke="#003893" stroke-width="1.5"/><circle cx="7" cy="8" r="2" fill="#FFF"/><polygon points="8,17 9.5,18 7.5,19 6,17.5" fill="#FFF"/></svg>',
+  'Norwegian': '<svg class="lang-flag-svg" viewBox="0 0 36 24"><rect width="36" height="24" fill="#BA0C2F"/><rect x="9" width="6" height="24" fill="#FFF"/><rect y="9" width="36" height="6" fill="#FFF"/><rect x="10.5" width="3" height="24" fill="#00205B"/><rect y="10.5" width="36" height="3" fill="#00205B"/></svg>',
+  'Odia': '<svg class="lang-flag-svg" viewBox="0 0 36 24"><rect width="36" height="8" fill="#FF9933"/><rect y="8" width="36" height="8" fill="#FFFFFF"/><rect y="16" width="36" height="8" fill="#138808"/><circle cx="18" cy="12" r="3" fill="none" stroke="#000080" stroke-width="0.8"/><circle cx="18" cy="12" r="0.6" fill="#000080"/></svg>',
+  'Pashto': '<svg class="lang-flag-svg" viewBox="0 0 36 24"><rect width="12" height="24" fill="#000000"/><rect x="12" width="12" height="24" fill="#D32011"/><rect x="24" width="12" height="24" fill="#007A3D"/><circle cx="18" cy="12" r="3.5" fill="none" stroke="#FFF" stroke-width="0.8"/></svg>',
+  'Persian': '<svg class="lang-flag-svg" viewBox="0 0 36 24"><rect width="36" height="8" fill="#239F40"/><rect y="8" width="36" height="8" fill="#FFFFFF"/><rect y="16" width="36" height="8" fill="#DA0000"/><circle cx="18" cy="12" r="2.5" fill="none" stroke="#DA0000" stroke-width="0.8"/></svg>',
+  'Polish': '<svg class="lang-flag-svg" viewBox="0 0 36 24"><rect width="36" height="12" fill="#FFFFFF"/><rect y="12" width="36" height="12" fill="#DC143C"/></svg>',
+  'Portuguese': '<svg class="lang-flag-svg" viewBox="0 0 36 24"><rect width="14.4" height="24" fill="#006600"/><rect x="14.4" width="21.6" height="24" fill="#FF0000"/><circle cx="14.4" cy="12" r="4.5" fill="#FFE600"/><rect x="12.5" y="10" width="3.8" height="4" rx="1" fill="#FFF"/><rect x="13.2" y="10.8" width="2.4" height="2.4" fill="#002B7F"/></svg>',
+  'Punjabi': '<svg class="lang-flag-svg" viewBox="0 0 36 24"><rect width="36" height="8" fill="#FF9933"/><rect y="8" width="36" height="8" fill="#FFFFFF"/><rect y="16" width="36" height="8" fill="#138808"/><circle cx="18" cy="12" r="3" fill="none" stroke="#000080" stroke-width="0.8"/><circle cx="18" cy="12" r="0.6" fill="#000080"/></svg>',
+  'Romanian': '<svg class="lang-flag-svg" viewBox="0 0 36 24"><rect width="12" height="24" fill="#002B7F"/><rect x="12" width="12" height="24" fill="#FCD116"/><rect x="24" width="12" height="24" fill="#CE1126"/></svg>',
+  'Russian': '<svg class="lang-flag-svg" viewBox="0 0 36 24"><rect width="36" height="8" fill="#FFFFFF"/><rect y="8" width="36" height="8" fill="#0039A6"/><rect y="16" width="36" height="8" fill="#D52B1E"/></svg>',
+  'Serbian': '<svg class="lang-flag-svg" viewBox="0 0 36 24"><rect width="36" height="8" fill="#C6363C"/><rect y="8" width="36" height="8" fill="#0C4076"/><rect y="16" width="36" height="8" fill="#FFFFFF"/><rect x="10" y="7" width="6" height="9" rx="1" fill="#C6363C" stroke="#FFF" stroke-width="0.6"/><polygon points="13,8 14,10 12,10" fill="#E8A900"/></svg>',
+  'Sinhala': '<svg class="lang-flag-svg" viewBox="0 0 36 24"><rect width="36" height="24" fill="#FFBE29"/><rect x="4" y="4" width="4" height="16" fill="#005A36"/><rect x="9" y="4" width="4" height="16" fill="#EB7400"/><rect x="14" y="4" width="18" height="16" fill="#8D153A"/><circle cx="23" cy="12" r="3" fill="#FFBE29"/></svg>',
+  'Slovak': '<svg class="lang-flag-svg" viewBox="0 0 36 24"><rect width="36" height="8" fill="#FFFFFF"/><rect y="8" width="36" height="8" fill="#0B4EA2"/><rect y="16" width="36" height="8" fill="#EE1C25"/><path d="M10 6h6v6a3 3 0 0 1-6 0z" fill="#EE1C25" stroke="#FFF" stroke-width="0.5"/><path d="M13 8v5M11.5 9.5h3M12 11h2" stroke="#FFF" stroke-width="0.8"/></svg>',
+  'Spanish': '<svg class="lang-flag-svg" viewBox="0 0 36 24"><rect width="36" height="6" fill="#AA151B"/><rect y="6" width="36" height="12" fill="#F1BF00"/><rect y="18" width="36" height="6" fill="#AA151B"/><rect x="8" y="9" width="4" height="6" fill="#AA151B" rx="1"/><rect x="8.8" y="10" width="2.4" height="4" fill="#F1BF00"/></svg>',
+  'Swahili': '<svg class="lang-flag-svg" viewBox="0 0 36 24"><polygon points="0,0 36,0 0,24" fill="#1EB53A"/><polygon points="0,24 36,0 36,24" fill="#00A3DD"/><polygon points="0,24 36,0 36,6 6,24" fill="#000"/><polygon points="0,20 30,0 36,0 6,24 0,24" fill="#FCD116"/></svg>',
+  'Swedish': '<svg class="lang-flag-svg" viewBox="0 0 36 24"><rect width="36" height="24" fill="#006AA7"/><rect x="10" width="4" height="24" fill="#FECC00"/><rect y="10" width="36" height="4" fill="#FECC00"/></svg>',
+  'Tamil': '<svg class="lang-flag-svg" viewBox="0 0 36 24"><rect width="36" height="8" fill="#FF9933"/><rect y="8" width="36" height="8" fill="#FFFFFF"/><rect y="16" width="36" height="8" fill="#138808"/><circle cx="18" cy="12" r="3" fill="none" stroke="#000080" stroke-width="0.8"/><circle cx="18" cy="12" r="0.6" fill="#000080"/></svg>',
+  'Telugu': '<svg class="lang-flag-svg" viewBox="0 0 36 24"><rect width="36" height="8" fill="#FF9933"/><rect y="8" width="36" height="8" fill="#FFFFFF"/><rect y="16" width="36" height="8" fill="#138808"/><circle cx="18" cy="12" r="3" fill="none" stroke="#000080" stroke-width="0.8"/><circle cx="18" cy="12" r="0.6" fill="#000080"/></svg>',
+  'Thai': '<svg class="lang-flag-svg" viewBox="0 0 36 24"><rect width="36" height="4" fill="#A51931"/><rect y="4" width="36" height="4" fill="#F4F5F8"/><rect y="8" width="36" height="8" fill="#2D2A4A"/><rect y="16" width="36" height="4" fill="#F4F5F8"/><rect y="20" width="36" height="4" fill="#A51931"/></svg>',
+  'Turkish': '<svg class="lang-flag-svg" viewBox="0 0 36 24"><rect width="36" height="24" fill="#E30A17"/><circle cx="14" cy="12" r="5" fill="#FFF"/><circle cx="15.5" cy="12" r="4" fill="#E30A17"/><polygon points="20,12 21.2,10.6 22.8,11.2 22.2,12.8 20.8,12.8" fill="#FFF"/></svg>',
+  'Ukrainian': '<svg class="lang-flag-svg" viewBox="0 0 36 24"><rect width="36" height="12" fill="#005BBB"/><rect y="12" width="36" height="12" fill="#FFD500"/></svg>',
+  'Urdu': '<svg class="lang-flag-svg" viewBox="0 0 36 24"><rect width="36" height="24" fill="#115E32"/><rect width="9" height="24" fill="#FFFFFF"/><circle cx="22.5" cy="12" r="5" fill="#FFF"/><circle cx="24" cy="10.8" r="4.2" fill="#115E32"/><polygon points="24,9 24.8,10.4 26.2,9.8 25.4,11.2 26.5,12.2 25,12 24.5,13.4 23.8,12.2 22.4,12.4 23.2,11.2" fill="#FFF"/></svg>',
+  'Uzbek': '<svg class="lang-flag-svg" viewBox="0 0 36 24"><rect width="36" height="7.5" fill="#0099B5"/><rect y="7.5" width="36" height="1" fill="#CE1126"/><rect y="8.5" width="36" height="7" fill="#FFFFFF"/><rect y="15.5" width="36" height="1" fill="#CE1126"/><rect y="16.5" width="36" height="7.5" fill="#1EB53A"/><circle cx="6" cy="4" r="2" fill="#FFF"/><circle cx="6.7" cy="4" r="1.7" fill="#0099B5"/></svg>',
+  'Vietnamese': '<svg class="lang-flag-svg" viewBox="0 0 36 24"><rect width="36" height="24" fill="#DA251D"/><polygon points="18,5 19.8,10.5 25.5,10.5 20.9,13.8 22.6,19.3 18,15.9 13.4,19.3 15.1,13.8 10.5,10.5 16.2,10.5" fill="#FFFF00"/></svg>'
+};
+
+function getOptionDisplayHtml(selectEl, opt) {
+  if (!opt) return '<span class="custom-select-text">Select an option...</span>';
+  if (selectEl && (selectEl.id === 'targetLang' || selectEl.id === 'sourceLang')) {
+    const flagSvg = LANGUAGE_FLAGS_SVG[opt.value] || '';
+    if (flagSvg) {
+      return `<span class="custom-select-flag-wrapper">${flagSvg}</span><span class="custom-select-text">${escapeHtml(opt.text)}</span>`;
+    }
+  }
+  return `<span class="custom-select-text">${escapeHtml(opt.text)}</span>`;
+}
+
 // ── Custom Glassmorphism Select Component Engine ──
 const customSelectRegistry = new Map();
 
@@ -6219,7 +6291,6 @@ function buildCustomSelect(selectEl) {
   if (selectEl.disabled) container.classList.add('is-disabled');
 
   const currentOption = selectEl.options[selectEl.selectedIndex] || selectEl.options[0];
-  const initialText = currentOption ? currentOption.text : 'Select an option...';
 
   // Trigger Button
   const trigger = document.createElement('button');
@@ -6228,7 +6299,7 @@ function buildCustomSelect(selectEl) {
   trigger.setAttribute('aria-haspopup', 'listbox');
   trigger.setAttribute('aria-expanded', 'false');
   trigger.innerHTML = `
-    <span class="custom-select-value">${escapeHtml(initialText)}</span>
+    <span class="custom-select-value">${getOptionDisplayHtml(selectEl, currentOption)}</span>
     <svg class="custom-select-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
       <polyline points="6 9 12 15 18 9"></polyline>
     </svg>
@@ -6282,7 +6353,10 @@ function buildCustomSelect(selectEl) {
         subDesc = matchParen[2].trim();
       }
 
+      const flagSvg = (selectId === 'targetLang' || selectId === 'sourceLang') ? (LANGUAGE_FLAGS_SVG[opt.value] || '') : '';
+
       optEl.innerHTML = `
+        ${flagSvg ? `<span class="custom-select-flag-wrapper">${flagSvg}</span>` : ''}
         <div class="custom-select-option-text">
           <span class="option-main-title">${escapeHtml(mainTitle)}</span>
           ${subDesc ? `<span class="option-sub-desc">${escapeHtml(subDesc)}</span>` : ''}
@@ -6294,7 +6368,7 @@ function buildCustomSelect(selectEl) {
       optEl.addEventListener('click', (e) => {
         e.stopPropagation();
         selectEl.value = opt.value;
-        trigger.querySelector('.custom-select-value').textContent = opt.text;
+        trigger.querySelector('.custom-select-value').innerHTML = getOptionDisplayHtml(selectEl, opt);
         selectEl.dispatchEvent(new Event('change', { bubbles: true }));
         closeAllCustomSelects();
         renderOptions(searchInput ? searchInput.value : '');
@@ -6418,7 +6492,7 @@ function buildCustomSelect(selectEl) {
   selectEl.addEventListener('change', () => {
     const activeOpt = selectEl.options[selectEl.selectedIndex];
     if (activeOpt) {
-      trigger.querySelector('.custom-select-value').textContent = activeOpt.text;
+      trigger.querySelector('.custom-select-value').innerHTML = getOptionDisplayHtml(selectEl, activeOpt);
       renderOptions(searchInput ? searchInput.value : '');
     }
   });

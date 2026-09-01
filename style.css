@@ -2674,6 +2674,9 @@ body.is-native-app .app-info-section {
 }
 
 .custom-select-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2682,6 +2685,39 @@ body.is-native-app .app-info-section {
   color: var(--text-main);
   min-width: 0;
   flex: 1;
+}
+
+.custom-select-value .custom-select-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.custom-select-flag-wrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 15px;
+  min-width: 22px;
+  border-radius: 3px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  flex-shrink: 0;
+}
+
+[data-theme="light"] .custom-select-flag-wrapper {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  border-color: rgba(0, 0, 0, 0.15);
+}
+
+.custom-select-flag-wrapper .lang-flag-svg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .custom-select-chevron {
