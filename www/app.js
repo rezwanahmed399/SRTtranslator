@@ -6836,22 +6836,77 @@ function initFirebaseAuthAndCloudSync() {
     });
   }
 
+  // ── Google Sign-In & Cloud Sync Loading Helper ──
+  function showAuthSyncLoading(title = 'Google Sign-In', status = 'Signing in with Google...') {
+    let overlay = document.getElementById('authSyncOverlay');
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.id = 'authSyncOverlay';
+      overlay.className = 'auth-sync-overlay';
+      overlay.innerHTML = `
+        <div class="auth-sync-card" role="dialog" aria-modal="true">
+          <div class="modal-top-accent" style="background: linear-gradient(90deg, #4285F4, #34A853, #FBBC05, #EA4335);"></div>
+          <div class="auth-sync-icon-wrap">
+            <svg viewBox="0 0 24 24" width="26" height="26">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+            </svg>
+          </div>
+          <h3 class="auth-sync-title" id="authSyncTitle">${escapeHtml(title)}</h3>
+          <p class="auth-sync-status" id="authSyncStatus">${escapeHtml(status)}</p>
+          <div class="auth-sync-progress-bar">
+            <div class="auth-sync-progress-fill"></div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+    }
+    const titleEl = overlay.querySelector('#authSyncTitle');
+    const statusEl = overlay.querySelector('#authSyncStatus');
+    if (titleEl) titleEl.textContent = title;
+    if (statusEl) statusEl.textContent = status;
+    overlay.classList.add('active');
+  }
+
+  function updateAuthSyncStatus(status) {
+    const overlay = document.getElementById('authSyncOverlay');
+    if (!overlay) return;
+    const statusEl = overlay.querySelector('#authSyncStatus');
+    if (statusEl) statusEl.textContent = status;
+  }
+
+  function hideAuthSyncLoading() {
+    const overlay = document.getElementById('authSyncOverlay');
+    if (overlay) {
+      overlay.classList.remove('active');
+      setTimeout(() => {
+        if (overlay.parentNode && !overlay.classList.contains('active')) {
+          overlay.remove();
+        }
+      }, 250);
+    }
+  }
+
   // Handle Google Sign-In
   const onSignInClick = async () => {
     try {
       if (!window.FIREBASE_CONFIG || !window.FIREBASE_CONFIG.apiKey) {
-        showCustomModal(
-          'Firebase Setup Info',
-          'To enable 1-click Google Sign-In and Cloud API Key sync, please paste your free Firebase credentials into firebase-config.js. App continues to work 100% offline locally!',
-          'info'
-        );
+        showToast('Firebase configuration not found.', true);
         return;
       }
-      showToast('Opening Google Sign-In...');
-      await window.FirebaseCloudSync.signInWithGoogle();
+      showAuthSyncLoading('Google Sign-In', 'Opening Google account picker...');
+      const result = await window.FirebaseCloudSync.signInWithGoogle();
+      if (!result) {
+        hideAuthSyncLoading();
+        return;
+      }
+      updateAuthSyncStatus('Loading saved API keys & cloud data...');
     } catch (err) {
       console.error('[Auth Error]', err);
-      showCustomModal('Google Sign-In', err.message || 'Failed to sign in with Google.', 'warning');
+      hideAuthSyncLoading();
+      showToast(err.message || 'Failed to sign in with Google.', true);
     }
   };
 
@@ -6931,11 +6986,12 @@ function initFirebaseAuthAndCloudSync() {
       lastRestoredUserId = user.uid;
 
       try {
+        updateAuthSyncStatus('Restoring saved API keys & models...');
+
         // 1. Auto-restore keys from Firestore
         const cloudData = await window.FirebaseCloudSync.loadKeysFromCloud();
         if (cloudData) {
           let restoredCount = 0;
-          let newKeysImported = 0;
           const cloudVerificationPromises = [];
           ['gemini', 'groq', 'openrouter', 'deepseek', 'openai', 'custom'].forEach(pid => {
             const cloudKey = cloudData[pid];
@@ -6943,7 +6999,6 @@ function initFirebaseAuthAndCloudSync() {
               const cloudBaseUrl = cloudData.custom_api_base_url || cloudData.customBaseUrl;
               const cloudModelName = cloudData.custom_api_model_name || cloudData.customModelName;
               if (cloudBaseUrl) {
-                if (localStorage.getItem('custom_api_base_url') !== cloudBaseUrl) newKeysImported++;
                 localStorage.setItem('custom_api_base_url', cloudBaseUrl);
                 const urlInp = $('customApiBaseUrl');
                 if (urlInp) urlInp.value = cloudBaseUrl;
@@ -6954,7 +7009,6 @@ function initFirebaseAuthAndCloudSync() {
                 if (modelInp) modelInp.value = cloudModelName;
               }
               if (cloudKey) {
-                if (localStorage.getItem('custom_api_key') !== cloudKey) newKeysImported++;
                 state.apiKeys.custom = cloudKey;
                 localStorage.setItem('custom_api_key', cloudKey);
                 const keyInp = $('apiKeyInput_custom');
@@ -6965,8 +7019,6 @@ function initFirebaseAuthAndCloudSync() {
                 restoredCount++;
               }
             } else if (cloudKey && typeof cloudKey === 'string' && cloudKey.length > 5) {
-              const prevKey = localStorage.getItem(AI_PROVIDERS[pid].storageKey);
-              if (prevKey !== cloudKey) newKeysImported++;
               state.apiKeys[pid] = cloudKey;
               localStorage.setItem(AI_PROVIDERS[pid].storageKey, cloudKey);
               if (pid === 'gemini') {
@@ -6991,10 +7043,6 @@ function initFirebaseAuthAndCloudSync() {
             updateApiGuardAndHeaderStatus();
             checkReadyToTranslate();
             populateCombinedModelDropdown();
-            // Only toast if new keys were actually imported from another device/session
-            if (newKeysImported > 0) {
-              showToast(`Restored ${newKeysImported} API Key(s) from Google Cloud!`);
-            }
           }
         } else {
           // If cloud is empty and local keys exist, automatically backup to cloud silently
@@ -7007,6 +7055,8 @@ function initFirebaseAuthAndCloudSync() {
             });
           }
         }
+
+        updateAuthSyncStatus('Syncing preferences & translation history...');
 
         // 2. Auto-restore User Preferences (Translate In language & Subtitle Pacing Preset)
         const cloudPrefs = await window.FirebaseCloudSync.loadPreferencesFromCloud();
@@ -7036,14 +7086,18 @@ function initFirebaseAuthAndCloudSync() {
         await renderCloudHistoryUI();
       } finally {
         isRestoringCloudData = false;
+        hideAuthSyncLoading();
         updateApiGuardAndHeaderStatus();
         checkReadyToTranslate();
+        const userName = user.displayName || user.email?.split('@')[0] || 'User';
+        showToast(`Signed in as ${userName} • Cloud data synced!`);
         if (typeof window.FirebaseCloudSync?.markInitialSyncComplete === 'function') {
           window.FirebaseCloudSync.markInitialSyncComplete();
         }
       }
     } else {
       lastRestoredUserId = null;
+      hideAuthSyncLoading();
       if (Array.isArray(window._pendingProviderVerifications) && window._pendingProviderVerifications.length > 0) {
         await Promise.allSettled(window._pendingProviderVerifications).catch(() => {});
       }
