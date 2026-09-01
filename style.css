@@ -3411,18 +3411,15 @@ input[type="text"]:focus {
 }
 
 .api-required-checklist .checklist-title {
-  font-size: 0.69rem;
+  font-size: 0.74rem;
   font-weight: 700;
   color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
+  letter-spacing: 0;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 [data-theme="light"] .api-required-checklist .checklist-title {
-  color: #475569;
+  color: #334155;
 }
 
 .api-required-checklist .checklist-status-badge {
