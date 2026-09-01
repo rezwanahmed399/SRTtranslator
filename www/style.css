@@ -8069,6 +8069,15 @@ button:active:not(:disabled),
     display: block;
   }
 
+  body.keyboard-open .native-bottom-nav,
+  .native-bottom-nav.keyboard-hidden {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    transform: translateY(150%) !important;
+  }
+
   .desktop-tabs {
     display: none !important;
   }
