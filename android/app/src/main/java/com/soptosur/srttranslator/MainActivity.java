@@ -34,9 +34,6 @@ public class MainActivity extends BridgeActivity {
 
         // 3. Acquire CPU Partial WakeLock for 100% uninterrupted background translation & network
         acquireCpuWakeLock();
-
-        // 4. Request Battery Optimization Exemption so Android never kills or freezes background work
-        requestIgnoreBatteryOptimizations();
     }
 
     private void acquireCpuWakeLock() {

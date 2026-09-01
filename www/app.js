@@ -10,18 +10,14 @@ const AI_PROVIDERS = {
     storageKey: 'gemini_api_key',
     docLink: 'https://aistudio.google.com/app/apikey',
     type: 'gemini',
-    defaultModel: 'gemini-3.5-pro',
+    defaultModel: 'gemini-2.5-flash',
     badge: 'Required',
     models: [
-      { id: 'gemini-3.5-pro', displayName: 'Gemini 3.5 Pro', version: '3.5', inputTokens: 2097152, outputTokens: 8192, rpm: '5 RPM', rpd: '1,000 RPD', desc: 'Next-Gen Flagship Pro Reasoning (Google AI)' },
-      { id: 'gemini-3.5-flash', displayName: 'Gemini 3.5 Flash', version: '3.5', inputTokens: 1048576, outputTokens: 8192, rpm: '15 RPM', rpd: '1,500 RPD', desc: 'Latest Ultra-Fast High Quality (Google AI)' },
-      { id: 'gemini-3.1-pro', displayName: 'Gemini 3.1 Pro', version: '3.1', inputTokens: 2097152, outputTokens: 8192, rpm: '5 RPM', rpd: '1,000 RPD', desc: 'Top Nuance Dialogue Reasoning' },
-      { id: 'gemini-3.1-flash', displayName: 'Gemini 3.1 Flash', version: '3.1', inputTokens: 1048576, outputTokens: 8192, rpm: '15 RPM', rpd: '1,500 RPD', desc: 'High-Throughput Fast Translation' },
-      { id: 'gemini-3.0-pro', displayName: 'Gemini 3.0 Pro', version: '3.0', inputTokens: 2097152, outputTokens: 8192, rpm: '5 RPM', rpd: '1,000 RPD', desc: 'Deep Context & Cinematic Flow' },
-      { id: 'gemini-3.0-flash', displayName: 'Gemini 3.0 Flash', version: '3.0', inputTokens: 1048576, outputTokens: 8192, rpm: '15 RPM', rpd: '1,500 RPD', desc: 'Stable Gemini 3.0 Production' },
-      { id: 'gemini-3.5-flash-lite', displayName: 'Gemini 3.5 Flash Lite', version: '3.5', inputTokens: 1048576, outputTokens: 8192, rpm: '30 RPM', rpd: '1,500 RPD', desc: 'Gemini 3.5 Ultra-Fast Lite' },
-      { id: 'gemini-3.1-flash-lite', displayName: 'Gemini 3.1 Flash Lite', version: '3.1', inputTokens: 1048576, outputTokens: 8192, rpm: '30 RPM', rpd: '1,500 RPD', desc: 'Gemini 3.1 Ultra-Fast Lite' },
-      { id: 'gemini-3.0-flash-lite', displayName: 'Gemini 3.0 Flash Lite', version: '3.0', inputTokens: 1048576, outputTokens: 8192, rpm: '30 RPM', rpd: '1,500 RPD', desc: 'Gemini 3.0 Ultra-Fast Lite' }
+      { id: 'gemini-2.5-flash', displayName: 'Gemini 2.5 Flash', version: '2.5', inputTokens: 1048576, outputTokens: 8192, rpm: '15 RPM', rpd: '1,500 RPD', desc: 'Latest Ultra-Fast High Quality (Google AI)' },
+      { id: 'gemini-2.5-pro', displayName: 'Gemini 2.5 Pro', version: '2.5', inputTokens: 2097152, outputTokens: 8192, rpm: '5 RPM', rpd: '1,000 RPD', desc: 'Flagship Pro Reasoning (Google AI)' },
+      { id: 'gemini-2.0-flash', displayName: 'Gemini 2.0 Flash', version: '2.0', inputTokens: 1048576, outputTokens: 8192, rpm: '15 RPM', rpd: '1,500 RPD', desc: 'Stable Production Gemini (Google AI)' },
+      { id: 'gemini-1.5-flash', displayName: 'Gemini 1.5 Flash', version: '1.5', inputTokens: 1048576, outputTokens: 8192, rpm: '15 RPM', rpd: '1,500 RPD', desc: 'Reliable Production Flash' },
+      { id: 'gemini-1.5-pro', displayName: 'Gemini 1.5 Pro', version: '1.5', inputTokens: 2097152, outputTokens: 8192, rpm: '5 RPM', rpd: '1,000 RPD', desc: 'Pro Deep Context Reasoning' }
     ]
   },
   openrouter: {
@@ -105,24 +101,20 @@ const AI_PROVIDERS = {
 // ── Translation Quality & Auto-Switch Priority Hierarchy ──
 // Ranked by: Dialogue translation naturalness, nuance/slang retention, speed, and rate-limit resilience
 const TRANSLATION_MODEL_RANKING = [
-  // ── Tier 1A: Google Gemini (Direct) Pro & Flash Models (Version >= 3.0 Only) ──
-  { providerId: 'gemini', modelId: 'gemini-3.5-pro', name: 'Gemini 3.5 Pro', tier: 'Tier 1A (Gemini 3+ Pro)', desc: 'Next-Gen Flagship Pro Reasoning' },
-  { providerId: 'gemini', modelId: 'gemini-3.5-flash', name: 'Gemini 3.5 Flash', tier: 'Tier 1A (Gemini 3+ Flash)', desc: 'Latest Ultra-Fast High Quality' },
-  { providerId: 'gemini', modelId: 'gemini-3.1-pro', name: 'Gemini 3.1 Pro', tier: 'Tier 1A (Gemini 3+ Pro)', desc: 'Top Nuance Dialogue Reasoning' },
-  { providerId: 'gemini', modelId: 'gemini-3.1-flash', name: 'Gemini 3.1 Flash', tier: 'Tier 1A (Gemini 3+ Flash)', desc: 'High-Throughput Fast Translation' },
-  { providerId: 'gemini', modelId: 'gemini-3.0-pro', name: 'Gemini 3.0 Pro', tier: 'Tier 1A (Gemini 3+ Pro)', desc: 'Deep Context & Cinematic Flow' },
-  { providerId: 'gemini', modelId: 'gemini-3.0-flash', name: 'Gemini 3.0 Flash', tier: 'Tier 1A (Gemini 3+ Flash)', desc: 'Stable Gemini 3.0 Production' },
+  // ── Tier 1A: Google Gemini (Direct) Pro & Flash Models ──
+  { providerId: 'gemini', modelId: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro', tier: 'Tier 1A (Gemini Pro)', desc: 'Next-Gen Flagship Pro Reasoning (Google AI)' },
+  { providerId: 'gemini', modelId: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', tier: 'Tier 1A (Gemini Flash)', desc: 'Latest Ultra-Fast High Quality (Google AI)' },
+  { providerId: 'gemini', modelId: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash', tier: 'Tier 1A (Gemini Flash)', desc: 'Stable Production Gemini (Google AI)' },
+  { providerId: 'gemini', modelId: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash', tier: 'Tier 1A (Gemini Flash)', desc: 'Reliable Production Flash (Google AI)' },
+  { providerId: 'gemini', modelId: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro', tier: 'Tier 1A (Gemini Pro)', desc: 'Pro Deep Context Reasoning (Google AI)' },
 
-  // ── Tier 1B: Google Gemini (Direct) Lite Models (Version >= 3.0 Only, Newest to Oldest) ──
-  { providerId: 'gemini', modelId: 'gemini-3.5-flash-lite', name: 'Gemini 3.5 Flash Lite', tier: 'Tier 1B (Gemini 3+ Lite)', desc: 'Gemini 3.5 Ultra-Fast Lite' },
-  { providerId: 'gemini', modelId: 'gemini-3.1-flash-lite', name: 'Gemini 3.1 Flash Lite', tier: 'Tier 1B (Gemini 3+ Lite)', desc: 'Gemini 3.1 Ultra-Fast Lite' },
-  { providerId: 'gemini', modelId: 'gemini-3.0-flash-lite', name: 'Gemini 3.0 Flash Lite', tier: 'Tier 1B (Gemini 3+ Lite)', desc: 'Gemini 3.0 Ultra-Fast Lite' },
+  // ── Tier 1B: Google Gemini (Direct) Lite Models ──
+  { providerId: 'gemini', modelId: 'gemini-2.0-flash-lite', name: 'Gemini 2.0 Flash Lite', tier: 'Tier 1B (Gemini Lite)', desc: 'Gemini Ultra-Fast Lite' },
 
-  // ── Tier 2A: OpenRouter Gemini Models (Version >= 3.0) ──
-  { providerId: 'openrouter', modelId: 'google/gemini-3.5-pro', name: 'Gemini 3.5 Pro (OpenRouter)', tier: 'Tier 2A (OpenRouter Gemini 3+)', desc: 'Top Nuance via OpenRouter' },
-  { providerId: 'openrouter', modelId: 'google/gemini-3.5-flash', name: 'Gemini 3.5 Flash (OpenRouter)', tier: 'Tier 2A (OpenRouter Gemini 3+)', desc: 'Next-Gen Speed via OpenRouter' },
-  { providerId: 'openrouter', modelId: 'google/gemini-3.0-flash', name: 'Gemini 3.0 Flash (OpenRouter)', tier: 'Tier 2A (OpenRouter Gemini 3+)', desc: 'Ultra-Fast via OpenRouter' },
-  { providerId: 'openrouter', modelId: 'google/gemini-3.0-flash-lite', name: 'Gemini 3.0 Flash Lite (OpenRouter)', tier: 'Tier 2A (OpenRouter Gemini 3+ Lite)', desc: 'Ultra-Light via OpenRouter' },
+  // ── Tier 2A: OpenRouter Gemini Models ──
+  { providerId: 'openrouter', modelId: 'google/gemini-2.5-pro', name: 'Gemini 2.5 Pro (OpenRouter)', tier: 'Tier 2A (OpenRouter Gemini)', desc: 'Top Nuance via OpenRouter' },
+  { providerId: 'openrouter', modelId: 'google/gemini-2.5-flash', name: 'Gemini 2.5 Flash (OpenRouter)', tier: 'Tier 2A (OpenRouter Gemini)', desc: 'Next-Gen Speed via OpenRouter' },
+  { providerId: 'openrouter', modelId: 'google/gemini-2.0-flash', name: 'Gemini 2.0 Flash (OpenRouter)', tier: 'Tier 2A (OpenRouter Gemini)', desc: 'Ultra-Fast via OpenRouter' },
 
   // ── Tier 2B: OpenRouter Other Top Cinematic / Dialogue AI Models ──
   { providerId: 'openrouter', modelId: 'deepseek/deepseek-chat', name: 'DeepSeek V3 (OpenRouter)', tier: 'Tier 2B (OpenRouter DeepSeek)', desc: 'Top Cinematic Dialogue & Idioms' },
@@ -2148,19 +2140,13 @@ function isGeminiProOrFlash(providerId, modelId) {
   const mid = (modelId || '').toLowerCase().replace(/^models\//, '').replace(/^google\//, '');
   if (!mid.includes('gemini') && providerId !== 'gemini') return false;
   if (mid.includes('lite')) return false;
-  if (!mid.includes('pro') && !mid.includes('flash')) return false;
-  // STRICT RULE: Exclude versions below 3.0 (only >= 3.0 allowed)
-  const ver = getGeminiVersionNumber(modelId);
-  return ver >= 3.0;
+  return mid.includes('pro') || mid.includes('flash');
 }
 
 function isGeminiLite(providerId, modelId) {
   const mid = (modelId || '').toLowerCase().replace(/^models\//, '').replace(/^google\//, '');
   if (!mid.includes('gemini') && providerId !== 'gemini') return false;
-  if (!mid.includes('lite')) return false;
-  // STRICT RULE: Exclude versions below 3.0 (only >= 3.0 allowed)
-  const ver = getGeminiVersionNumber(modelId);
-  return ver >= 3.0;
+  return mid.includes('lite');
 }
 
 function getAllGeminiProFlashModels(providerId = 'gemini') {
@@ -2288,7 +2274,7 @@ function resolveRealTimeBestModel() {
     }
   }
 
-  return { providerId: 'gemini', model: 'gemini-3.5-pro', key: state.apiKeys.gemini || '', displayName: 'Gemini 3.5 Pro' };
+  return { providerId: 'gemini', model: 'gemini-2.5-flash', key: state.apiKeys.gemini || '', displayName: 'Gemini 2.5 Flash' };
 }
 
 function getActiveProviderAndKey(modelId) {
@@ -2336,7 +2322,7 @@ function getActiveProviderAndKey(modelId) {
     }
   }
 
-  return { providerId: 'gemini', model: 'gemini-3.5-pro', key: state.apiKeys.gemini || '' };
+  return { providerId: 'gemini', model: 'gemini-2.5-flash', key: state.apiKeys.gemini || '' };
 }
 
 function findFailoverBackup(currentProviderId, currentModelId) {
@@ -4603,10 +4589,10 @@ OUTPUT (JSON Array):`;
   const reqStart = Date.now();
   updateApiHealthUI('active', `[Gemini] Sending Batch #${batch[0]?.num || 1}...`);
 
-  const timeoutMs = selectedModel.includes('pro') ? 10000 : 8000;
+  const timeoutMs = 60000;
   const abortController = new AbortController();
   const timeoutId = setTimeout(() => {
-    abortController.abort(new Error(`Gemini API request timed out (${timeoutMs / 1000}s slow response)`));
+    abortController.abort(new Error(`Gemini API request timed out (${timeoutMs / 1000}s network timeout)`));
   }, timeoutMs);
 
   let response;
@@ -4620,8 +4606,8 @@ OUTPUT (JSON Array):`;
   } catch (netErr) {
     const lat = Date.now() - reqStart;
     if (netErr.name === 'AbortError' || abortController.signal.aborted) {
-      updateApiHealthUI('warning', '[Gemini] Slow response timeout...', lat);
-      throw new Error(`Gemini API timeout (${timeoutMs / 1000}s slow response). Switching to fast backup model.`);
+      updateApiHealthUI('warning', '[Gemini] Network timeout...', lat);
+      throw new Error(`Gemini API timeout (${timeoutMs / 1000}s network timeout). Switching to backup model.`);
     }
     updateApiHealthUI('warning', '[Gemini] Network Error...', lat);
     throw netErr;
@@ -4754,7 +4740,7 @@ OUTPUT (JSON Array):`;
     headers['Authorization'] = `Bearer ${key.trim()}`;
   }
   if (providerId === 'openrouter') {
-    headers['HTTP-Referer'] = window.location.origin || 'https://srttranslator.vercel.app';
+    headers['HTTP-Referer'] = 'https://srttranslator.vercel.app';
     headers['X-Title'] = 'SRTtranslator';
   }
 
