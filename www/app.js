@@ -794,6 +794,7 @@ window.addEventListener('DOMContentLoaded', () => {
   restoreSessionIfAvailable();
   initNativeAppIntegrations();
   initFirebaseAuthAndCloudSync();
+  initDownloadsManager();
 
   // Begin monitoring full website load state
   waitForWebsiteFullLoad();
@@ -820,25 +821,8 @@ function initNativeAppIntegrations() {
     // Show Get APK button ONLY on Android mobile browsers
     if (headerApkBtn) {
       headerApkBtn.style.display = 'inline-flex';
-      let activeApkFile = 'SRTtranslator-v1.6.0.apk';
-      headerApkBtn.href = activeApkFile;
-      headerApkBtn.setAttribute('download', activeApkFile);
-
-      try {
-        fetch('version.json?t=' + Date.now())
-          .then(res => res.json())
-          .then(data => {
-            if (data && data.apkFileName) {
-              activeApkFile = data.apkFileName;
-              headerApkBtn.href = activeApkFile;
-              headerApkBtn.setAttribute('download', activeApkFile);
-            }
-          })
-          .catch(() => {});
-      } catch (e) {}
-
       headerApkBtn.addEventListener('click', () => {
-        headerApkBtn.href = `${activeApkFile}?t=${Date.now()}`;
+        headerApkBtn.href = `SRTtranslator-latest.apk?t=${Date.now()}`;
       });
     }
   } else {
@@ -1185,7 +1169,7 @@ function updateRequiredChecklistUI() {
       overallBadge.textContent = '2/2 Connected';
     } else if (connectedCount === 1) {
       overallBadge.className = 'checklist-status-badge badge-partial';
-      overallBadge.textContent = '1/2 Connected (1 Missing)';
+      overallBadge.textContent = '1/2 Connected';
     } else {
       overallBadge.className = 'checklist-status-badge badge-none';
       overallBadge.textContent = '0/2 Connected';
@@ -1207,8 +1191,14 @@ function switchProviderTab(providerId) {
   }
 
   if (providerSelectedTag && pConf) {
-    const badge = pConf.badge ? ` (${pConf.badge})` : '';
-    providerSelectedTag.textContent = `${pConf.name}${badge}`;
+    let shortName = pConf.name;
+    if (providerId === 'gemini') shortName = 'Gemini';
+    else if (providerId === 'openrouter') shortName = 'OpenRouter';
+    else if (providerId === 'openai') shortName = 'OpenAI';
+    else if (providerId === 'deepseek') shortName = 'DeepSeek';
+    else if (providerId === 'groq') shortName = 'Groq';
+    else if (providerId === 'custom') shortName = 'Custom API';
+    providerSelectedTag.textContent = shortName;
   }
 
   // Update Panels
@@ -1423,10 +1413,6 @@ async function handleRemoveProviderKey(providerId) {
   populateCombinedModelDropdown();
   updateApiGuardAndHeaderStatus();
   checkReadyToTranslate();
-
-  if (inp) {
-    setTimeout(() => inp.focus(), 50);
-  }
 }
 
 async function verifyAndLoadProvider(providerId, key) {
@@ -1957,9 +1943,15 @@ function updateProviderStatusUI(providerId, isConnected, extraText = '') {
     inp.readOnly = isConnected;
     if (isConnected) {
       inp.classList.add('input-locked');
+      inp.tabIndex = -1;
+      inp.setAttribute('inputmode', 'none');
+      inp.style.cursor = 'default';
       inp.setAttribute('title', 'API Key is connected. Click Disconnect to modify.');
     } else {
       inp.classList.remove('input-locked');
+      inp.removeAttribute('tabindex');
+      inp.removeAttribute('inputmode');
+      inp.style.cursor = 'text';
       inp.removeAttribute('title');
     }
   }
@@ -1971,9 +1963,15 @@ function updateProviderStatusUI(providerId, isConnected, extraText = '') {
       urlInp.readOnly = isConnected;
       if (isConnected) {
         urlInp.classList.add('input-locked');
+        urlInp.tabIndex = -1;
+        urlInp.setAttribute('inputmode', 'none');
+        urlInp.style.cursor = 'default';
         urlInp.setAttribute('title', 'Endpoint is connected. Click Disconnect to modify.');
       } else {
         urlInp.classList.remove('input-locked');
+        urlInp.removeAttribute('tabindex');
+        urlInp.removeAttribute('inputmode');
+        urlInp.style.cursor = 'text';
         urlInp.removeAttribute('title');
       }
     }
@@ -1981,9 +1979,15 @@ function updateProviderStatusUI(providerId, isConnected, extraText = '') {
       modelInp.readOnly = isConnected;
       if (isConnected) {
         modelInp.classList.add('input-locked');
+        modelInp.tabIndex = -1;
+        modelInp.setAttribute('inputmode', 'none');
+        modelInp.style.cursor = 'default';
         modelInp.setAttribute('title', 'Model is connected. Click Disconnect to modify.');
       } else {
         modelInp.classList.remove('input-locked');
+        modelInp.removeAttribute('tabindex');
+        modelInp.removeAttribute('inputmode');
+        modelInp.style.cursor = 'text';
         modelInp.removeAttribute('title');
       }
     }
@@ -2098,10 +2102,10 @@ function populateCombinedModelDropdown() {
 
   if (modelLiveBadge) {
     modelLiveBadge.innerHTML = `
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:11px;height:11px;display:inline-block;margin-right:4px;vertical-align:-1px;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:11px;height:11px;display:inline-block;margin-right:3px;vertical-align:-1px;">
         <polyline points="20 6 9 17 4 12"/>
       </svg>
-      <span>${totalModelsCount} Live Models Verified (${connectedProviders.length} Providers)</span>
+      <span>${totalModelsCount} Models Verified</span>
     `;
     modelLiveBadge.className = 'hint-tag active-tag';
   }
@@ -2715,6 +2719,7 @@ async function togglePauseTranslation() {
 
     addTerminalLog('warn', isCondense ? 'AI Condensation paused.' : 'Translation paused.');
     showToast(isCondense ? 'Condensation paused.' : 'Translation paused.', 'pause');
+    if (ctaHint) ctaHint.textContent = isCondense ? 'Condensation paused. Click Resume to continue.' : 'Translation paused. Click Resume to continue.';
   } else {
     state.isPaused = false;
     const isCondense = !!state.isCondensing;
@@ -2741,6 +2746,7 @@ async function togglePauseTranslation() {
 
     updateApiHealthUI('active', isCondense ? 'Resuming AI Condenser...' : 'Resuming Translation...');
     addTerminalLog('info', isCondense ? 'AI Condensation resumed.' : 'Translation resumed.');
+    if (ctaHint) ctaHint.textContent = isCondense ? 'Condensing subtitles in progress...' : 'Translation in progress...';
   }
 
   updateControlsLockState();
@@ -2755,7 +2761,7 @@ async function cancelTranslationProcess() {
     message: isCondense
       ? 'Are you sure you want to cancel the AI condensation? Ongoing progress will be stopped and the session will be reset.'
       : 'Are you sure you want to cancel the ongoing translation? All translated data will be discarded and the session will be reset.',
-    confirmText: 'Yes, Discard & Reset',
+    confirmText: 'Discard & Reset',
     cancelText: isCondense ? 'Keep Condensing' : 'Keep Translating',
     type: 'danger'
   });
@@ -2812,6 +2818,127 @@ async function cancelTranslationProcess() {
   checkReadyToTranslate();
   if (typeof renderCloudHistoryUI === 'function') renderCloudHistoryUI();
   addTerminalLog('warn', isCondense ? 'AI condensation cancelled and session reset.' : 'Translation cancelled and session reset.');
+}
+
+// ── App Tab & Sub-Tab Navigation Systems ──
+function switchAppTab(tabId) {
+  const isTranslator = tabId === 'translator';
+  
+  const tabBtnTranslator = $('tabBtnTranslator');
+  const tabBtnSettings = $('tabBtnSettings');
+  const bottomTabBtnTranslator = $('bottomTabBtnTranslator');
+  const bottomTabBtnSettings = $('bottomTabBtnSettings');
+  const viewTranslator = $('viewTranslator');
+  const viewSettings = $('viewSettings');
+
+  if (tabBtnTranslator) {
+    tabBtnTranslator.classList.toggle('active', isTranslator);
+    tabBtnTranslator.setAttribute('aria-selected', isTranslator ? 'true' : 'false');
+  }
+  if (tabBtnSettings) {
+    tabBtnSettings.classList.toggle('active', !isTranslator);
+    tabBtnSettings.setAttribute('aria-selected', !isTranslator ? 'true' : 'false');
+  }
+  if (bottomTabBtnTranslator) {
+    bottomTabBtnTranslator.classList.toggle('active', isTranslator);
+  }
+  if (bottomTabBtnSettings) {
+    bottomTabBtnSettings.classList.toggle('active', !isTranslator);
+  }
+
+  if (viewTranslator) {
+    viewTranslator.classList.toggle('active', isTranslator);
+  }
+  if (viewSettings) {
+    viewSettings.classList.toggle('active', !isTranslator);
+  }
+
+  window.scrollTo({ top: 0, behavior: 'instant' });
+}
+
+function switchTranslatorSubTab(subTabId) {
+  const isEngineSettings = subTabId === 'settings' || subTabId === 'engine';
+  const subTabBtnEngineSettings = $('subTabBtnEngineSettings');
+  const subTabBtnWorkspace = $('subTabBtnWorkspace');
+  const subViewEngineSettings = $('subViewEngineSettings');
+  const subViewWorkspace = $('subViewWorkspace');
+
+  if (subTabBtnEngineSettings) {
+    subTabBtnEngineSettings.classList.toggle('active', isEngineSettings);
+    subTabBtnEngineSettings.setAttribute('aria-selected', isEngineSettings ? 'true' : 'false');
+  }
+  if (subTabBtnWorkspace) {
+    subTabBtnWorkspace.classList.toggle('active', !isEngineSettings);
+    subTabBtnWorkspace.setAttribute('aria-selected', !isEngineSettings ? 'true' : 'false');
+  }
+
+  if (subViewEngineSettings) {
+    subViewEngineSettings.classList.toggle('active', isEngineSettings);
+  }
+  if (subViewWorkspace) {
+    subViewWorkspace.classList.toggle('active', !isEngineSettings);
+  }
+}
+
+function switchSettingsSubTab(subTabId) {
+  const isApiKeys = subTabId === 'apikeys';
+  const subTabBtnApiKeys = $('subTabBtnApiKeys');
+  const subTabBtnHistory = $('subTabBtnHistory');
+  const subViewApiKeys = $('subViewApiKeys');
+  const subViewHistory = $('subViewHistory');
+
+  if (subTabBtnApiKeys) {
+    subTabBtnApiKeys.classList.toggle('active', isApiKeys);
+    subTabBtnApiKeys.setAttribute('aria-selected', isApiKeys ? 'true' : 'false');
+  }
+  if (subTabBtnHistory) {
+    subTabBtnHistory.classList.toggle('active', !isApiKeys);
+    subTabBtnHistory.setAttribute('aria-selected', !isApiKeys ? 'true' : 'false');
+  }
+
+  if (subViewApiKeys) {
+    subViewApiKeys.classList.toggle('active', isApiKeys);
+  }
+  if (subViewHistory) {
+    subViewHistory.classList.toggle('active', !isApiKeys);
+  }
+
+  if (!isApiKeys && typeof renderCloudHistoryUI === 'function') {
+    renderCloudHistoryUI();
+  }
+}
+
+// Global API Settings Shortcut
+window.goToApiSettingsTab = function() {
+  if (typeof triggerHaptic === 'function') triggerHaptic('medium');
+  switchAppTab('settings');
+  switchSettingsSubTab('apikeys');
+  setTimeout(() => {
+    const apiSection = $('apiSection');
+    if (apiSection) {
+      apiSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, 100);
+};
+
+function downloadSRTFile(blocks) {
+  if (!blocks || blocks.length === 0) return;
+  const srtContent = buildSRTContent(blocks);
+  const baseName = state.fileName ? state.fileName.replace(/\.srt$/i, '') : 'translated_subtitle';
+  const langSuffix = (targetLang?.value || 'Bengali').toLowerCase().replace(/[^a-z0-9]/g, '_');
+  const safeName = `${baseName}_${langSuffix}.srt`;
+  triggerDirectSrtDownload(safeName, srtContent);
+}
+
+function buildSRTContent(blocks) {
+  return blocks.map((b, idx) => {
+    const num = idx + 1;
+    const time = `${b.startTime} --> ${b.endTime}`;
+    const text = (b.translatedLines && b.translatedLines.length > 0)
+      ? b.translatedLines.join('\n')
+      : (b.lines ? b.lines.join('\n') : '');
+    return `${num}\n${time}\n${text}`;
+  }).join('\n\n') + '\n';
 }
 
 // ── Event Setup ──
@@ -2921,6 +3048,11 @@ function setupEventListeners() {
     if (saveBtn) saveBtn.addEventListener('click', () => handleSaveProviderKey(pid));
     if (removeBtn) removeBtn.addEventListener('click', () => handleRemoveProviderKey(pid));
     if (input) {
+      input.addEventListener('focus', () => {
+        if (input.readOnly) {
+          input.blur();
+        }
+      });
       input.addEventListener('keydown', e => {
         if (input.readOnly && e.key !== 'Tab' && !e.ctrlKey && !e.metaKey) {
           e.preventDefault();
@@ -3079,19 +3211,26 @@ function setupEventListeners() {
   const resultFileNamePill = $('resultFileNamePill');
   if (resultFileNamePill) resultFileNamePill.addEventListener('click', promptRenameCurrentFile);
 
-  // Top API Key Alert Banner Connect Button click handler
+  // Top API Key Alert Banner Connect Button & Banner Click Handler
   const topAlertConnectBtn = $('topAlertConnectBtn');
-  if (topAlertConnectBtn) {
-    topAlertConnectBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      switchAppTab('settings');
-      const providerSelect = $('providerSelect');
-      if (providerSelect) {
-        providerSelect.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  const topApiKeyAlertBanner = $('topApiKeyAlertBanner');
+  const handleAlertConnectClick = (e) => {
+    e.stopPropagation();
+    triggerHaptic('medium');
+    switchAppTab('settings');
+    switchSettingsSubTab('apikeys');
+    setTimeout(() => {
+      const apiSection = $('apiSection');
+      if (apiSection) {
+        apiSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
-      const apiKeyInp = $('apiKeyInput');
-      if (apiKeyInp) setTimeout(() => apiKeyInp.focus(), 250);
-    });
+    }, 150);
+  };
+  if (topAlertConnectBtn) {
+    topAlertConnectBtn.addEventListener('click', handleAlertConnectClick);
+  }
+  if (topApiKeyAlertBanner) {
+    topApiKeyAlertBanner.addEventListener('click', handleAlertConnectClick);
   }
 
   // Required API Keys Checklist Click Handlers (Quick Configure)
@@ -3104,7 +3243,6 @@ function setupEventListeners() {
         const targetInput = $(`apiKeyInput${provider === 'gemini' ? '' : '_' + provider}`);
         if (targetInput) {
           targetInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          setTimeout(() => targetInput.focus(), 250);
         }
       }
     });
@@ -3187,57 +3325,57 @@ function setupEventListeners() {
     if (pacingBadge) {
       if (val === 'micro') {
         pacingBadge.innerHTML = `
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;display:inline-block;vertical-align:-1px;margin-right:3px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:10px;height:10px;display:inline-block;vertical-align:-1px;margin-right:2px;">
             <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
           </svg>
-          <span>Glance Speed (Natural)</span>
+          <span>Glance Speed</span>
         `;
       } else if (val === 'concise') {
         pacingBadge.innerHTML = `
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;display:inline-block;vertical-align:-1px;margin-right:3px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:10px;height:10px;display:inline-block;vertical-align:-1px;margin-right:2px;">
             <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
           </svg>
-          <span>Fast Reading (Natural)</span>
+          <span>Fast Reading</span>
         `;
       } else if (val === 'balanced') {
         pacingBadge.innerHTML = `
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;display:inline-block;vertical-align:-1px;margin-right:3px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:10px;height:10px;display:inline-block;vertical-align:-1px;margin-right:2px;">
             <circle cx="12" cy="12" r="10"/>
             <polyline points="12 6 12 12 16 14"/>
           </svg>
-          <span>Balanced (Natural Flow)</span>
+          <span>Balanced</span>
         `;
       } else if (val === 'detailed') {
         pacingBadge.innerHTML = `
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;display:inline-block;vertical-align:-1px;margin-right:3px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:10px;height:10px;display:inline-block;vertical-align:-1px;margin-right:2px;">
             <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
             <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
           </svg>
-          <span>Detailed (Unabridged)</span>
+          <span>Detailed</span>
         `;
       } else if (val === 'micro_limit') {
         pacingBadge.innerHTML = `
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;display:inline-block;vertical-align:-1px;margin-right:3px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:10px;height:10px;display:inline-block;vertical-align:-1px;margin-right:2px;">
             <rect x="3" y="3" width="18" height="18" rx="2"/>
             <path d="M9 9h6v6H9z"/>
           </svg>
-          <span>1–4 Words (Max 5)</span>
+          <span>1–4 Words</span>
         `;
       } else if (val === 'concise_limit') {
         pacingBadge.innerHTML = `
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;display:inline-block;vertical-align:-1px;margin-right:3px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:10px;height:10px;display:inline-block;vertical-align:-1px;margin-right:2px;">
             <rect x="3" y="3" width="18" height="18" rx="2"/>
             <path d="M9 9h6v6H9z"/>
           </svg>
-          <span>4–7 Words Limit (Strict)</span>
+          <span>4–7 Words</span>
         `;
       } else if (val === 'balanced_limit') {
         pacingBadge.innerHTML = `
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;display:inline-block;vertical-align:-1px;margin-right:3px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:10px;height:10px;display:inline-block;vertical-align:-1px;margin-right:2px;">
             <rect x="3" y="3" width="18" height="18" rx="2"/>
             <path d="M9 9h6v6H9z"/>
           </svg>
-          <span>7–12 Words Limit (Strict)</span>
+          <span>7–12 Words</span>
         `;
       }
     }
@@ -3576,6 +3714,9 @@ function checkReadyToTranslate() {
       translateBtn.disabled = true;
       translateBtn.classList.add('disabled');
       translateBtn.classList.remove('btn-completed');
+    }
+    if (ctaHint) {
+      ctaHint.textContent = state.isPaused ? 'Translation paused. Click Resume to continue.' : 'Translation in progress...';
     }
     return;
   }
@@ -3923,8 +4064,6 @@ async function runTranslationPipeline() {
     if (providerSelect) {
       providerSelect.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
-    const apiKeyInp = $('apiKeyInput');
-    if (apiKeyInp) setTimeout(() => apiKeyInp.focus(), 250);
     return;
   }
 
@@ -3935,8 +4074,6 @@ async function runTranslationPipeline() {
     if (providerSelect) {
       providerSelect.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
-    const apiKeyInp = $('apiKeyInput');
-    if (apiKeyInp) setTimeout(() => apiKeyInp.focus(), 250);
     return;
   }
 
@@ -3958,6 +4095,7 @@ async function runTranslationPipeline() {
   translateBtn.querySelector('.btn-content').classList.add('hidden');
   translateBtn.querySelector('.btn-spinner-state').classList.remove('hidden');
   translateBtn.disabled = true;
+  if (ctaHint) ctaHint.textContent = 'Translation in progress...';
 
   progressCard.classList.remove('hidden');
   resultCard.classList.add('hidden');
@@ -5956,6 +6094,16 @@ async function downloadSRTFile(blocks) {
     fileName += '.srt';
   }
 
+  // Record to Download Manager
+  saveDownloadedFile({
+    fileName: fileName,
+    srtContent: content,
+    lang: targetLang?.value || 'Bengali',
+    lines: Array.isArray(blocks) ? blocks.length : 0,
+    size: new Blob([content]).size,
+    isCondensed: !!state.isCondensed
+  });
+
   const isNative = !!(
     (window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform()) ||
     window.location.protocol === 'capacitor:' ||
@@ -6175,7 +6323,10 @@ function buildCustomSelect(selectEl) {
   const totalOptionsCount = selectEl.options.length;
   let searchInput = null;
 
-  if (totalOptionsCount > 6) {
+  // Only language dropdowns get a search bar; Subtitle Pacing & Model Selection do NOT have a search bar
+  const isSearchable = (selectId === 'targetLang' || selectId === 'sourceLang') && totalOptionsCount > 6;
+
+  if (isSearchable) {
     const searchWrap = document.createElement('div');
     searchWrap.className = 'custom-select-search-wrap';
     searchWrap.innerHTML = `
@@ -6183,7 +6334,7 @@ function buildCustomSelect(selectEl) {
         <circle cx="11" cy="11" r="8"></circle>
         <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
       </svg>
-      <input type="text" class="custom-select-search-input" placeholder="Search..." autocomplete="off" />
+      <input type="text" class="custom-select-search-input" placeholder="Search language..." autocomplete="off" inputmode="search" tabindex="-1" readonly />
     `;
     menu.appendChild(searchWrap);
     searchInput = searchWrap.querySelector('input');
@@ -6203,8 +6354,20 @@ function buildCustomSelect(selectEl) {
       const optEl = document.createElement('div');
       optEl.className = 'custom-select-option' + (isSelected ? ' is-selected' : '');
       optEl.dataset.value = opt.value;
+
+      let mainTitle = opt.text;
+      let subDesc = '';
+      const matchParen = opt.text.match(/^([^(]+?)\s*\(([^)]+)\)$/);
+      if (matchParen) {
+        mainTitle = matchParen[1].trim();
+        subDesc = matchParen[2].trim();
+      }
+
       optEl.innerHTML = `
-        <span>${escapeHtml(opt.text)}</span>
+        <div class="custom-select-option-text">
+          <span class="option-main-title">${escapeHtml(mainTitle)}</span>
+          ${subDesc ? `<span class="option-sub-desc">${escapeHtml(subDesc)}</span>` : ''}
+        </div>
         <svg class="option-check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <polyline points="20 6 9 17 4 12"></polyline>
         </svg>
@@ -6269,7 +6432,14 @@ function buildCustomSelect(selectEl) {
     searchInput.addEventListener('input', () => {
       renderOptions(searchInput.value);
     });
-    searchInput.addEventListener('click', e => e.stopPropagation());
+    searchInput.addEventListener('click', e => {
+      e.stopPropagation();
+      searchInput.removeAttribute('readonly');
+      searchInput.focus();
+    });
+    searchInput.addEventListener('focus', () => {
+      searchInput.removeAttribute('readonly');
+    });
   }
 
   // Toggle dropdown on trigger click
@@ -6279,6 +6449,28 @@ function buildCustomSelect(selectEl) {
     const isOpen = container.classList.contains('is-open');
     closeAllCustomSelects();
     if (!isOpen) {
+      // Calculate available space above and below
+      const triggerRect = trigger.getBoundingClientRect();
+      const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+      const bottomNavHeight = 70; // Clearance for bottom navigation bar
+      const topHeaderHeight = 60; // Clearance for top sticky header
+      
+      const spaceBelow = viewportHeight - triggerRect.bottom - bottomNavHeight;
+      const spaceAbove = triggerRect.top - topHeaderHeight;
+
+      // Determine smart direction: if space below < 230px and above has more space, flip UP!
+      const shouldOpenUp = (spaceBelow < 230 && spaceAbove > spaceBelow);
+
+      if (shouldOpenUp) {
+        container.classList.add('opens-up');
+        const maxH = Math.min(320, Math.max(160, spaceAbove - 20));
+        list.style.maxHeight = `${maxH}px`;
+      } else {
+        container.classList.remove('opens-up');
+        const maxH = Math.min(320, Math.max(160, spaceBelow - 16));
+        list.style.maxHeight = `${maxH}px`;
+      }
+
       container.classList.add('is-open');
       trigger.setAttribute('aria-expanded', 'true');
       
@@ -6286,7 +6478,19 @@ function buildCustomSelect(selectEl) {
       if (parentCard) parentCard.classList.add('has-open-dropdown');
 
       if (searchInput) {
-        setTimeout(() => searchInput.focus(), 50);
+        searchInput.value = '';
+        searchInput.setAttribute('readonly', 'readonly');
+        renderOptions('');
+      } else {
+        // Smoothly scroll selected option into view
+        setTimeout(() => {
+          const selectedOptionEl = list.querySelector('.custom-select-option.is-selected');
+          if (selectedOptionEl) {
+            selectedOptionEl.scrollIntoView({ block: 'nearest' });
+          } else {
+            list.scrollTop = 0;
+          }
+        }, 40);
       }
     }
   });
@@ -6316,8 +6520,18 @@ function buildCustomSelect(selectEl) {
 function closeAllCustomSelects() {
   document.querySelectorAll('.custom-select-container.is-open').forEach(c => {
     c.classList.remove('is-open');
+    setTimeout(() => {
+      if (!c.classList.contains('is-open')) {
+        c.classList.remove('opens-up');
+      }
+    }, 220);
     const tr = c.querySelector('.custom-select-trigger');
     if (tr) tr.setAttribute('aria-expanded', 'false');
+    const sinp = c.querySelector('.custom-select-search-input');
+    if (sinp) {
+      sinp.setAttribute('readonly', 'readonly');
+      sinp.blur();
+    }
   });
   document.querySelectorAll('.has-open-dropdown').forEach(card => {
     card.classList.remove('has-open-dropdown');
@@ -7197,27 +7411,31 @@ function generateHistoryCardsHtml(items) {
       <div class="cloud-history-item" data-id="${docId}">
         <div class="cloud-item-info">
           <div class="cloud-item-title-row">
-            <span class="cloud-item-title" title="${safeFileName}">${safeFileName}</span>
-            <button class="btn-cloud-rename" type="button" data-docid="${docId}" title="Rename file">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
-              </svg>
-            </button>
-            ${isCondensedItem ? `
-              <span class="condensed-badge" title="AI Condensed & Shortened Subtitle">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;display:inline-block;vertical-align:-1px;margin-right:2px;">
-                  <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+            <div class="cloud-title-group">
+              <span class="cloud-item-title" title="${safeFileName}">${safeFileName}</span>
+              <button class="btn-cloud-rename" type="button" data-docid="${docId}" title="Rename file">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
                 </svg>
-                <span>Condensed</span>
+              </button>
+            </div>
+            <div class="cloud-badges-group">
+              ${isCondensedItem ? `
+                <span class="condensed-badge" title="AI Condensed & Shortened Subtitle">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:10px;height:10px;display:inline-block;vertical-align:-1px;margin-right:2px;">
+                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                  </svg>
+                  <span>Condensed</span>
+                </span>
+              ` : ''}
+              <span class="expiry-badge ${isUrgent ? 'urgent' : ''}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:10px;height:10px;display:inline-block;vertical-align:-1px;margin-right:2px;">
+                  <circle cx="12" cy="12" r="10"/>
+                  <polyline points="12 6 12 12 16 14"/>
+                </svg>
+                <span>${expiryText}</span>
               </span>
-            ` : ''}
-            <span class="expiry-badge ${isUrgent ? 'urgent' : ''}">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;display:inline-block;vertical-align:-1px;margin-right:2px;">
-                <circle cx="12" cy="12" r="10"/>
-                <polyline points="12 6 12 12 16 14"/>
-              </svg>
-              <span>${expiryText}</span>
-            </span>
+            </div>
           </div>
           <div class="cloud-item-meta">
             <span class="meta-pill">
@@ -7236,14 +7454,6 @@ function generateHistoryCardsHtml(items) {
                 <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
               </svg>
               <span>${escapeTxt(item.targetLang || 'Bengali')}</span>
-            </span>
-            <span class="meta-pill">
-              <svg class="meta-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
-                <line x1="8" y1="21" x2="16" y2="21"/>
-                <line x1="12" y1="17" x2="12" y2="21"/>
-              </svg>
-              <span>${escapeTxt(item.modelUsed || 'AI')}</span>
             </span>
             <span class="meta-pill">
               <svg class="meta-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -7494,10 +7704,10 @@ function showAllCloudHistoryModal(initialItems) {
             <span>All Translation History</span>
             <span class="history-count-badge" id="historyModalCountBadge">${currentItems.length} Subtitles</span>
           </div>
-          <p class="history-modal-subline">7-Day Cloud Archive • Auto-removed after 7 days</p>
+          <p class="history-modal-subline">7-Day Cloud Archive • Auto-removes after 7 days</p>
         </div>
         <button class="btn-history-modal-close" type="button" id="historyModalCloseBtn" title="Close">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;">
             <line x1="18" y1="6" x2="6" y2="18"/>
             <line x1="6" y1="6" x2="18" y2="18"/>
           </svg>
@@ -7509,9 +7719,9 @@ function showAllCloudHistoryModal(initialItems) {
             <circle cx="11" cy="11" r="8"/>
             <line x1="21" y1="21" x2="16.65" y2="16.65"/>
           </svg>
-          <input type="text" id="historyModalSearch" class="history-search-input" placeholder="Search by subtitle file name, language, or model..." autocomplete="off" spellcheck="false" />
+          <input type="text" id="historyModalSearch" class="history-search-input" placeholder="Search by subtitle name..." autocomplete="off" spellcheck="false" />
           <button class="btn-history-clear-search hidden" type="button" id="historyModalClearBtn" title="Clear search">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;">
               <line x1="18" y1="6" x2="6" y2="18"/>
               <line x1="6" y1="6" x2="18" y2="18"/>
             </svg>
@@ -7521,8 +7731,6 @@ function showAllCloudHistoryModal(initialItems) {
       <div class="history-modal-content-list" id="historyModalList"></div>
     </div>
   `;
-
-  document.body.appendChild(backdrop);
 
   const listContainer = backdrop.querySelector('#historyModalList');
   const searchInput = backdrop.querySelector('#historyModalSearch');
@@ -7591,6 +7799,7 @@ function showAllCloudHistoryModal(initialItems) {
   };
 
   renderModalList();
+  document.body.appendChild(backdrop);
 
   if (searchInput) {
     searchInput.addEventListener('input', renderModalList);
@@ -7709,16 +7918,510 @@ async function renderCloudHistoryUI() {
   }
 }
 
-function triggerDirectSrtDownload(fileName, srtContent) {
-  const blob = new Blob([srtContent], { type: 'text/plain;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = fileName.endsWith('.srt') ? fileName : `${fileName}.srt`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
+// ═══════════════════════════════════════════════════════════════════
+// DOWNLOADS MANAGER (Top Header Download Bar & History Drawer)
+// ═══════════════════════════════════════════════════════════════════
+const DOWNLOADS_STORAGE_KEY = 'srt_downloads_history_store';
+let activeDownloadsQueue = [];
+
+function getDownloadedFiles() {
+  try {
+    const raw = localStorage.getItem(DOWNLOADS_STORAGE_KEY);
+    if (!raw) return [];
+    const list = JSON.parse(raw);
+    return Array.isArray(list) ? list : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function saveDownloadedFile({ fileName, srtContent, lang = 'Bengali', lines = 0, size = 0, isCondensed = false }) {
+  if (!fileName || !srtContent) return;
+  const list = getDownloadedFiles();
+  
+  const formattedSize = size > 0 ? (size < 1024 ? `${size} B` : `${(size / 1024).toFixed(1)} KB`) : `${(new Blob([srtContent]).size / 1024).toFixed(1)} KB`;
+  const blockCount = lines > 0 ? lines : (parseSRT(srtContent) || []).length;
+  const cleanLang = lang || targetLang?.value || 'Bengali';
+  const now = Date.now();
+  const dateStr = new Date(now).toLocaleString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+
+  const entry = {
+    id: `dl_${now}_${Math.random().toString(36).slice(2, 7)}`,
+    fileName: fileName.endsWith('.srt') ? fileName : `${fileName}.srt`,
+    srtContent: srtContent,
+    targetLang: cleanLang,
+    blockCount: blockCount,
+    fileSizeFormatted: formattedSize,
+    downloadedAt: now,
+    downloadedDate: dateStr,
+    isCondensed: !!isCondensed
+  };
+
+  // Prepend to top and remove existing duplicate fileName if downloaded recently
+  const filtered = list.filter(item => item.fileName !== entry.fileName || (now - item.downloadedAt > 300000));
+  filtered.unshift(entry);
+
+  // Keep max 60 files
+  const capped = filtered.slice(0, 60);
+
+  try {
+    localStorage.setItem(DOWNLOADS_STORAGE_KEY, JSON.stringify(capped));
+  } catch (err) {
+    try {
+      const lightweight = capped.slice(0, 25);
+      localStorage.setItem(DOWNLOADS_STORAGE_KEY, JSON.stringify(lightweight));
+    } catch (e) {}
+  }
+
+  // Trigger Header Button Animation & Update Badge
+  triggerHeaderDownloadAnimation();
+  updateHeaderDownloadsBadge();
+
+  // If download manager modal is currently open, re-render it live
+  const activeModal = document.querySelector('.downloads-drawer-backdrop');
+  if (activeModal) {
+    renderDownloadsModalContent(activeModal);
+  }
+}
+
+function removeDownloadedFile(id) {
+  const list = getDownloadedFiles();
+  const updated = list.filter(item => item.id !== id);
+  try {
+    localStorage.setItem(DOWNLOADS_STORAGE_KEY, JSON.stringify(updated));
+  } catch (e) {}
+  updateHeaderDownloadsBadge();
+}
+
+function clearAllDownloadedFiles() {
+  try {
+    localStorage.removeItem(DOWNLOADS_STORAGE_KEY);
+  } catch (e) {}
+  updateHeaderDownloadsBadge();
+}
+
+function updateHeaderDownloadsBadge() {
+  const badge = $('headerDownloadsBadge');
+  if (!badge) return;
+  const list = getDownloadedFiles();
+  if (list.length > 0) {
+    badge.textContent = list.length > 99 ? '99+' : String(list.length);
+    badge.classList.remove('hidden');
+  } else {
+    badge.classList.add('hidden');
+  }
+}
+
+function triggerHeaderDownloadAnimation() {
+  const btn = $('headerDownloadsBtn');
+  const pulse = $('headerDownloadsPulse');
+  if (btn) {
+    btn.classList.add('is-downloading');
+    if (pulse) pulse.classList.remove('hidden');
+    setTimeout(() => {
+      btn.classList.remove('is-downloading');
+      if (pulse) pulse.classList.add('hidden');
+    }, 2000);
+  }
+}
+
+function trackActiveDownloadProgress(fileName, onComplete) {
+  const activeId = `act_${Date.now()}`;
+  const activeItem = {
+    id: activeId,
+    fileName: fileName,
+    progress: 10
+  };
+  activeDownloadsQueue.push(activeItem);
+
+  triggerHeaderDownloadAnimation();
+
+  // Animate progress smoothly
+  const interval = setInterval(() => {
+    activeItem.progress += Math.floor(Math.random() * 25) + 15;
+    if (activeItem.progress >= 100) {
+      activeItem.progress = 100;
+      clearInterval(interval);
+      setTimeout(() => {
+        activeDownloadsQueue = activeDownloadsQueue.filter(a => a.id !== activeId);
+        if (typeof onComplete === 'function') onComplete();
+        const activeModal = document.querySelector('.downloads-drawer-backdrop');
+        if (activeModal) renderDownloadsModalContent(activeModal);
+      }, 500);
+    }
+    const activeModal = document.querySelector('.downloads-drawer-backdrop');
+    if (activeModal) renderDownloadsModalContent(activeModal);
+  }, 200);
+}
+
+function showDownloadsManagerModal() {
+  const existing = document.querySelector('.downloads-drawer-backdrop');
+  if (existing) existing.remove();
+
+  const backdrop = document.createElement('div');
+  backdrop.className = 'downloads-drawer-backdrop';
+
+  backdrop.innerHTML = `
+    <div class="downloads-modal-box" role="dialog" aria-modal="true">
+      <div class="modal-top-accent" style="background:linear-gradient(90deg, #10b981, #38bdf8, #6366f1);"></div>
+      <div class="downloads-modal-header">
+        <div class="downloads-modal-title-group">
+          <div class="downloads-modal-heading">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;color:#10b981;">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            <span>Downloads</span>
+            <span class="downloads-count-badge" id="downloadsModalCountBadge">0 Files</span>
+          </div>
+          <div class="downloads-path-badge" title="Auto-saved to device Downloads / SRTtranslator folder">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;flex-shrink:0;">
+              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+            </svg>
+            <span>Path: /Download/SRTtranslator</span>
+          </div>
+        </div>
+        <div class="downloads-header-actions">
+          <button class="btn-downloads-clear" type="button" id="downloadsModalClearAllBtn" title="Clear download list">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;">
+              <polyline points="3 6 5 6 21 6"/>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+            </svg>
+            <span>Clear All</span>
+          </button>
+          <button class="btn-downloads-close" type="button" id="downloadsModalCloseBtn" title="Close">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="downloads-modal-content" id="downloadsModalContent"></div>
+    </div>
+  `;
+
+  const close = () => {
+    backdrop.style.opacity = '0';
+    setTimeout(() => backdrop.remove(), 150);
+  };
+
+  const closeBtn = backdrop.querySelector('#downloadsModalCloseBtn');
+  if (closeBtn) closeBtn.addEventListener('click', close);
+  backdrop.addEventListener('click', (e) => {
+    if (e.target === backdrop) close();
+  });
+  window.addEventListener('keydown', function escHandler(e) {
+    if (e.key === 'Escape') {
+      close();
+      window.removeEventListener('keydown', escHandler);
+    }
+  });
+
+  const clearAllBtn = backdrop.querySelector('#downloadsModalClearAllBtn');
+  if (clearAllBtn) {
+    clearAllBtn.addEventListener('click', async () => {
+      const items = getDownloadedFiles();
+      if (items.length === 0) {
+        showToast('No downloads to clear.');
+        return;
+      }
+      const confirmed = await showCustomConfirm({
+        title: 'Clear Download History?',
+        message: 'Are you sure you want to clear your local download list? Saved files on your device will remain intact.',
+        confirmText: 'Clear List',
+        cancelText: 'Cancel',
+        type: 'warning'
+      });
+      if (confirmed) {
+        clearAllDownloadedFiles();
+        showToast('Download list cleared.');
+        renderDownloadsModalContent(backdrop, close);
+      }
+    });
+  }
+
+  renderDownloadsModalContent(backdrop, close);
+  document.body.appendChild(backdrop);
+}
+
+function renderDownloadsModalContent(backdrop, closeFn) {
+  const container = backdrop.querySelector('#downloadsModalContent');
+  const countBadge = backdrop.querySelector('#downloadsModalCountBadge');
+  if (!container) return;
+
+  const items = getDownloadedFiles();
+  if (countBadge) countBadge.textContent = `${items.length} File${items.length === 1 ? '' : 's'}`;
+
+  let html = '';
+
+  // 1. Active Downloads Queue
+  if (activeDownloadsQueue.length > 0) {
+    html += `
+      <div class="downloads-active-wrap">
+        ${activeDownloadsQueue.map(act => `
+          <div class="active-download-card">
+            <div class="active-download-header">
+              <span class="active-download-title">⏳ ${escapeHtml(act.fileName)}</span>
+              <span class="active-download-status">${act.progress}% Ready</span>
+            </div>
+            <div class="active-download-progress-track">
+              <div class="active-download-progress-bar" style="width: ${act.progress}%;"></div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
+
+  // 2. Completed Downloads List
+  if (items.length === 0 && activeDownloadsQueue.length === 0) {
+    html += `
+      <div class="downloads-empty-state">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        <h4>No Downloaded Subtitles Yet</h4>
+      </div>
+    `;
+  } else {
+    html += items.map(item => `
+      <div class="download-card-item" data-id="${item.id}">
+        <div class="download-card-top-row">
+          <div class="download-card-title-group">
+            <span class="download-card-title" title="${escapeHtml(item.fileName)}">${escapeHtml(item.fileName)}</span>
+          </div>
+          ${item.isCondensed ? `
+            <span class="condensed-badge" title="AI Condensed">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:10px;height:10px;display:inline-block;vertical-align:-1px;margin-right:2px;">
+                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+              </svg>
+              <span>Condensed</span>
+            </span>
+          ` : ''}
+        </div>
+        <div class="download-card-meta">
+          <span class="meta-pill">
+            <svg class="meta-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            <span>${item.downloadedDate || 'Recently'}</span>
+          </span>
+          <span class="meta-pill">
+            <svg class="meta-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="2" y1="12" x2="22" y2="12"/>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+            </svg>
+            <span>${escapeHtml(item.targetLang || 'Bengali')}</span>
+          </span>
+          ${item.blockCount ? `
+            <span class="meta-pill">
+              <svg class="meta-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+              </svg>
+              <span>${item.blockCount} lines</span>
+            </span>
+          ` : ''}
+          ${item.fileSizeFormatted ? `
+            <span class="meta-pill">
+              <svg class="meta-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                <polyline points="17 21 17 13 7 13 7 21"/>
+                <polyline points="7 3 7 8 15 8"/>
+              </svg>
+              <span>${item.fileSizeFormatted}</span>
+            </span>
+          ` : ''}
+        </div>
+        <div class="download-card-actions">
+          <button class="btn-download-share" type="button" data-id="${item.id}" title="Share or open subtitle file">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;">
+              <circle cx="18" cy="5" r="3"/>
+              <circle cx="6" cy="12" r="3"/>
+              <circle cx="18" cy="19" r="3"/>
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+            </svg>
+            <span>Share / Send</span>
+          </button>
+          <button class="btn-download-condense" type="button" data-id="${item.id}" title="Run AI Condenser on this subtitle">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;">
+              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+            </svg>
+            <span>AI Condenser</span>
+          </button>
+          <button class="btn-download-delete" type="button" data-id="${item.id}" title="Remove from list">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;color:#ef4444;">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  container.innerHTML = html;
+
+  // Wire Share / Send action on the rendered cards
+  container.querySelectorAll('.btn-download-share').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = btn.getAttribute('data-id');
+      const item = items.find(d => d.id === id);
+      if (item && item.srtContent) {
+        if (typeof triggerHaptic === 'function') triggerHaptic('light');
+        
+        // 1. Android Native Share Plugin
+        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.NativeStorage) {
+          try {
+            await window.Capacitor.Plugins.NativeStorage.shareSubtitle({
+              fileName: item.fileName,
+              content: item.srtContent
+            });
+            return;
+          } catch (err) {
+            console.warn('Native share failed:', err);
+          }
+        }
+        
+        // 2. Web Share API
+        if (navigator.share) {
+          try {
+            const shareFile = new File([item.srtContent], item.fileName, { type: 'application/x-subrip' });
+            await navigator.share({
+              files: [shareFile],
+              title: item.fileName,
+              text: item.fileName
+            });
+            return;
+          } catch (e) {}
+        }
+
+        // 3. Fallback: re-trigger save
+        triggerDirectSrtDownload(item.fileName, item.srtContent);
+      }
+    });
+  });
+
+  container.querySelectorAll('.btn-download-condense').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.getAttribute('data-id');
+      const item = items.find(d => d.id === id);
+      if (item && item.srtContent) {
+        if (typeof closeFn === 'function') closeFn();
+        const parsed = parseSRT(item.srtContent);
+        if (!parsed || parsed.length === 0) {
+          showToast('Could not parse subtitle file.', true);
+          return;
+        }
+        localStorage.removeItem('srt_session_last_cleared');
+        state.parsedBlocks = parsed;
+        state.translatedBlocks = parsed.map(b => ({
+          ...b,
+          translatedLines: b.lines,
+          isTranslated: true
+        }));
+        state.uncompressedBlocks = JSON.parse(JSON.stringify(state.translatedBlocks));
+        state.fileName = item.fileName || 'translated_subtitle.srt';
+        state.originalFileName = state.fileName;
+        state.fileSize = new Blob([item.srtContent]).size;
+        state.isCondensed = false;
+        calculateDuration(parsed);
+        state.optimalBatchSize = calculateOptimalBatchSize(parsed);
+        switchAppTab('translator');
+        displayLoadedFileInfo({ name: state.fileName, size: state.fileSize }, parsed);
+        saveCurrentSession();
+        showToast(`Loaded "${state.fileName}". Starting AI Condenser...`);
+        setTimeout(() => runAiCondensePipeline(), 300);
+      }
+    });
+  });
+
+  container.querySelectorAll('.btn-download-delete').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.getAttribute('data-id');
+      removeDownloadedFile(id);
+      renderDownloadsModalContent(backdrop, closeFn);
+      showToast('Removed from downloads.');
+    });
+  });
+}
+
+function initDownloadsManager() {
+  const headerBtn = $('headerDownloadsBtn');
+  if (headerBtn) {
+    headerBtn.addEventListener('click', showDownloadsManagerModal);
+  }
+  updateHeaderDownloadsBadge();
+}
+
+async function triggerDirectSrtDownload(fileName, srtContent) {
+  let safeName = fileName.endsWith('.srt') ? fileName : `${fileName}.srt`;
+  let finalSavedPath = `/Download/SRTtranslator/${safeName}`;
+
+  // 1. Android Native Storage Plugin Auto-Save (Scoped Storage MediaStore + Duplicate Auto-Numbering)
+  let savedNatively = false;
+  try {
+    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.NativeStorage) {
+      const res = await window.Capacitor.Plugins.NativeStorage.saveSubtitleToStorage({
+        fileName: safeName,
+        content: srtContent
+      });
+      if (res && res.success) {
+        savedNatively = true;
+        if (res.fileName) safeName = res.fileName;
+        finalSavedPath = res.relativePath || `/Download/SRTtranslator/${safeName}`;
+      }
+    }
+  } catch (err) {
+    console.warn('[NativeStorage Auto-Save skipped or error]', err);
+  }
+
+  // 2. Browser Fallback (Blob download trigger)
+  if (!savedNatively) {
+    try {
+      const blob = new Blob([srtContent], { type: 'application/x-subrip;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = safeName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (blobErr) {
+      console.warn('Web blob download error:', blobErr);
+    }
+  }
+
+  // 3. Record in download history with exact saved name
+  const blockCount = (typeof parseSRT === 'function' ? (parseSRT(srtContent) || []).length : 0);
+  saveDownloadedFile({
+    fileName: safeName,
+    srtContent: srtContent,
+    lang: targetLang?.value || 'Bengali',
+    lines: blockCount,
+    size: new Blob([srtContent]).size,
+    isCondensed: /condens|glance/i.test(safeName)
+  });
+
+  if (typeof triggerHaptic === 'function') triggerHaptic('success');
+  showToast(`Saved to ${finalSavedPath}`);
 }
 
 // ── Refresh & Page Exit Confirmation Guard ──
@@ -7731,3 +8434,34 @@ window.addEventListener('beforeunload', (e) => {
     return '';
   }
 });
+
+// ── Virtual Keyboard Stabilization (Bottom Navigation Stays Anchored, Input Stays Visible) ──
+function initKeyboardVisibilityHandler() {
+  // Smoothly ensure focused editable inputs are visible above the virtual keyboard
+  document.addEventListener('focusin', (e) => {
+    const el = e.target;
+    if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') && !el.readOnly) {
+      setTimeout(() => {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 250);
+    }
+  });
+
+  // Tap outside active input automatically dismisses virtual keyboard
+  document.addEventListener('touchstart', (e) => {
+    const active = document.activeElement;
+    if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) {
+      if (!active.contains(e.target) && e.target !== active && !e.target.closest('.custom-select-search-wrap') && !e.target.closest('button') && !e.target.closest('.action-btn')) {
+        active.blur();
+      }
+    }
+  }, { passive: true });
+}
+
+// Automatically start keyboard visibility monitoring
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initKeyboardVisibilityHandler);
+} else {
+  initKeyboardVisibilityHandler();
+}
+
