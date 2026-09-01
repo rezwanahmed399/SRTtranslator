@@ -1,6 +1,6 @@
 {
   "name": "subsync-ai",
-  "version": "1.8.28",
+  "version": "1.8.29",
   "description": "AI-Powered Subtitle Translator with 100% Timing Preservation and Zero Overlaps",
   "main": "index.html",
   "scripts": {

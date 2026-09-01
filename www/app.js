@@ -3262,7 +3262,20 @@ function setupEventListeners() {
   if (retryIncompleteBtn) retryIncompleteBtn.addEventListener('click', retryIncompleteBatchesPipeline);
 
   // AI Condenser (2nd-Pass Refinement)
-  if (condenseSrtBtn) condenseSrtBtn.addEventListener('click', runAiCondensePipeline);
+  if (condenseSrtBtn) {
+    condenseSrtBtn.addEventListener('click', async () => {
+      if (state.translatedBlocks.length === 0) return;
+      const confirmed = await showCustomConfirm({
+        title: 'Start AI Subtitle Condensation?',
+        message: `Do you want to condense "${escapeHtml(state.fileName || 'current subtitles')}" to optimize reading flow and line lengths?`,
+        confirmText: 'Yes, Start Condensing',
+        cancelText: 'Cancel',
+        type: 'info'
+      });
+      if (!confirmed) return;
+      runAiCondensePipeline();
+    });
+  }
 
   // Restore Original Uncompressed Translation
   if (restoreOriginalBtn) restoreOriginalBtn.addEventListener('click', restoreOriginalTranslation);
@@ -7492,6 +7505,7 @@ function wireHistoryActions(container, items, onListMutated, onCondenseChosen) {
   if (viewLiveBtn) {
     viewLiveBtn.addEventListener('click', async () => {
       switchAppTab('translator');
+      switchTranslatorSubTab('workspace');
       if (progressCard) {
         progressCard.classList.remove('hidden');
         progressCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -7560,10 +7574,20 @@ function wireHistoryActions(container, items, onListMutated, onCondenseChosen) {
 
   // Wire AI Condense click handlers
   container.querySelectorAll('.btn-cloud-condense').forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', async () => {
       const docId = btn.getAttribute('data-docid');
       const item = items.find(h => (h.docId || h.id) === docId);
       if (item && item.srtContent) {
+        // Confirmation dialog to prevent accidental clicks
+        const confirmed = await showCustomConfirm({
+          title: 'Start AI Subtitle Condensation?',
+          message: `Do you want to condense "${escapeHtml(item.fileName || 'this subtitle')}" to optimize reading flow and line lengths?`,
+          confirmText: 'Yes, Start Condensing',
+          cancelText: 'Cancel',
+          type: 'info'
+        });
+        if (!confirmed) return;
+
         if (typeof onCondenseChosen === 'function') {
           onCondenseChosen();
         }
@@ -7591,8 +7615,9 @@ function wireHistoryActions(container, items, onListMutated, onCondenseChosen) {
         calculateDuration(parsed);
         state.optimalBatchSize = calculateOptimalBatchSize(parsed);
 
-        // Switch to Translator Tab automatically
+        // Switch to Translator Tab and "Translate" sub-tab
         switchAppTab('translator');
+        switchTranslatorSubTab('workspace');
 
         // Render loaded file info and transition to condensing
         displayLoadedFileInfo({ name: state.fileName, size: state.fileSize }, parsed);
