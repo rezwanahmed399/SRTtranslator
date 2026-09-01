@@ -536,22 +536,18 @@
   color: #b91c1c;
 }
 
-[data-theme="light"] .expiry-badge {
-  background: rgba(217, 119, 6, 0.1);
-  border-color: rgba(217, 119, 6, 0.25);
-  color: #b45309;
-}
-
-[data-theme="light"] .expiry-badge.urgent {
-  background: rgba(220, 38, 38, 0.1);
-  border-color: rgba(220, 38, 38, 0.25);
-  color: #dc2626;
-}
-
-[data-theme="light"] .condensed-badge {
+[data-theme="light"] .condensed-badge-mini {
   background: rgba(79, 70, 229, 0.1);
   border-color: rgba(79, 70, 229, 0.25);
   color: #4f46e5;
+}
+
+[data-theme="light"] .meta-expiry-pill {
+  color: #b45309;
+}
+
+[data-theme="light"] .meta-expiry-pill.urgent {
+  color: #dc2626;
 }
 
 /* ── Google Account & Cloud Backup Banner in Light Mode ── */
@@ -6622,53 +6618,48 @@ body.is-native-platform #apkDownloadSection {
 }
 
 .cloud-item-title {
-  font-size: 0.84rem;
+  font-size: 0.86rem;
   font-weight: 700;
   color: var(--text-main, #f8fafc);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  min-width: 0;
+  flex: 0 1 auto;
 }
 
-.cloud-badges-group {
-  display: flex;
+.condensed-badge-mini {
+  display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 0.58rem;
+  font-weight: 700;
+  background: rgba(99, 102, 241, 0.14);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  color: #a5b4fc;
+  white-space: nowrap;
+  flex-shrink: 0;
+  height: 17px;
+  line-height: 1;
+}
+
+.condensed-badge-mini svg {
+  width: 9px;
+  height: 9px;
+  color: #818cf8;
   flex-shrink: 0;
 }
 
-.expiry-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  padding: 2px 6px;
-  border-radius: var(--radius-pill);
-  font-size: 0.66rem;
-  font-weight: 700;
-  background: rgba(245, 158, 11, 0.12);
-  border: 1px solid rgba(245, 158, 11, 0.3);
-  color: #fbbf24;
-  white-space: nowrap;
+[data-theme="light"] .condensed-badge-mini {
+  background: rgba(99, 102, 241, 0.1);
+  border-color: rgba(99, 102, 241, 0.25);
+  color: #4f46e5;
 }
 
-.expiry-badge.urgent {
-  background: rgba(239, 68, 68, 0.12);
-  border-color: rgba(239, 68, 68, 0.3);
-  color: #f87171;
-}
-
-.condensed-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  padding: 2px 6px;
-  border-radius: var(--radius-pill);
-  font-size: 0.66rem;
-  font-weight: 700;
-  background: rgba(99, 102, 241, 0.15);
-  border: 1px solid rgba(99, 102, 241, 0.35);
-  color: #a5b4fc;
-  white-space: nowrap;
+[data-theme="light"] .condensed-badge-mini svg {
+  color: #4f46e5;
 }
 
 .cloud-item-meta {
@@ -6680,7 +6671,7 @@ body.is-native-platform #apkDownloadSection {
   flex-wrap: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin: 1px 0 4px 0;
+  margin: 2px 0 5px 0;
 }
 
 .meta-pill {
@@ -6699,6 +6690,40 @@ body.is-native-platform #apkDownloadSection {
   display: inline-block;
   vertical-align: -1px;
   flex-shrink: 0;
+}
+
+.meta-expiry-pill {
+  color: #fbbf24;
+  font-weight: 600;
+}
+
+.meta-expiry-pill .meta-svg {
+  color: #fbbf24;
+}
+
+.meta-expiry-pill.urgent {
+  color: #f87171;
+  font-weight: 700;
+}
+
+.meta-expiry-pill.urgent .meta-svg {
+  color: #f87171;
+}
+
+[data-theme="light"] .meta-expiry-pill {
+  color: #d97706;
+}
+
+[data-theme="light"] .meta-expiry-pill .meta-svg {
+  color: #d97706;
+}
+
+[data-theme="light"] .meta-expiry-pill.urgent {
+  color: #dc2626;
+}
+
+[data-theme="light"] .meta-expiry-pill.urgent .meta-svg {
+  color: #dc2626;
 }
 
 .cloud-item-actions {
@@ -9123,7 +9148,7 @@ button:active:not(:disabled),
   }
 
   .cloud-item-title {
-    font-size: 0.78rem;
+    font-size: 0.82rem;
     font-weight: 700;
     white-space: nowrap;
     overflow: hidden;
@@ -9144,19 +9169,16 @@ button:active:not(:disabled),
     height: 10px;
   }
 
-  .cloud-badges-group {
-    display: flex;
-    align-items: center;
-    gap: 3px;
-    flex-shrink: 0;
+  .condensed-badge-mini {
+    font-size: 0.54rem;
+    padding: 1px 3.5px;
+    height: 15px;
+    border-radius: 3.5px;
   }
 
-  .expiry-badge,
-  .condensed-badge {
-    padding: 1.5px 5px;
-    font-size: 0.60rem;
-    border-radius: 5px;
-    white-space: nowrap;
+  .condensed-badge-mini svg {
+    width: 8px;
+    height: 8px;
   }
 
   .cloud-item-meta {
@@ -9165,9 +9187,14 @@ button:active:not(:disabled),
     justify-content: flex-start;
     gap: 3px;
     flex-wrap: nowrap;
-    overflow: hidden;
+    overflow-x: auto;
+    scrollbar-width: none;
     width: 100%;
     margin: 0 0 3px 0;
+  }
+
+  .cloud-item-meta::-webkit-scrollbar {
+    display: none;
   }
 
   .meta-pill {

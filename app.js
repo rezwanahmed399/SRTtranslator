@@ -7457,23 +7457,23 @@ function generateHistoryCardsHtml(items) {
     const diffMs = expiresAt ? Math.max(0, expiresAt - nowMs) : (item.daysLeft ? item.daysLeft * 24 * 3600 * 1000 : 7 * 24 * 3600 * 1000);
     const diffHours = diffMs / (1000 * 60 * 60);
 
-    let expiryText = 'Expires in 7d';
+    let expiryShortText = '7d';
     let isUrgent = false;
 
     if (diffMs <= 0) {
-      expiryText = 'Expired';
+      expiryShortText = 'Exp';
       isUrgent = true;
     } else if (diffHours > 24) {
       const days = Math.ceil(diffHours / 24);
-      expiryText = `Expires in ${days}d`;
+      expiryShortText = `${days}d`;
       isUrgent = days <= 1;
     } else if (diffHours >= 1) {
       const hours = Math.ceil(diffHours);
-      expiryText = `Expires in ${hours}h`;
+      expiryShortText = `${hours}h`;
       isUrgent = true;
     } else {
       const mins = Math.max(1, Math.ceil(diffMs / (1000 * 60)));
-      expiryText = `Expires in ${mins}m`;
+      expiryShortText = `${mins}m`;
       isUrgent = true;
     }
 
@@ -7491,23 +7491,14 @@ function generateHistoryCardsHtml(items) {
                 </svg>
               </button>
             </div>
-            <div class="cloud-badges-group">
-              ${isCondensedItem ? `
-                <span class="condensed-badge" title="AI Condensed & Shortened Subtitle">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:10px;height:10px;display:inline-block;vertical-align:-1px;margin-right:2px;">
-                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
-                  </svg>
-                  <span>Condensed</span>
-                </span>
-              ` : ''}
-              <span class="expiry-badge ${isUrgent ? 'urgent' : ''}">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:10px;height:10px;display:inline-block;vertical-align:-1px;margin-right:2px;">
-                  <circle cx="12" cy="12" r="10"/>
-                  <polyline points="12 6 12 12 16 14"/>
+            ${isCondensedItem ? `
+              <span class="condensed-badge-mini" title="AI Condensed & Shortened Subtitle">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
                 </svg>
-                <span>${expiryText}</span>
+                <span>Condensed</span>
               </span>
-            </div>
+            ` : ''}
           </div>
           <div class="cloud-item-meta">
             <span class="meta-pill">
@@ -7546,6 +7537,13 @@ function generateHistoryCardsHtml(items) {
                 <span>${item.fileSizeFormatted}</span>
               </span>
             ` : ''}
+            <span class="meta-pill meta-expiry-pill ${isUrgent ? 'urgent' : ''}" title="Auto-expires in ${expiryShortText}">
+              <svg class="meta-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
+              <span>${expiryShortText}</span>
+            </span>
           </div>
         </div>
         <div class="cloud-item-actions">
