@@ -1374,15 +1374,24 @@ body {
 /* Sub-View Panels with Smooth Slide-Fade */
 .sub-view-panel {
   display: none;
-  opacity: 0;
-  transform: translateY(6px);
-  transition: opacity 0.24s cubic-bezier(0.16, 1, 0.3, 1), transform 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+  width: 100%;
 }
 
 .sub-view-panel.active {
   display: block;
-  opacity: 1;
-  transform: translateY(0);
+  animation: subViewEnter 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: opacity, transform;
+}
+
+@keyframes subViewEnter {
+  0% {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Mandatory API Key Lockout Guard */
@@ -2698,8 +2707,9 @@ body.is-native-app .app-info-section {
   overflow: hidden;
   opacity: 0;
   visibility: hidden;
-  transform: translateY(-6px) scale(0.98);
-  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translateY(-6px) scale(0.97);
+  transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.2s ease;
+  will-change: opacity, transform;
   display: flex;
   flex-direction: column;
 }
@@ -2721,7 +2731,7 @@ body.is-native-app .app-info-section {
   top: auto !important;
   bottom: calc(100% + 6px) !important;
   transform-origin: bottom center;
-  transform: translateY(6px) scale(0.98);
+  transform: translateY(6px) scale(0.97);
   box-shadow: 0 -14px 40px rgba(0, 0, 0, 0.5), 0 0 15px var(--accent-glow);
 }
 
@@ -7938,7 +7948,7 @@ input, textarea, [contenteditable="true"], .terminal-feed, .raw-srt-editor, .tab
 }
 
 /* Tactile Spring Press Micro-Interactions (Haptic Feel) */
-button, .btn, .app-tab-btn, .bottom-nav-btn, .custom-select-trigger, .input-action-btn, .faq-q-btn {
+button, .btn, .app-tab-btn, .bottom-nav-btn, .custom-select-trigger, .input-action-btn, .faq-q-btn, .sub-tab-pill, .preset-pill, .btn-action-pill, .model-select-btn, .cloud-action-btn, .provider-tab-pill {
   touch-action: manipulation;
   transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s, box-shadow 0.2s, border-color 0.2s, opacity 0.2s;
 }
@@ -7947,8 +7957,14 @@ button:active:not(:disabled),
 .btn:active:not(:disabled),
 .app-tab-btn:active,
 .bottom-nav-btn:active,
-.custom-select-trigger:active {
-  transform: scale(0.96) !important;
+.custom-select-trigger:active,
+.sub-tab-pill:active,
+.preset-pill:active,
+.btn-action-pill:active,
+.model-select-btn:active,
+.cloud-action-btn:active,
+.provider-tab-pill:active {
+  transform: scale(0.965) !important;
 }
 
 /* ── 2. Native Mobile Floating Bottom Navigation Bar ── */
@@ -9357,6 +9373,19 @@ button:active:not(:disabled),
 
 .app-view.active {
   display: block !important;
+  animation: appViewEnter 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: opacity, transform;
+}
+
+@keyframes appViewEnter {
+  0% {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 #viewTranslator:not(.active) {
@@ -9365,6 +9394,7 @@ button:active:not(:disabled),
 
 #viewSettings.active {
   display: block !important;
+  animation: appViewEnter 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 #viewSettings:not(.active) {
