@@ -172,7 +172,7 @@
       </nav>
       
       <div class="nav-badges">
-        <a href="SRTtranslator-v1.8.25.apk" download="SRTtranslator-v1.8.25.apk" class="header-apk-btn" id="headerApkBtn" title="Download Standalone Android App (APK)">
+        <a href="SRTtranslator-v1.8.26.apk" download="SRTtranslator-v1.8.26.apk" class="header-apk-btn" id="headerApkBtn" title="Download Standalone Android App (APK)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
           </svg>
@@ -863,8 +863,8 @@
             </label>
             <div class="select-wrapper">
               <select id="providerSelect">
-                <option value="gemini" selected>Google Gemini (Required)</option>
-                <option value="openrouter">OpenRouter (Required)</option>
+                <option value="gemini" selected>Google Gemini (Recommended)</option>
+                <option value="openrouter">OpenRouter (Recommended)</option>
                 <option value="groq">Groq</option>
                 <option value="deepseek">DeepSeek</option>
                 <option value="openai">OpenAI</option>
@@ -873,7 +873,7 @@
             </div>
           </div>
 
-          <!-- Provider Panel: Gemini (Required) -->
+          <!-- Provider Panel: Gemini (Recommended) -->
           <div class="provider-panel active" id="panel_gemini">
             <div class="api-form-row">
               <div class="input-glow-wrapper">
@@ -917,7 +917,7 @@
             </div>
           </div>
 
-          <!-- Provider Panel: OpenRouter (Required) -->
+          <!-- Provider Panel: OpenRouter (Recommended) -->
           <div class="provider-panel" id="panel_openrouter">
             <div class="api-form-row">
               <div class="input-glow-wrapper">
@@ -1270,7 +1270,7 @@
             </div>
           </div>
 
-          <!-- Compact Required API Keys Status Checklist -->
+          <!-- Compact Recommended AI Keys Status Checklist -->
           <div class="api-required-checklist compact-checklist" id="apiRequiredChecklist">
             <div class="compact-checklist-header">
               <div class="compact-header-left">
@@ -1278,13 +1278,13 @@
                   <path d="M9 11l3 3L22 4"/>
                   <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
                 </svg>
-                <span class="checklist-title">Required AI Keys</span>
+                <span class="checklist-title">Recommended AI Keys</span>
               </div>
               <span class="checklist-status-badge badge-none" id="checklistOverallBadge">0/2 Connected</span>
             </div>
             
             <div class="compact-checklist-grid">
-              <div class="checklist-item is-missing" id="checkItemGemini" data-provider="gemini" title="Click to configure Google Gemini API key">
+              <div class="checklist-item is-missing" id="checkItemGemini" data-provider="gemini" title="Click to configure Google Gemini API key (Recommended)">
                 <div class="checklist-item-left">
                   <span class="checklist-status-icon status-missing" id="checkIconGemini">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -1300,7 +1300,7 @@
                 <button type="button" class="checklist-action-btn" id="checkActionGemini" data-provider="gemini">Configure &rarr;</button>
               </div>
 
-              <div class="checklist-item is-missing" id="checkItemOpenRouter" data-provider="openrouter" title="Click to configure OpenRouter API key">
+              <div class="checklist-item is-missing" id="checkItemOpenRouter" data-provider="openrouter" title="Click to configure OpenRouter API key (Recommended)">
                 <div class="checklist-item-left">
                   <span class="checklist-status-icon status-missing" id="checkIconOpenRouter">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">

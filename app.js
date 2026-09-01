@@ -955,12 +955,22 @@ function hasOpenRouterApiKey() {
   return state.providerStatus.openrouter?.connected === true || (hasKeyString && state.providerStatus.openrouter?.connected !== false);
 }
 
-function hasRequiredMandatoryApiKeys() {
-  return hasGeminiApiKey() && hasOpenRouterApiKey();
+function hasAnyConnectedApiKey() {
+  const connected = Object.keys(AI_PROVIDERS).filter(pid => {
+    if (pid === 'custom') {
+      const storedUrl = (localStorage.getItem('custom_api_base_url') || '').trim();
+      return state.providerStatus.custom?.connected === true || (storedUrl.length > 5 && state.providerStatus.custom?.connected !== false);
+    }
+    const memKey = state.apiKeys[pid] ? state.apiKeys[pid].trim() : '';
+    const storedKey = (localStorage.getItem(AI_PROVIDERS[pid].storageKey) || '').trim();
+    const hasKeyString = (memKey.length > 5) || (storedKey.length > 5);
+    return state.providerStatus[pid]?.connected === true || (hasKeyString && state.providerStatus[pid]?.connected !== false);
+  });
+  return connected.length > 0;
 }
 
-function hasAnyConnectedApiKey() {
-  return hasRequiredMandatoryApiKeys();
+function hasRequiredMandatoryApiKeys() {
+  return hasAnyConnectedApiKey();
 }
 
 function getConnectedProviderNames() {
@@ -1041,18 +1051,16 @@ function updateApiGuardAndHeaderStatus() {
   const settingsNavDot = $('settingsNavDot');
   const bottomNavDot = $('bottomNavDot');
 
-  const hasGemini = hasGeminiApiKey();
-  const hasOpenRouter = hasOpenRouterApiKey();
-  const allMandatoryConnected = hasGemini && hasOpenRouter;
+  const hasAnyKey = hasAnyConnectedApiKey();
 
-  if (!allMandatoryConnected) {
+  if (!hasAnyKey) {
     if (headerBadge) {
       headerBadge.className = 'header-ai-status-badge badge-off';
       if (headerText) headerText.textContent = 'No API Key';
     }
     if (settingsNavDot) {
       settingsNavDot.className = 'settings-nav-dot dot-off';
-      settingsNavDot.title = 'API Keys Required';
+      settingsNavDot.title = 'API Key Required';
     }
     if (bottomNavDot) {
       bottomNavDot.className = 'bottom-nav-dot dot-off';
@@ -3663,9 +3671,7 @@ function displayLoadedFileInfo(file, blocks) {
 
 function checkReadyToTranslate() {
   const hasFile = state.parsedBlocks.length > 0;
-  const hasGemini = hasGeminiApiKey();
-  const hasOpenRouter = hasOpenRouterApiKey();
-  const hasKeys = hasGemini && hasOpenRouter;
+  const hasKeys = hasAnyConnectedApiKey();
   const isTranslationCompleted = state.translatedBlocks && state.translatedBlocks.length > 0 && resultCard && !resultCard.classList.contains('hidden') && !state.isTranslating && !state.isCondensing;
 
   // 1. Synchronize Top Red Warning Alert Banner
@@ -3727,7 +3733,7 @@ function checkReadyToTranslate() {
       translateBtn.disabled = false;
       translateBtn.classList.remove('disabled');
       translateBtn.classList.add('btn-missing-keys');
-      if (btnLabel) btnLabel.textContent = 'Please Connect API Keys';
+      if (btnLabel) btnLabel.textContent = 'Please Connect API Key';
       if (heroIcon) {
         heroIcon.innerHTML = `
           <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
@@ -3756,9 +3762,9 @@ function checkReadyToTranslate() {
 
   if (ctaHint) {
     if (!hasKeys && !hasFile) {
-      ctaHint.textContent = 'Please connect your API keys in Settings & upload an SRT subtitle file to start translating.';
+      ctaHint.textContent = 'Please connect at least 1 API key in Settings & upload an SRT subtitle file to start translating.';
     } else if (!hasKeys) {
-      ctaHint.textContent = 'Please connect your API keys in Settings to unlock translation.';
+      ctaHint.textContent = 'Please connect at least 1 API key in Settings to unlock translation.';
     } else if (!hasFile) {
       ctaHint.textContent = 'Please upload an SRT subtitle file above to begin.';
     } else {
