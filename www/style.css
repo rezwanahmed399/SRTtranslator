@@ -8449,6 +8449,66 @@ body.is-native-app .terminal-log-item.log-success {
   color: #a7f3d0 !important;
 }
 
+/* Component Level Visual Hierarchy & Touch Targets */
+body.is-native-app .custom-select-trigger {
+  min-height: 48px !important;
+  padding: 10px 14px !important;
+  border-radius: 14px !important;
+  font-size: 0.94rem !important;
+}
+
+body.is-native-app .auto-batch-card {
+  border-radius: 14px !important;
+  padding: 14px 16px !important;
+  border: 1px solid rgba(16, 185, 129, 0.25) !important;
+  background: rgba(16, 185, 129, 0.05) !important;
+}
+
+body.is-native-app .file-meta-bar {
+  border-radius: 16px !important;
+  padding: 14px 16px !important;
+  background: rgba(15, 23, 42, 0.9) !important;
+  border: 1px solid rgba(99, 102, 241, 0.25) !important;
+}
+
+body.is-native-app .preview-box {
+  border-radius: 14px !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+body.is-native-app .progress-stats-strip {
+  gap: 8px !important;
+}
+
+body.is-native-app .stat-cell {
+  border-radius: 14px !important;
+  padding: 12px 10px !important;
+  background: rgba(15, 23, 42, 0.85) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+body.is-native-app .stat-name {
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.03em !important;
+}
+
+body.is-native-app .stat-val {
+  font-size: 1.05rem !important;
+  font-weight: 700 !important;
+}
+
+body.is-native-app .terminal-log-wrapper {
+  border-radius: 14px !important;
+}
+
+body.is-native-app .provider-tab-pill {
+  min-height: 40px !important;
+  padding: 8px 14px !important;
+  border-radius: 12px !important;
+  font-size: 0.84rem !important;
+}
+
 /* 7. Native Mobile Bottom Sheet (For Language, Model & Pacing Selectors) */
 @media (max-width: 768px), (pointer: coarse) {
   body.is-native-app .custom-select-container.is-open .custom-select-menu,
