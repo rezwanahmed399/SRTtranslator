@@ -8116,13 +8116,9 @@ async function syncDownloadsWithDeviceStorage(backdrop, closeFn) {
 
 function updateHeaderDownloadsBadge() {
   const badge = $('headerDownloadsBadge');
-  if (!badge) return;
-  const list = getDownloadedFiles();
-  if (list.length > 0) {
-    badge.textContent = list.length > 99 ? '99+' : String(list.length);
-    badge.classList.remove('hidden');
-  } else {
+  if (badge) {
     badge.classList.add('hidden');
+    badge.textContent = '';
   }
 }
 
