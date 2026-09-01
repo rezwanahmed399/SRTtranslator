@@ -287,7 +287,7 @@ function showCustomConfirm({
   type = 'warning' 
 } = {}) {
   return new Promise((resolve) => {
-    const existing = document.querySelector('.custom-modal-backdrop');
+    const existing = document.querySelector('.custom-modal-backdrop:not(.history-modal-backdrop)');
     if (existing) existing.remove();
 
     const backdrop = document.createElement('div');
@@ -385,7 +385,7 @@ function showCustomAlert({
   type = 'info' 
 } = {}) {
   return new Promise((resolve) => {
-    const existing = document.querySelector('.custom-modal-backdrop');
+    const existing = document.querySelector('.custom-modal-backdrop:not(.history-modal-backdrop)');
     if (existing) existing.remove();
 
     const backdrop = document.createElement('div');
@@ -591,7 +591,25 @@ function initNativeAppIntegrations() {
     // 2. Hardware Back Button Handling
     if (window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
       window.Capacitor.Plugins.App.addListener('backButton', async () => {
-        // If custom modal is open, close it
+        // If a prompt or confirm dialog is open on top, close it first
+        const openPrompt = document.querySelector('.custom-modal-backdrop:not(.history-modal-backdrop)');
+        if (openPrompt) {
+          const cancelBtn = openPrompt.querySelector('.btn-modal-cancel') || openPrompt.querySelector('#modalCancelBtn') || openPrompt.querySelector('#modalAlertBtn');
+          if (cancelBtn) cancelBtn.click();
+          else openPrompt.remove();
+          return;
+        }
+
+        // If the All History modal is open, close it
+        const openHistoryModal = document.querySelector('.history-modal-backdrop');
+        if (openHistoryModal) {
+          const closeBtn = openHistoryModal.querySelector('#historyModalCloseBtn');
+          if (closeBtn) closeBtn.click();
+          else openHistoryModal.remove();
+          return;
+        }
+
+        // If legacy custom modal is open, close it
         if (customModalBackdrop && !customModalBackdrop.classList.contains('hidden')) {
           closeCustomModal(false);
           return;
@@ -3439,16 +3457,31 @@ function setupEventListeners() {
   });
 }
 
-// ── File Name Sanitizer with Strict Character Limit (Max 60 chars base) ──
-function sanitizeFileName(rawName, maxBaseLen = 60) {
+// ── File Name Sanitizer with Strict Character Limit (Max 30 chars total) ──
+function sanitizeFileName(rawName, maxTotalLen = 30) {
   if (!rawName || typeof rawName !== 'string') return 'subtitle.srt';
   let clean = rawName.trim().replace(/[/\\?%*:|"<>]/g, '_');
   let base = clean.replace(/\.srt$/i, '').trim();
   if (!base) base = 'subtitle';
+  const maxBaseLen = Math.max(1, maxTotalLen - 4); // 26 chars for base + '.srt' = 30 chars max
   if (base.length > maxBaseLen) {
     base = base.substring(0, maxBaseLen).trim();
   }
   return `${base}.srt`;
+}
+
+// ── Display Title Formatter (Strict 30 chars limit) ──
+function formatDisplayTitle(name, maxLen = 30) {
+  if (!name || typeof name !== 'string') return 'subtitle.srt';
+  const trimmed = name.trim();
+  if (trimmed.length <= maxLen) return trimmed;
+  const dotIdx = trimmed.lastIndexOf('.');
+  if (dotIdx > 0 && dotIdx > trimmed.length - 6) {
+    const ext = trimmed.slice(dotIdx);
+    const base = trimmed.slice(0, Math.max(1, maxLen - ext.length));
+    return `${base}${ext}`;
+  }
+  return trimmed.slice(0, maxLen);
 }
 
 // ── File Selection & Adaptive Batching ──
@@ -3471,7 +3504,7 @@ function handleFileSelection(file) {
   if (fileRestoredBadge) fileRestoredBadge.classList.add('hidden');
   clearSavedSession();
 
-  state.fileName = sanitizeFileName(file.name, 60);
+  state.fileName = sanitizeFileName(file.name, 30);
   state.originalFileName = state.fileName;
   state.fileSize = file.size;
 
@@ -5155,14 +5188,16 @@ function getReadingSpeedPill(lines) {
   }
 }
 
-// ── Helper: Generate distinct filename for condensed subtitles ──
+// ── Helper: Generate distinct filename for condensed subtitles (Strict 30 chars limit) ──
 function getCondensedFileName(origName) {
   if (!origName) return 'subtitles_condensed.srt';
   const clean = origName.replace(/\.srt$/i, '');
   if (/(_condensed|-condensed|_glance)/i.test(clean)) {
-    return `${clean}.srt`;
+    return `${clean.slice(0, 26)}.srt`;
   }
-  return `${clean}_condensed.srt`;
+  // Total limit 30 characters: '_condensed.srt' is 14 chars -> max base length is 16 chars
+  const base = clean.slice(0, 16).trim();
+  return `${base}_condensed.srt`;
 }
 
 // ── AI 2nd-Pass Condenser Pipeline ──
@@ -8034,6 +8069,7 @@ function saveDownloadedFile({ fileName, srtContent, lang = 'Bengali', lines = 0,
   if (!fileName || !srtContent) return;
   const list = getDownloadedFiles();
   
+  const cleanName = sanitizeFileName(fileName, 30);
   const formattedSize = size > 0 ? (size < 1024 ? `${size} B` : `${(size / 1024).toFixed(1)} KB`) : `${(new Blob([srtContent]).size / 1024).toFixed(1)} KB`;
   const blockCount = lines > 0 ? lines : (parseSRT(srtContent) || []).length;
   const cleanLang = lang || targetLang?.value || 'Bengali';
@@ -8047,7 +8083,7 @@ function saveDownloadedFile({ fileName, srtContent, lang = 'Bengali', lines = 0,
 
   const entry = {
     id: `dl_${now}_${Math.random().toString(36).slice(2, 7)}`,
-    fileName: fileName.endsWith('.srt') ? fileName : `${fileName}.srt`,
+    fileName: cleanName,
     srtContent: srtContent,
     targetLang: cleanLang,
     blockCount: blockCount,
@@ -8137,7 +8173,7 @@ function trackActiveDownloadProgress(fileName, onComplete) {
   const activeId = `act_${Date.now()}`;
   const activeItem = {
     id: activeId,
-    fileName: fileName,
+    fileName: sanitizeFileName(fileName, 30),
     progress: 10
   };
   activeDownloadsQueue.push(activeItem);
@@ -8244,7 +8280,7 @@ function renderDownloadsModalContent(backdrop, closeFn) {
         ${activeDownloadsQueue.map(act => `
           <div class="active-download-card">
             <div class="active-download-header">
-              <span class="active-download-title">⏳ ${escapeHtml(act.fileName)}</span>
+              <span class="active-download-title">⏳ ${escapeHtml(formatDisplayTitle(act.fileName, 30))}</span>
               <span class="active-download-status">${act.progress}% Ready</span>
             </div>
             <div class="active-download-progress-track">
@@ -8273,7 +8309,7 @@ function renderDownloadsModalContent(backdrop, closeFn) {
       <div class="download-card-item" data-id="${item.id}">
         <div class="download-card-top-row">
           <div class="download-card-title-group">
-            <span class="download-card-title" title="${escapeHtml(item.fileName)}">${escapeHtml(item.fileName)}</span>
+            <span class="download-card-title" title="${escapeHtml(item.fileName)}">${escapeHtml(formatDisplayTitle(item.fileName, 30))}</span>
           </div>
           ${item.isCondensed ? `
             <span class="condensed-badge" title="AI Condensed">
@@ -8434,7 +8470,7 @@ function initDownloadsManager() {
 }
 
 async function triggerDirectSrtDownload(fileName, srtContent) {
-  let safeName = fileName.endsWith('.srt') ? fileName : `${fileName}.srt`;
+  let safeName = sanitizeFileName(fileName, 30);
   let finalSavedPath = `/Download/SRTtranslator/${safeName}`;
 
   // 1. Android Native Storage Plugin Auto-Save (Scoped Storage MediaStore + Duplicate Auto-Numbering)
@@ -8447,7 +8483,7 @@ async function triggerDirectSrtDownload(fileName, srtContent) {
       });
       if (res && res.success) {
         savedNatively = true;
-        if (res.fileName) safeName = res.fileName;
+        if (res.fileName) safeName = sanitizeFileName(res.fileName, 30);
         finalSavedPath = res.relativePath || `/Download/SRTtranslator/${safeName}`;
       }
     }
