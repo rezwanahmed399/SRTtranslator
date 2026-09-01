@@ -608,6 +608,13 @@ function initNativeAppIntegrations() {
           return;
         }
 
+        // If on Settings view, switch back to Translator main view
+        const viewSettings = $('viewSettings');
+        if (viewSettings && viewSettings.classList.contains('active')) {
+          switchAppTab('translator');
+          return;
+        }
+
         // If translation is currently running, ask before exiting
         if ((state.isTranslating || state.isCondensing) && !state.isCancelled) {
           const confirmed = await showCustomConfirm({
@@ -633,13 +640,27 @@ function initNativeAppIntegrations() {
 
 // ── Tactile Mobile Haptic Feedback Engine ──
 function triggerHaptic(type = 'light') {
+  // 1. Capacitor Native Haptics Plugin (Android / iOS native bridge)
+  try {
+    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Haptics) {
+      const Haptics = window.Capacitor.Plugins.Haptics;
+      if (type === 'light') Haptics.impact({ style: 'LIGHT' }).catch(() => {});
+      else if (type === 'medium') Haptics.impact({ style: 'MEDIUM' }).catch(() => {});
+      else if (type === 'heavy') Haptics.impact({ style: 'HEAVY' }).catch(() => {});
+      else if (type === 'success') Haptics.notification({ type: 'SUCCESS' }).catch(() => {});
+      else if (type === 'warning') Haptics.notification({ type: 'WARNING' }).catch(() => {});
+      return;
+    }
+  } catch (e) {}
+
+  // 2. Web Vibration API Standard Fallback
   try {
     if (typeof navigator !== 'undefined' && navigator.vibrate) {
-      if (type === 'light') navigator.vibrate(12);
-      else if (type === 'medium') navigator.vibrate(25);
-      else if (type === 'heavy') navigator.vibrate(40);
-      else if (type === 'success') navigator.vibrate([15, 60, 25]);
-      else if (type === 'warning') navigator.vibrate([30, 80, 30]);
+      if (type === 'light') navigator.vibrate(14);
+      else if (type === 'medium') navigator.vibrate(28);
+      else if (type === 'heavy') navigator.vibrate(50);
+      else if (type === 'success') navigator.vibrate([18, 50, 28]);
+      else if (type === 'warning') navigator.vibrate([35, 75, 35]);
     }
   } catch (e) {}
 }
@@ -3257,23 +3278,38 @@ function setupEventListeners() {
   }
 
   // Retry Incomplete Batches
-  if (retryIncompleteBtn) retryIncompleteBtn.addEventListener('click', retryIncompleteBatchesPipeline);
+  if (retryIncompleteBtn) retryIncompleteBtn.addEventListener('click', () => {
+    triggerHaptic('medium');
+    retryIncompleteBatchesPipeline();
+  });
 
   // AI Condenser (2nd-Pass Refinement)
-  if (condenseSrtBtn) condenseSrtBtn.addEventListener('click', runAiCondensePipeline);
+  if (condenseSrtBtn) condenseSrtBtn.addEventListener('click', () => {
+    triggerHaptic('medium');
+    runAiCondensePipeline();
+  });
 
   // Restore Original Uncompressed Translation
-  if (restoreOriginalBtn) restoreOriginalBtn.addEventListener('click', restoreOriginalTranslation);
+  if (restoreOriginalBtn) restoreOriginalBtn.addEventListener('click', () => {
+    triggerHaptic('light');
+    restoreOriginalTranslation();
+  });
 
   // Download Action
   if (downloadBtn) {
     downloadBtn.addEventListener('click', () => {
+      triggerHaptic('medium');
       if (state.translatedBlocks.length > 0) downloadSRTFile(state.translatedBlocks);
     });
   }
 
   // Copy Action
-  if (copySrtBtn) copySrtBtn.addEventListener('click', copyFullSRTCode);
+  if (copySrtBtn) {
+    copySrtBtn.addEventListener('click', () => {
+      triggerHaptic('medium');
+      copyFullSRTCode();
+    });
+  }
 
   // Translate In (Target Language) Selection Change & Persistent Sync
   if (targetLang) {
@@ -3417,6 +3453,7 @@ function setupEventListeners() {
   // Tab switching
   document.querySelectorAll('.preview-tab').forEach(btn => {
     btn.addEventListener('click', function() {
+      triggerHaptic('light');
       document.querySelectorAll('.preview-tab').forEach(t => t.classList.remove('active'));
       this.classList.add('active');
       renderActiveTab(this.dataset.tab, state.translatedBlocks);
