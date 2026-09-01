@@ -23,6 +23,13 @@ try {
 
 const currentApkName = `SRTtranslator-v${currentVersion.replace(/^v/, '')}.apk`;
 
+// If a new gradle build output exists, copy it to the versioned APK file
+const gradleApk = path.join(__dirname, 'android', 'app', 'build', 'outputs', 'apk', 'debug', 'app-debug.apk');
+if (fs.existsSync(gradleApk)) {
+  fs.copyFileSync(gradleApk, path.join(__dirname, currentApkName));
+  console.log(`📦 Synced Gradle build output -> ${currentApkName}`);
+}
+
 // Clean up all old/previous APK files from root and www (except current active version)
 const cleanOldApks = (dir) => {
   if (!fs.existsSync(dir)) return;
@@ -56,6 +63,19 @@ const buildVersion = {
 };
 fs.writeFileSync(path.join(__dirname, 'version.json'), JSON.stringify(buildVersion, null, 2));
 
+// Update index.html header-apk-btn href to match current active APK
+try {
+  const indexHtmlPath = path.join(__dirname, 'index.html');
+  if (fs.existsSync(indexHtmlPath)) {
+    let indexHtml = fs.readFileSync(indexHtmlPath, 'utf8');
+    indexHtml = indexHtml.replace(/href=["']SRTtranslator-[^"']+\.apk["']/g, `href="${currentApkName}"`);
+    indexHtml = indexHtml.replace(/download=["']SRTtranslator-[^"']+\.apk["']/g, `download="${currentApkName}"`);
+    fs.writeFileSync(indexHtmlPath, indexHtml);
+  }
+} catch (e) {
+  console.warn('Could not patch index.html link:', e.message);
+}
+
 // Files to copy to www
 const filesToCopy = [
   'index.html',
@@ -83,5 +103,6 @@ filesToCopy.forEach(file => {
 });
 
 console.log(`[Build Complete] Active APK: ${currentApkName}. All previous APK versions cleared.`);
+
 
 

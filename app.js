@@ -820,10 +820,25 @@ function initNativeAppIntegrations() {
     // Show Get APK button ONLY on Android mobile browsers
     if (headerApkBtn) {
       headerApkBtn.style.display = 'inline-flex';
-      headerApkBtn.href = 'SRTtranslator-v1.6.0.apk';
-      headerApkBtn.setAttribute('download', 'SRTtranslator-v1.6.0.apk');
+      let activeApkFile = 'SRTtranslator-v1.6.0.apk';
+      headerApkBtn.href = activeApkFile;
+      headerApkBtn.setAttribute('download', activeApkFile);
+
+      try {
+        fetch('version.json?t=' + Date.now())
+          .then(res => res.json())
+          .then(data => {
+            if (data && data.apkFileName) {
+              activeApkFile = data.apkFileName;
+              headerApkBtn.href = activeApkFile;
+              headerApkBtn.setAttribute('download', activeApkFile);
+            }
+          })
+          .catch(() => {});
+      } catch (e) {}
+
       headerApkBtn.addEventListener('click', () => {
-        headerApkBtn.href = `SRTtranslator-v1.6.0.apk?t=${Date.now()}`;
+        headerApkBtn.href = `${activeApkFile}?t=${Date.now()}`;
       });
     }
   } else {
