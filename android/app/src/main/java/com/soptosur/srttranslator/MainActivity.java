@@ -16,6 +16,7 @@ public class MainActivity extends BridgeActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         registerPlugin(NativeGoogleAuthPlugin.class);
+        registerPlugin(NativeStoragePlugin.class);
         super.onCreate(savedInstanceState);
         
         // Allow high-performance background execution and prevent CPU sleeping
