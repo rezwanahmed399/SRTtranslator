@@ -7711,9 +7711,16 @@ function showAllCloudHistoryModal(initialItems) {
           </button>
         </div>
       </div>
-      <div class="history-modal-content-list" id="historyModalList"></div>
+      <div class="history-modal-content-list" id="historyModalList">
+        <div class="history-modal-loading">
+          <div class="history-spinner"></div>
+          <span>Loading subtitles...</span>
+        </div>
+      </div>
     </div>
   `;
+
+  document.body.appendChild(backdrop);
 
   const listContainer = backdrop.querySelector('#historyModalList');
   const searchInput = backdrop.querySelector('#historyModalSearch');
@@ -7722,8 +7729,12 @@ function showAllCloudHistoryModal(initialItems) {
   const closeBtn = backdrop.querySelector('#historyModalCloseBtn');
 
   const close = () => {
-    backdrop.style.opacity = '0';
-    setTimeout(() => backdrop.remove(), 150);
+    backdrop.style.animation = 'modalFadeOut 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards';
+    const box = backdrop.querySelector('.history-modal-box');
+    if (box) {
+      box.style.animation = 'modalPopOut 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards';
+    }
+    setTimeout(() => backdrop.remove(), 170);
   };
 
   const renderModalList = () => {
@@ -7781,8 +7792,10 @@ function showAllCloudHistoryModal(initialItems) {
     });
   };
 
-  renderModalList();
-  document.body.appendChild(backdrop);
+  // Render cards smoothly without freezing UI thread
+  requestAnimationFrame(() => {
+    renderModalList();
+  });
 
   if (searchInput) {
     searchInput.addEventListener('input', renderModalList);
