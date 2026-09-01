@@ -59,7 +59,7 @@ public class NativeStoragePlugin extends Plugin {
 
                 ContentValues values = new ContentValues();
                 values.put(MediaStore.Downloads.DISPLAY_NAME, resolvedFileName);
-                values.put(MediaStore.Downloads.MIME_TYPE, "text/plain");
+                values.put(MediaStore.Downloads.MIME_TYPE, "application/x-subrip");
                 values.put(MediaStore.Downloads.RELATIVE_PATH, RELATIVE_DOWNLOAD_PATH);
                 values.put(MediaStore.Downloads.IS_PENDING, 1);
 
@@ -184,7 +184,7 @@ public class NativeStoragePlugin extends Plugin {
             );
 
             Intent shareIntent = new Intent(Intent.ACTION_SEND);
-            shareIntent.setType("text/plain");
+            shareIntent.setType("application/x-subrip");
             shareIntent.putExtra(Intent.EXTRA_STREAM, fileUri);
             shareIntent.putExtra(Intent.EXTRA_SUBJECT, fileName);
             shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
