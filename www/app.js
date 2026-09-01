@@ -5776,29 +5776,30 @@ function showTranslationResults(blocks, percentSaved, origWords, condWords) {
     resName.textContent = state.fileName || 'translated_subtitle.srt';
   }
 
+  const resTitle = $('resultTitle') || $('resultCard')?.querySelector('h3');
   const untranslatedCount = blocks.filter(b => b.isTranslated === false).length;
 
   if (state.isCondensed) {
-    const wStart = origWords || countTotalWords(state.uncompressedBlocks || []);
-    const wEnd = condWords || countTotalWords(blocks);
-    const wordInfo = (wStart > 0 && wEnd > 0) ? ` (${wStart} words -> ${wEnd} words • -${percentSaved || Math.round(((wStart - wEnd) / wStart) * 100)}% reading load)` : '';
-    resultStats.textContent = `${blocks.length} subtitles localized & condensed for instant glance reading${wordInfo} • 0 drift • 100% timecode integrity`;
+    if (resTitle) resTitle.textContent = 'AI Condensation Completed!';
+    resultStats.textContent = `${blocks.length} subtitles condensed for glance reading`;
     if (incompleteWarningBanner) {
       incompleteWarningBanner.classList.add('hidden');
     }
   } else if (untranslatedCount > 0) {
-    resultStats.textContent = `${blocks.length - untranslatedCount} of ${blocks.length} subtitles translated to ${targetLang.value} (${untranslatedCount} in English) • 0 drift • 100% timecode integrity`;
+    if (resTitle) resTitle.textContent = 'Translation Partially Completed';
+    resultStats.textContent = `${blocks.length - untranslatedCount} of ${blocks.length} subtitles translated to ${targetLang.value} (${untranslatedCount} in English)`;
     if (incompleteWarningBanner) {
       incompleteWarningBanner.classList.remove('hidden');
       if (incompleteWarningTitle) {
         incompleteWarningTitle.textContent = `Attention: ${untranslatedCount} subtitle lines remain untranslated`;
       }
       if (incompleteWarningDesc) {
-        incompleteWarningDesc.textContent = `Due to temporary rate limits or API load, ${untranslatedCount} lines could not be translated and remain in English. Click "Retry Incomplete Batches" below to translate only these lines.`;
+        incompleteWarningDesc.textContent = `Due to temporary rate limits or API load, ${untranslatedCount} lines could not be translated. Click "Retry Incomplete Batches" below.`;
       }
     }
   } else {
-    resultStats.textContent = `${blocks.length} subtitles localized to ${targetLang.value} • 0 drift • 100% timecode integrity`;
+    if (resTitle) resTitle.textContent = 'Translation Completed!';
+    resultStats.textContent = `${blocks.length} subtitles localized to ${targetLang.value}`;
     if (incompleteWarningBanner) {
       incompleteWarningBanner.classList.add('hidden');
     }
@@ -5819,9 +5820,10 @@ function showTranslationResults(blocks, percentSaved, origWords, condWords) {
   if (state.isCondensed) {
     const wStart = origWords || countTotalWords(state.uncompressedBlocks || []);
     const wEnd = condWords || countTotalWords(blocks);
+    const pct = percentSaved || (wStart > 0 ? Math.max(0, Math.round(((wStart - wEnd) / wStart) * 100)) : 0);
     const badgeText = (wStart > 0 && wEnd > 0)
-      ? `AI Condensed (${wStart}w -> ${wEnd}w • -${percentSaved || Math.round(((wStart - wEnd) / wStart) * 100)}%)`
-      : `AI Condensed (${percentSaved ? '-' + percentSaved + '% Words' : 'Glance-Speed'})`;
+      ? `AI Condensed (${wStart}w → ${wEnd}w • -${pct}%)`
+      : `AI Condensed (-${pct}% load)`;
     badges.push({ 
       text: badgeText, 
       type: 'success' 
@@ -5829,26 +5831,26 @@ function showTranslationResults(blocks, percentSaved, origWords, condWords) {
   }
 
   if (untranslatedCount === 0) {
-    badges.push({ text: `${blocks.length} Subtitles 100% Ready`, type: 'success' });
+    badges.push({ text: `${blocks.length} Subtitles Ready`, type: 'success' });
   } else {
-    badges.push({ text: `${blocks.length - untranslatedCount}/${blocks.length} Subtitles Ready`, type: 'warning' });
-    badges.push({ text: `${untranslatedCount} Lines in English`, type: 'warning' });
+    badges.push({ text: `${blocks.length - untranslatedCount}/${blocks.length} Ready`, type: 'warning' });
+    badges.push({ text: `${untranslatedCount} in English`, type: 'warning' });
   }
 
   badges.push({ text: '100% Timing Preserved', type: 'success' });
 
   if (state.stats.overlapsFixed > 0) {
-    badges.push({ text: `${state.stats.overlapsFixed} Overlaps Auto-Corrected`, type: 'warning' });
+    badges.push({ text: `${state.stats.overlapsFixed} Overlaps Fixed`, type: 'warning' });
   } else {
-    badges.push({ text: '0 Timing Overlaps Found', type: 'success' });
+    badges.push({ text: '0 Overlaps', type: 'success' });
   }
 
   if (state.stats.emptyRecovered > 0) {
-    badges.push({ text: `${state.stats.emptyRecovered} Missing Lines Recovered`, type: 'warning' });
+    badges.push({ text: `${state.stats.emptyRecovered} Recovered`, type: 'warning' });
   }
 
   if (state.stats.retries > 0) {
-    badges.push({ text: `${state.stats.retries} Auto-Retries / Sub-Splits`, type: 'warning' });
+    badges.push({ text: `${state.stats.retries} Auto-Retried`, type: 'warning' });
   }
 
   fixSummary.innerHTML = badges.map(b => `

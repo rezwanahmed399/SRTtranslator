@@ -3937,45 +3937,65 @@ input[type="text"]:focus {
 .result-top-banner {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 18px;
+  align-items: flex-start;
+  margin-bottom: 14px;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 12px;
+  min-width: 0;
+  width: 100%;
 }
 
 .result-success-title {
   display: flex;
-  align-items: center;
-  gap: 14px;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+  flex: 1;
+  max-width: 100%;
+}
+
+.result-title-text-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  flex: 1;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .success-icon-badge {
-  width: 44px;
-  height: 44px;
-  border-radius: var(--radius-sm);
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-sm, 10px);
   background: var(--status-success-bg);
   border: 1px solid rgba(16, 185, 129, 0.3);
   color: var(--status-success);
   display: grid;
   place-items: center;
   flex-shrink: 0;
+  margin-top: 2px;
 }
 
 .success-icon-badge svg {
-  width: 22px;
-  height: 22px;
+  width: 18px;
+  height: 18px;
 }
 
 .result-success-title h3 {
-  font-size: 1.2rem;
+  font-size: 1.15rem;
   font-weight: 800;
   color: #fff;
   letter-spacing: -0.01em;
+  line-height: 1.25;
+  margin: 0;
 }
 
 .result-sub-info {
-  font-size: 0.82rem;
+  font-size: 0.80rem;
   color: var(--text-muted);
+  line-height: 1.35;
+  margin: 0;
 }
 
 .quick-action-buttons {
@@ -7360,37 +7380,50 @@ body.is-native-platform #apkDownloadSection {
 
 /* Result Section File Pill */
 .result-file-pill-row {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
-  margin-top: 6px;
-  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
   max-width: 100%;
+  min-width: 0;
 }
 
 .result-file-pill {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 4px 10px;
+  background: rgba(99, 102, 241, 0.12);
+  border: 1px solid rgba(99, 102, 241, 0.28);
+  padding: 3px 9px;
   border-radius: var(--radius-pill, 9999px);
-  font-size: 0.82rem;
+  font-size: 0.76rem;
   font-weight: 600;
-  color: #f1f5f9;
+  color: #e2e8f0;
   cursor: pointer;
   transition: all 0.2s ease;
-  white-space: normal;
-  word-break: break-word;
-  overflow-wrap: anywhere;
-  line-height: 1.4;
   max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.result-file-icon {
+  width: 12px;
+  height: 12px;
+  color: var(--brand-primary-light, #818cf8);
+  flex-shrink: 0;
+}
+
+.result-file-pill #resultFileName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  display: block;
 }
 
 .result-file-pill:hover {
-  border-color: rgba(99, 102, 241, 0.5);
-  background: rgba(30, 41, 59, 0.9);
+  border-color: rgba(99, 102, 241, 0.6);
+  background: rgba(99, 102, 241, 0.22);
   color: #ffffff;
 }
 
@@ -8666,10 +8699,16 @@ button:active:not(:disabled),
 
   .result-file-pill {
     font-size: 0.74rem;
-    max-width: calc(100vw - 120px);
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .result-file-pill #resultFileName {
+    max-width: calc(100vw - 160px);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    display: inline-block;
   }
 
   /* Ultra-Compact Translation Engine Settings for Zero-Scroll Mobile */
