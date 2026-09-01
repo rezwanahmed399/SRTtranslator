@@ -581,6 +581,7 @@ function initNativeAppIntegrations() {
 
     // 1. Android Status Bar Styling
     if (window.Capacitor.Plugins && window.Capacitor.Plugins.StatusBar) {
+      window.Capacitor.Plugins.StatusBar.setOverlaysWebView({ overlay: false }).catch(() => {});
       window.Capacitor.Plugins.StatusBar.setBackgroundColor({ color: '#070a13' }).catch(() => {});
       window.Capacitor.Plugins.StatusBar.setStyle({ style: 'DARK' }).catch(() => {});
     }
@@ -622,7 +623,22 @@ function initNativeAppIntegrations() {
       });
     }
   }
+}
 
+// ── Tactile Mobile Haptic Feedback Engine ──
+function triggerHaptic(type = 'light') {
+  try {
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      if (type === 'light') navigator.vibrate(12);
+      else if (type === 'medium') navigator.vibrate(25);
+      else if (type === 'heavy') navigator.vibrate(40);
+      else if (type === 'success') navigator.vibrate([15, 60, 25]);
+      else if (type === 'warning') navigator.vibrate([30, 80, 30]);
+    }
+  } catch (e) {}
+}
+
+function initAppSessionReset() {
   // Clear Saved Subtitle Session Data Button
   const resetBtn = $('resetSessionDataBtn');
   if (resetBtn) {
@@ -832,6 +848,7 @@ function initNativeAppIntegrations() {
 
 // ── 2-Tab Navigation Engine (Translator vs Settings) ──
 function switchAppTab(tabId) {
+  triggerHaptic('light');
   const tabBtnTranslator = $('tabBtnTranslator');
   const tabBtnSettings = $('tabBtnSettings');
   const bottomTabBtnTranslator = $('bottomTabBtnTranslator');
@@ -884,6 +901,7 @@ function switchAppTab(tabId) {
 
 // ── Sub-Tabs Navigation Controllers ──
 function switchTranslatorSubTab(subTabId) {
+  triggerHaptic('light');
   const btnSettings = $('subTabBtnEngineSettings');
   const btnWorkspace = $('subTabBtnWorkspace');
   const panelSettings = $('subViewEngineSettings');
@@ -915,6 +933,7 @@ function switchTranslatorSubTab(subTabId) {
 }
 
 function switchSettingsSubTab(subTabId) {
+  triggerHaptic('light');
   const btnApiKeys = $('subTabBtnApiKeys');
   const btnHistory = $('subTabBtnHistory');
   const panelApiKeys = $('subViewApiKeys');
@@ -2667,6 +2686,7 @@ function toggleTheme() {
 // ── Pause / Resume & Cancel Handlers ──
 async function togglePauseTranslation() {
   if (!state.isTranslating && !state.isCondensing) return;
+  triggerHaptic('light');
 
   if (!state.isPaused) {
     const isCondense = !!state.isCondensing;
@@ -2743,6 +2763,7 @@ async function cancelTranslationProcess() {
     type: 'danger'
   });
   if (!confirmed) return;
+  triggerHaptic('medium');
 
   state.isCancelled = true;
   state.isPaused = false;
@@ -5635,6 +5656,7 @@ async function condenseSingleBlock(index) {
 
 // ── Render Results View ──
 function showTranslationResults(blocks, percentSaved, origWords, condWords) {
+  triggerHaptic('success');
   progressCard.classList.add('hidden');
   resultCard.classList.remove('hidden');
 
@@ -6194,6 +6216,7 @@ function buildCustomSelect(selectEl) {
       `;
       optEl.addEventListener('click', (e) => {
         e.stopPropagation();
+        triggerHaptic('light');
         selectEl.value = opt.value;
         trigger.querySelector('.custom-select-value').textContent = opt.text;
         selectEl.dispatchEvent(new Event('change', { bubbles: true }));

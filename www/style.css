@@ -3249,11 +3249,11 @@ input[type="text"]:focus {
 
 .compact-checklist-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 8px;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 640px) {
   .compact-checklist-grid {
     grid-template-columns: 1fr;
   }
@@ -3263,14 +3263,16 @@ input[type="text"]:focus {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  flex-wrap: wrap;
+  gap: 8px 10px;
   background: var(--surface-card);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
-  padding: 6px 10px;
-  min-height: 38px;
+  padding: 8px 12px;
+  min-height: 42px;
   transition: all var(--transition-fast);
   cursor: pointer;
+  box-sizing: border-box;
 }
 
 .compact-checklist .checklist-item:hover {
@@ -3386,12 +3388,15 @@ input[type="text"]:focus {
 .compact-checklist .checklist-item-right {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  flex-shrink: 0;
+  margin-left: auto;
 }
 
 .compact-checklist .checklist-item-status-text {
-  font-size: 0.72rem;
+  font-size: 0.74rem;
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .compact-checklist .checklist-item-status-text.status-connected {
@@ -3413,12 +3418,18 @@ input[type="text"]:focus {
 .compact-checklist .checklist-action-btn {
   background: none;
   border: 1px solid var(--border-subtle);
-  border-radius: 4px;
+  border-radius: 6px;
   color: var(--text-muted);
-  font-size: 0.70rem;
+  font-size: 0.72rem;
   font-weight: 600;
-  padding: 2px 7px;
+  padding: 4px 9px;
   cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-width: max-content;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   transition: all var(--transition-fast);
 }
 
@@ -8145,4 +8156,402 @@ button:active:not(:disabled),
   color: #ef4444;
   font-weight: 600;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   PURPOSE-BUILT NATIVE ANDROID MOBILE APP STYLES (SCOPED TO body.is-native-app)   
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* 1. Android Native App Root & Safe Area Handling */
+body.is-native-app {
+  overflow-x: hidden !important;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  background-color: #070a13 !important;
+}
+
+/* Status Bar & Notch Safe Area Padding on Native Top App Bar */
+body.is-native-app .top-nav {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 9998 !important;
+  margin: 0 !important;
+  padding: max(32px, calc(env(safe-area-inset-top) + 8px)) 16px 12px 16px !important;
+  height: auto !important;
+  min-height: 68px !important;
+  background: rgba(7, 10, 19, 0.94) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+
+/* Inside the native APK, the 'Get APK' button is redundant and squishes header controls */
+body.is-native-app #headerApkBtn {
+  display: none !important;
+}
+
+/* 2. Fluid 100% Mobile Containers */
+body.is-native-app .app-container {
+  width: 100% !important;
+  max-width: 100% !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+  overflow-x: hidden !important;
+}
+
+body.is-native-app .main-content {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  overflow-x: hidden !important;
+  padding: 12px 12px max(96px, calc(84px + env(safe-area-inset-bottom))) 12px !important;
+}
+
+body.is-native-app .app-view {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+body.is-native-app .glass-card {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  margin-bottom: 14px !important;
+}
+
+body.is-native-app .settings-grid {
+  display: flex !important;
+  flex-direction: column !important;
+  width: 100% !important;
+  gap: 12px !important;
+}
+
+body.is-native-app .field-card {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+body.is-native-app .provider-config {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+body.is-native-app .sub-tabs-bar {
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* 3. Visual Hierarchy & Prominent Primary Action (Translate CTA) */
+body.is-native-app .action-cta-wrap {
+  margin: 18px 0 !important;
+  width: 100% !important;
+}
+
+body.is-native-app .btn-hero {
+  width: 100% !important;
+  padding: 17px 24px !important;
+  font-size: 1.05rem !important;
+  font-weight: 700 !important;
+  border-radius: 16px !important;
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
+  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.38) !important;
+  letter-spacing: 0.2px !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+}
+
+body.is-native-app .btn-hero:not(:disabled):hover {
+  box-shadow: 0 12px 30px rgba(99, 102, 241, 0.5) !important;
+  transform: translateY(-2px) !important;
+}
+
+body.is-native-app .btn-hero:not(:disabled):active {
+  transform: scale(0.98) !important;
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3) !important;
+}
+
+body.is-native-app .cta-hint {
+  font-size: 0.82rem !important;
+  color: var(--text-muted) !important;
+  text-align: center !important;
+  margin-top: 8px !important;
+}
+
+/* 4. Refined Card Hierarchy & Breathing Room */
+body.is-native-app .upload-section {
+  border: 1px solid rgba(99, 102, 241, 0.28) !important;
+  background: rgba(15, 23, 42, 0.78) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+}
+
+body.is-native-app .drop-zone {
+  padding: 36px 18px !important;
+  border-radius: 16px !important;
+  border-width: 2px !important;
+}
+
+body.is-native-app .drop-headline {
+  font-size: 1.08rem !important;
+  font-weight: 700 !important;
+}
+
+body.is-native-app .drop-subline {
+  font-size: 0.82rem !important;
+  color: var(--text-muted) !important;
+}
+
+body.is-native-app .drop-zone .btn-primary {
+  padding: 13px 22px !important;
+  font-size: 0.92rem !important;
+  font-weight: 600 !important;
+  border-radius: 12px !important;
+}
+
+/* 5. Typography Scale & Balanced Font Weights */
+body.is-native-app h2,
+body.is-native-app .section-title {
+  font-size: 1.25rem !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.01em !important;
+}
+
+body.is-native-app h3 {
+  font-size: 1.02rem !important;
+  font-weight: 600 !important;
+}
+
+body.is-native-app .field-card label {
+  font-size: 0.86rem !important;
+  font-weight: 600 !important;
+}
+
+body.is-native-app .field-micro-hint {
+  font-size: 0.76rem !important;
+  font-weight: 400 !important;
+  color: var(--text-muted) !important;
+}
+
+/* 6. Subtle, Modern Error & Warning Messages */
+body.is-native-app .incomplete-warning-banner {
+  background: rgba(245, 158, 11, 0.08) !important;
+  border: 1px solid rgba(245, 158, 11, 0.28) !important;
+  border-radius: 14px !important;
+  padding: 12px 14px !important;
+}
+
+body.is-native-app .incomplete-warning-banner strong {
+  font-size: 0.88rem !important;
+  font-weight: 600 !important;
+  color: #fbbf24 !important;
+}
+
+body.is-native-app .incomplete-warning-banner p {
+  font-size: 0.80rem !important;
+  font-weight: 400 !important;
+  line-height: 1.4 !important;
+  color: var(--text-muted) !important;
+}
+
+body.is-native-app .btn-warning-retry {
+  padding: 8px 14px !important;
+  font-size: 0.80rem !important;
+  border-radius: 8px !important;
+}
+
+body.is-native-app .terminal-log-item {
+  font-size: 0.78rem !important;
+  padding: 6px 10px !important;
+  border-radius: 8px !important;
+  margin-bottom: 4px !important;
+}
+
+body.is-native-app .terminal-log-item.log-error {
+  background: rgba(239, 68, 68, 0.08) !important;
+  border-left: 3px solid #ef4444 !important;
+  color: #fca5a5 !important;
+  font-weight: 500 !important;
+}
+
+body.is-native-app .terminal-log-item.log-warn {
+  background: rgba(245, 158, 11, 0.08) !important;
+  border-left: 3px solid #f59e0b !important;
+  color: #fde68a !important;
+  font-weight: 500 !important;
+}
+
+body.is-native-app .terminal-log-item.log-info {
+  background: rgba(99, 102, 241, 0.06) !important;
+  border-left: 3px solid #6366f1 !important;
+  color: #c7d2fe !important;
+}
+
+body.is-native-app .terminal-log-item.log-success {
+  background: rgba(16, 185, 129, 0.08) !important;
+  border-left: 3px solid #10b981 !important;
+  color: #a7f3d0 !important;
+}
+
+/* 7. Native Mobile Bottom Sheet (For Language, Model & Pacing Selectors) */
+@media (max-width: 768px), (pointer: coarse) {
+  body.is-native-app .custom-select-container.is-open .custom-select-menu,
+  .is-native-app .custom-select-container.is-open .custom-select-menu {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    top: auto !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    max-height: 82vh !important;
+    border-radius: 26px 26px 0 0 !important;
+    border: 1px solid rgba(255, 255, 255, 0.16) !important;
+    border-bottom: none !important;
+    background: #090e1a !important;
+    box-shadow: 0 -16px 48px rgba(0, 0, 0, 0.85) !important;
+    z-index: 999999 !important;
+    padding: 10px 14px max(24px, calc(16px + env(safe-area-inset-bottom))) 14px !important;
+    animation: nativeSheetSlideUp 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  body.is-native-app .custom-select-container.is-open::before,
+  .is-native-app .custom-select-container.is-open::before {
+    content: '' !important;
+    position: fixed !important;
+    inset: 0 !important;
+    background: rgba(0, 0, 0, 0.7) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+    z-index: 999998 !important;
+    animation: nativeSheetFadeIn 0.22s ease forwards !important;
+  }
+
+  body.is-native-app .custom-select-search-wrap,
+  .is-native-app .custom-select-search-wrap {
+    padding: 10px 12px !important;
+    border-radius: 12px !important;
+    background: rgba(15, 23, 42, 0.9) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    margin-bottom: 8px !important;
+  }
+
+  body.is-native-app .custom-select-search-input,
+  .is-native-app .custom-select-search-input {
+    font-size: 0.96rem !important;
+  }
+
+  body.is-native-app .custom-select-options-list,
+  .is-native-app .custom-select-options-list {
+    max-height: 60vh !important;
+    padding: 4px !important;
+  }
+
+  body.is-native-app .custom-select-option,
+  .is-native-app .custom-select-option {
+    min-height: 46px !important;
+    padding: 12px 14px !important;
+    font-size: 0.92rem !important;
+    border-radius: 10px !important;
+    margin-bottom: 2px !important;
+  }
+}
+
+@keyframes nativeSheetSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes nativeSheetFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* 8. Native Bottom Navigation Bar Polish */
+body.is-native-app .native-bottom-nav {
+  display: block !important;
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 9990 !important;
+  background: rgba(7, 10, 19, 0.95) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+  padding: 8px 16px max(14px, env(safe-area-inset-bottom)) 16px !important;
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.4) !important;
+}
+
+body.is-native-app .bottom-nav-container {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-around !important;
+  max-width: 440px !important;
+  margin: 0 auto !important;
+}
+
+body.is-native-app .bottom-nav-btn {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 4px !important;
+  background: none !important;
+  border: none !important;
+  color: var(--text-muted) !important;
+  font-size: 0.72rem !important;
+  font-weight: 600 !important;
+  padding: 6px 18px !important;
+  border-radius: 14px !important;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+body.is-native-app .bottom-nav-btn.active {
+  color: #818cf8 !important;
+  background: rgba(99, 102, 241, 0.12) !important;
+}
+
+body.is-native-app .bottom-nav-btn svg {
+  width: 22px !important;
+  height: 22px !important;
+  transition: transform 0.2s ease !important;
+}
+
+body.is-native-app .bottom-nav-btn.active svg {
+  transform: scale(1.1) !important;
+}
+
+/* 9. Native Screen Transitions */
+body.is-native-app .app-view.active {
+  animation: nativeViewSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+}
+
+@keyframes nativeViewSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+
 
