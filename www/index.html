@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=overlays-content" />
   <title>SRTtranslator — Free AI SRT Subtitle Translator Online (100% Timing Sync &amp; Fast Pacing)</title>
   <meta name="description" content="Free online AI subtitle translator for SRT files. Localize movie and video subtitles with 100% timecode sync, zero overlap, adaptive glance-speed pacing, and instant SRT export. 100% private client-side processing." />
   <meta name="keywords" content="srt translator, translate srt, subtitle translator, ai subtitle translation, translate srt online, free srt translator, translate subtitles to bengali, movie subtitle translator, srt timecode sync, srt file translator, srt subtitle compressor" />
@@ -172,7 +172,7 @@
       </nav>
       
       <div class="nav-badges">
-        <a href="SRTtranslator-v1.8.17.apk" download="SRTtranslator-v1.8.17.apk" class="header-apk-btn" id="headerApkBtn" title="Download Standalone Android App (APK)">
+        <a href="SRTtranslator-latest.apk" download="SRTtranslator-latest.apk" class="header-apk-btn" id="headerApkBtn" title="Download Standalone Android App (APK)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
           </svg>
@@ -228,6 +228,17 @@
           </div>
         </div>
 
+        <!-- Download Manager Header Button (Right beside Profile) -->
+        <button id="headerDownloadsBtn" class="header-downloads-btn" type="button" title="Downloaded Subtitles" aria-label="Downloaded Subtitles">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="header-downloads-svg">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          <span class="header-downloads-badge hidden" id="headerDownloadsBadge">0</span>
+          <span class="header-downloads-pulse hidden" id="headerDownloadsPulse"></span>
+        </button>
+
         <button id="themeToggleBtn" class="theme-toggle-btn" type="button" title="Toggle Light / Dark Mode" aria-label="Toggle theme">
           <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="5"/>
@@ -257,15 +268,20 @@
       <div class="app-view active" id="viewTranslator">
 
         <!-- Top Red Warning Alert Banner when API Keys are Missing -->
-        <div id="topApiKeyAlertBanner" class="top-api-key-alert-banner hidden">
+        <div id="topApiKeyAlertBanner" class="top-api-key-alert-banner hidden" onclick="if(window.goToApiSettingsTab) window.goToApiSettingsTab();">
           <div class="top-alert-content">
-            <svg class="top-alert-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-              <line x1="12" y1="9" x2="12" y2="13"/>
-              <line x1="12" y1="17" x2="12.01" y2="17"/>
-            </svg>
-            <span class="top-alert-text">AI API key is not connected. Please connect your API keys to enable subtitle translation.</span>
-            <button class="top-alert-btn" type="button" id="topAlertConnectBtn">Connect API Keys &rarr;</button>
+            <div class="top-alert-main-row">
+              <svg class="top-alert-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+              <span class="top-alert-text">No API Key</span>
+            </div>
+            <button class="top-alert-btn" type="button" id="topAlertConnectBtn" onclick="if(window.goToApiSettingsTab) { event.stopPropagation(); window.goToApiSettingsTab(); }">
+              <span>Connect Keys</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:12px;height:12px;"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </button>
           </div>
         </div>
 
@@ -302,193 +318,165 @@
         <div class="sub-view-panel active" id="subViewEngineSettings">
           <!-- Settings Grid (Language, Model, Pacing, Context) -->
           <section class="glass-card settings-section" id="settingsSection">
-          <div class="card-header">
-            <div class="title-with-icon">
-              <div class="icon-wrap config-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <line x1="4" y1="21" x2="4" y2="14"/>
-                  <line x1="4" y1="10" x2="4" y2="3"/>
-                  <line x1="12" y1="21" x2="12" y2="12"/>
-                  <line x1="12" y1="8" x2="12" y2="3"/>
-                  <line x1="20" y1="21" x2="20" y2="16"/>
-                  <line x1="20" y1="12" x2="20" y2="3"/>
-                  <line x1="1" y1="14" x2="7" y2="14"/>
-                  <line x1="9" y1="8" x2="15" y2="8"/>
-                  <line x1="17" y1="16" x2="23" y2="16"/>
-                </svg>
-              </div>
-              <div>
-                <h3>Translation Engine Settings</h3>
-                <p class="desc">Translate In language, AI models (auto-loaded live), and pacing presets.</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="settings-grid">
-            <!-- Translate In Language -->
-            <div class="field-item field-card">
-              <label for="targetLang">
-                <span class="field-label-group">
-                  <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="10"/>
-                    <line x1="2" y1="12" x2="22" y2="12"/>
-                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-                  </svg>
-                  <span>Translate In</span>
-                </span>
-                <span class="hint-tag">40+ Global</span>
-              </label>
-              <div class="select-wrapper">
-                <select id="targetLang">
-                  <optgroup label="Popular Languages">
-                    <option value="Bengali" selected>Bengali (বাংলা)</option>
-                    <option value="English">English</option>
-                    <option value="Spanish">Spanish (Español)</option>
-                    <option value="Hindi">Hindi (हिन्दी)</option>
-                    <option value="Urdu">Urdu (اردو)</option>
-                    <option value="Arabic">Arabic (العربية)</option>
-                    <option value="French">French (Français)</option>
-                    <option value="German">German (Deutsch)</option>
-                    <option value="Japanese">Japanese (日本語)</option>
-                    <option value="Korean">Korean (한국어)</option>
-                    <option value="Chinese (Simplified)">Chinese Simplified (简体中文)</option>
-                    <option value="Portuguese">Portuguese (Português)</option>
-                    <option value="Russian">Russian (Русский)</option>
-                    <option value="Turkish">Turkish (Türkçe)</option>
-                    <option value="Italian">Italian (Italiano)</option>
-                    <option value="Indonesian">Indonesian (Bahasa Indonesia)</option>
-                    <option value="Vietnamese">Vietnamese (Tiếng Việt)</option>
-                    <option value="Thai">Thai (ไทย)</option>
-                  </optgroup>
-                  <optgroup label="Regional & World Languages">
-                    <option value="Tamil">Tamil (தமிழ்)</option>
-                    <option value="Telugu">Telugu (తెలుగు)</option>
-                    <option value="Marathi">Marathi (मराठी)</option>
-                    <option value="Gujarati">Gujarati (ગુજરાતી)</option>
-                    <option value="Malayalam">Malayalam (മലയാളം)</option>
-                    <option value="Punjabi">Punjabi (ਪੰਜਾਬੀ)</option>
-                    <option value="Persian">Persian / Farsi (فارسی)</option>
-                    <option value="Dutch">Dutch (Nederlands)</option>
-                    <option value="Polish">Polish (Polski)</option>
-                    <option value="Swedish">Swedish (Svenska)</option>
-                    <option value="Norwegian">Norwegian (Norsk)</option>
-                    <option value="Danish">Danish (Dansk)</option>
-                    <option value="Finnish">Finnish (Suomi)</option>
-                    <option value="Greek">Greek (Ελληνικά)</option>
-                    <option value="Hebrew">Hebrew (עברית)</option>
-                    <option value="Czech">Czech (Čeština)</option>
-                    <option value="Romanian">Romanian (Română)</option>
-                    <option value="Hungarian">Hungarian (Magyar)</option>
-                    <option value="Ukrainian">Ukrainian (Українська)</option>
-                    <option value="Malay">Malay (Bahasa Melayu)</option>
-                    <option value="Filipino / Tagalog">Filipino / Tagalog</option>
-                  </optgroup>
-                </select>
-              </div>
-              <div class="field-footer-info">
-                <span class="field-micro-hint">Preserves 100% spoken emotion &amp; context</span>
-              </div>
-            </div>
-
-            <!-- AI Model Selection (Auto-fetched from live APIs) -->
-            <div class="field-item field-card">
-              <label for="modelSelect">
-                <span class="field-label-group">
-                  <svg class="field-icon icon-ai" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-                  </svg>
-                  <span>AI Model Selection</span>
-                </span>
-                <span class="hint-tag active-tag" id="modelLiveBadge">Awaiting API Keys</span>
-              </label>
-              <div class="select-wrapper">
-                <select id="modelSelect" disabled>
-                  <option value="" disabled selected>Connect API keys in Settings to load models...</option>
-                </select>
-              </div>
-              <div class="field-footer-info">
-                <span class="field-micro-hint">Auto Select dynamically probes and uses the fastest AI</span>
-              </div>
-            </div>
-
-            <!-- Subtitle Pacing / Style Mode -->
-            <div class="field-item field-card">
-              <label for="styleMode">
-                <span class="field-label-group">
-                  <svg class="field-icon icon-pacing" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="10"/>
-                    <polyline points="12 6 12 12 16 14"/>
-                  </svg>
-                  <span>Subtitle Pacing Preset</span>
-                </span>
-                <span class="hint-tag speed-tag" id="pacingBadge">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;display:inline-block;vertical-align:-1px;margin-right:3px;">
-                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-                  </svg>
-                  <span>Fast Reading</span>
-                </span>
-              </label>
-              <div class="select-wrapper">
-                <select id="styleMode">
-                  <optgroup label="Natural Flow (No Word Limits • Pure Linguistic Cadence)">
-                    <option value="micro">Ultra-Short / Glance Speed (Punchy &amp; Direct • Minimalist)</option>
-                    <option value="concise" selected>Fast Reading &amp; Concise (Recommended • Streamlined)</option>
-                    <option value="balanced">Balanced &amp; Natural (Standard Cinema Cadence)</option>
-                    <option value="detailed">Detailed &amp; Complete (Full Unabridged • Literal)</option>
-                  </optgroup>
-                  <optgroup label="Strict Word-Limit Modes (Fixed Word Count Limits)">
-                    <option value="micro_limit">Ultra-Short with Word Limit (Strict 1–4 Words, Max 5)</option>
-                    <option value="concise_limit">Concise with Word Limit (Strict 4–7 Words Limit)</option>
-                    <option value="balanced_limit">Balanced with Word Limit (Strict 7–12 Words Limit)</option>
-                  </optgroup>
-                </select>
-              </div>
-            </div>
-
-            <!-- Smart Batching Info Banner -->
-            <div class="field-item field-card">
-              <label>
-                <span class="field-label-group">
-                  <svg class="field-icon icon-batch" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
-                  </svg>
-                  <span>Batch Processing</span>
-                </span>
-                <span class="hint-tag" style="background:rgba(16,185,129,0.12); color:#10b981;">Auto-Adaptive</span>
-              </label>
-              <div class="auto-batch-card">
-                <div class="auto-batch-icon">
+            <div class="card-header">
+              <div class="title-with-icon">
+                <div class="icon-wrap config-icon">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                    <line x1="4" y1="21" x2="4" y2="14"/>
+                    <line x1="4" y1="10" x2="4" y2="3"/>
+                    <line x1="12" y1="21" x2="12" y2="12"/>
+                    <line x1="12" y1="8" x2="12" y2="3"/>
+                    <line x1="20" y1="21" x2="20" y2="16"/>
+                    <line x1="20" y1="12" x2="20" y2="3"/>
+                    <line x1="1" y1="14" x2="7" y2="14"/>
+                    <line x1="9" y1="8" x2="15" y2="8"/>
+                    <line x1="17" y1="16" x2="23" y2="16"/>
                   </svg>
                 </div>
                 <div>
-                  <div class="auto-batch-title">Adaptive Divide &amp; Conquer</div>
-                  <div class="auto-batch-sub">Auto-splits batches on complex lines to eliminate skipped subtitles.</div>
+                  <h3>Engine Settings</h3>
                 </div>
+              </div>
+              <div class="engine-batch-badge">
+                <span class="hint-tag" style="background:rgba(16,185,129,0.12); color:#10b981; border:1px solid rgba(16,185,129,0.25);">⚡ Auto-Adaptive</span>
               </div>
             </div>
 
-            <!-- Context / Genre Description -->
-            <div class="field-item field-card full-width">
-              <label for="contextHint">
-                <span class="field-label-group">
-                  <svg class="field-icon icon-hint" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                  </svg>
-                  <span>Context &amp; Genre Tone (Optional)</span>
-                </span>
-                <span class="hint-muted">Helps AI localize slang, humor, anime drama &amp; character tone</span>
-              </label>
-              <div class="input-glow-wrapper">
-                <input
-                  type="text"
-                  id="contextHint"
-                  placeholder="e.g., Action sci-fi movie with military jargon, medical drama, anime comedy, technical tutorial..."
-                />
+            <div class="settings-grid">
+              <!-- Field 1: Translate In Language -->
+              <div class="field-item field-card">
+                <label for="targetLang">
+                  <span class="field-label-group">
+                    <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10"/>
+                      <line x1="2" y1="12" x2="22" y2="12"/>
+                      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                    </svg>
+                    <span>Translate In</span>
+                  </span>
+                  <span class="hint-tag">40+ Languages</span>
+                </label>
+                <div class="select-wrapper">
+                  <select id="targetLang">
+                    <optgroup label="Popular Languages">
+                      <option value="Bengali" selected>Bengali (বাংলা)</option>
+                      <option value="English">English</option>
+                      <option value="Spanish">Spanish (Español)</option>
+                      <option value="Hindi">Hindi (हिन्दी)</option>
+                      <option value="Urdu">Urdu (اردو)</option>
+                      <option value="Arabic">Arabic (العربية)</option>
+                      <option value="French">French (Français)</option>
+                      <option value="German">German (Deutsch)</option>
+                      <option value="Japanese">Japanese (日本語)</option>
+                      <option value="Korean">Korean (한국어)</option>
+                      <option value="Chinese (Simplified)">Chinese Simplified (简体中文)</option>
+                      <option value="Portuguese">Portuguese (Português)</option>
+                      <option value="Russian">Russian (Русский)</option>
+                      <option value="Turkish">Turkish (Türkçe)</option>
+                      <option value="Italian">Italian (Italiano)</option>
+                      <option value="Indonesian">Indonesian (Bahasa Indonesia)</option>
+                      <option value="Vietnamese">Vietnamese (Tiếng Việt)</option>
+                      <option value="Thai">Thai (ไทย)</option>
+                    </optgroup>
+                    <optgroup label="Regional & World Languages">
+                      <option value="Tamil">Tamil (தமிழ்)</option>
+                      <option value="Telugu">Telugu (తెలుగు)</option>
+                      <option value="Marathi">Marathi (मराठी)</option>
+                      <option value="Gujarati">Gujarati (ગુજરાતી)</option>
+                      <option value="Malayalam">Malayalam (മലയാളം)</option>
+                      <option value="Punjabi">Punjabi (ਪੰਜਾਬੀ)</option>
+                      <option value="Persian">Persian / Farsi (فارسی)</option>
+                      <option value="Dutch">Dutch (Nederlands)</option>
+                      <option value="Polish">Polish (Polski)</option>
+                      <option value="Swedish">Swedish (Svenska)</option>
+                      <option value="Norwegian">Norwegian (Norsk)</option>
+                      <option value="Danish">Danish (Dansk)</option>
+                      <option value="Finnish">Finnish (Suomi)</option>
+                      <option value="Greek">Greek (Ελληνικά)</option>
+                      <option value="Hebrew">Hebrew (עברית)</option>
+                      <option value="Czech">Czech (Čeština)</option>
+                      <option value="Romanian">Romanian (Română)</option>
+                      <option value="Hungarian">Hungarian (Magyar)</option>
+                      <option value="Ukrainian">Ukrainian (Українська)</option>
+                      <option value="Malay">Malay (Bahasa Melayu)</option>
+                      <option value="Filipino / Tagalog">Filipino / Tagalog</option>
+                    </optgroup>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Field 2: AI Model Selection (Auto-fetched from live APIs) -->
+              <div class="field-item field-card">
+                <label for="modelSelect">
+                  <span class="field-label-group">
+                    <svg class="field-icon icon-ai" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                    </svg>
+                    <span>AI Model Selection</span>
+                  </span>
+                  <span class="hint-tag active-tag" id="modelLiveBadge">Awaiting Keys</span>
+                </label>
+                <div class="select-wrapper">
+                  <select id="modelSelect" disabled>
+                    <option value="" disabled selected>Connect API keys in Settings to load models...</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Field 3: Subtitle Pacing / Style Mode -->
+              <div class="field-item field-card">
+                <label for="styleMode">
+                  <span class="field-label-group">
+                    <svg class="field-icon icon-pacing" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10"/>
+                      <polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                    <span>Subtitle Pacing</span>
+                  </span>
+                  <span class="hint-tag speed-tag" id="pacingBadge">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:10px;height:10px;display:inline-block;vertical-align:-1px;margin-right:2px;">
+                      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                    </svg>
+                    <span>Fast</span>
+                  </span>
+                </label>
+                <div class="select-wrapper">
+                  <select id="styleMode">
+                    <optgroup label="Natural Flow (No Word Limits • Pure Linguistic Cadence)">
+                      <option value="micro">Ultra-Short / Glance Speed (Punchy &amp; Direct • Minimalist)</option>
+                      <option value="concise" selected>Fast Reading &amp; Concise (Recommended • Streamlined)</option>
+                      <option value="balanced">Balanced &amp; Natural (Standard Cinema Cadence)</option>
+                      <option value="detailed">Detailed &amp; Complete (Full Unabridged • Literal)</option>
+                    </optgroup>
+                    <optgroup label="Strict Word-Limit Modes (Fixed Word Count Limits)">
+                      <option value="micro_limit">Ultra-Short with Word Limit (Strict 1–4 Words, Max 5)</option>
+                      <option value="concise_limit">Concise with Word Limit (Strict 4–7 Words Limit)</option>
+                      <option value="balanced_limit">Balanced with Word Limit (Strict 7–12 Words Limit)</option>
+                    </optgroup>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Field 4: Context / Genre Description -->
+              <div class="field-item field-card">
+                <label for="contextHint">
+                  <span class="field-label-group">
+                    <svg class="field-icon icon-hint" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                    </svg>
+                    <span>Context &amp; Genre Tone</span>
+                  </span>
+                  <span class="hint-muted" style="font-size:0.64rem;">Optional</span>
+                </label>
+                <div class="input-glow-wrapper">
+                  <input
+                    type="text"
+                    id="contextHint"
+                    placeholder="e.g. Action, Drama, Sci-Fi, Anime comedy..."
+                  />
+                </div>
               </div>
             </div>
-          </div>
           </section>
         </div> <!-- /#subViewEngineSettings -->
 
@@ -827,7 +815,7 @@
           <div class="auth-sync-banner-simple">
             <div class="auth-banner-text-group">
               <div class="icon-wrap google-icon-wrap">
-                <svg viewBox="0 0 24 24" width="20" height="20">
+                <svg viewBox="0 0 24 24" width="16" height="16">
                   <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
                   <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.36 24 12 24z"/>
                   <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
@@ -836,17 +824,17 @@
               </div>
               <div class="auth-banner-copy">
                 <h3>Google Cloud Sync</h3>
-                <p>Sign in to sync API keys and backup your subtitle history across devices.</p>
+                <p>Backup keys &amp; subtitle history</p>
               </div>
             </div>
             <button id="settingsGoogleSignInBtn" class="btn btn-google-connect" type="button">
-              <svg viewBox="0 0 24 24" width="18" height="18">
+              <svg viewBox="0 0 24 24" width="14" height="14">
                 <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
                 <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.36 24 12 24z"/>
                 <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
                 <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.36 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
               </svg>
-              <span>Sign in with Google</span>
+              <span>Sign In</span>
             </button>
           </div>
         </section>
@@ -862,8 +850,7 @@
                 </svg>
               </div>
               <div>
-                <h3>AI Providers &amp; API Keys (Required)</h3>
-                <p class="desc">Connect API keys to enable translation with auto-failover resilience.</p>
+                <h3>API Keys</h3>
               </div>
             </div>
             
@@ -885,9 +872,9 @@
                   <line x1="8" y1="21" x2="16" y2="21"/>
                   <line x1="12" y1="17" x2="12" y2="21"/>
                 </svg>
-                <span>Select AI Provider to Configure</span>
+                <span>Configure</span>
               </span>
-              <span class="hint-tag active-tag" id="providerSelectedTag">Google Gemini (Required)</span>
+              <span class="hint-tag active-tag" id="providerSelectedTag">Gemini</span>
             </label>
             <div class="select-wrapper">
               <select id="providerSelect">
@@ -1306,7 +1293,7 @@
                   <path d="M9 11l3 3L22 4"/>
                   <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
                 </svg>
-                <span class="checklist-title">Required AI Keys Status</span>
+                <span class="checklist-title">Required AI Keys</span>
               </div>
               <span class="checklist-status-badge badge-none" id="checklistOverallBadge">0/2 Connected</span>
             </div>
@@ -1320,15 +1307,12 @@
                       <line x1="6" y1="6" x2="18" y2="18"></line>
                     </svg>
                   </span>
-                  <div class="checklist-name-group">
+                  <div class="checklist-text-group">
                     <span class="checklist-item-name">Google Gemini</span>
-                    <span class="checklist-badge-required">Required</span>
+                    <span class="checklist-item-status-text status-missing" id="checkStatusTextGemini">Not Connected</span>
                   </div>
                 </div>
-                <div class="checklist-item-right">
-                  <span class="checklist-item-status-text status-missing" id="checkStatusTextGemini">Not Connected</span>
-                  <button type="button" class="checklist-action-btn" id="checkActionGemini" data-provider="gemini">Configure &rarr;</button>
-                </div>
+                <button type="button" class="checklist-action-btn" id="checkActionGemini" data-provider="gemini">Configure &rarr;</button>
               </div>
 
               <div class="checklist-item is-missing" id="checkItemOpenRouter" data-provider="openrouter" title="Click to configure OpenRouter API key">
@@ -1339,15 +1323,12 @@
                       <line x1="6" y1="6" x2="18" y2="18"></line>
                     </svg>
                   </span>
-                  <div class="checklist-name-group">
+                  <div class="checklist-text-group">
                     <span class="checklist-item-name">OpenRouter</span>
-                    <span class="checklist-badge-required">Required</span>
+                    <span class="checklist-item-status-text status-missing" id="checkStatusTextOpenRouter">Not Connected</span>
                   </div>
                 </div>
-                <div class="checklist-item-right">
-                  <span class="checklist-item-status-text status-missing" id="checkStatusTextOpenRouter">Not Connected</span>
-                  <button type="button" class="checklist-action-btn" id="checkActionOpenRouter" data-provider="openrouter">Configure &rarr;</button>
-                </div>
+                <button type="button" class="checklist-action-btn" id="checkActionOpenRouter" data-provider="openrouter">Configure &rarr;</button>
               </div>
             </div>
           </div>
@@ -1417,7 +1398,7 @@
               </div>
               <div>
                 <h3>Cloud Subtitle Archive</h3>
-                <p class="desc">Translated subtitles are saved for 7 days.</p>
+                <p class="desc">Subtitles are saved for 7 days</p>
               </div>
             </div>
             <div class="cloud-history-actions">
