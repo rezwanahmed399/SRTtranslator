@@ -1784,7 +1784,7 @@ async function verifyAndLoadProvider(providerId, key) {
       lastLatency: probeMs
     };
 
-    showProviderFeedback(providerId, `Connected! ${loadedModels.length} live models verified (Ping: ${probeMs}ms).`, 'ok');
+    showProviderFeedback(providerId, `Connected! ${loadedModels.length} models (Ping: ${probeMs}ms)`, 'ok');
     updateProviderStatusUI(providerId, true, `${loadedModels.length} models, ${probeMs}ms`);
 
     updateApiGuardAndHeaderStatus();
@@ -3268,7 +3268,7 @@ function setupEventListeners() {
       const confirmed = await showCustomConfirm({
         title: 'Start AI Subtitle Condensation?',
         message: `Do you want to condense "${escapeHtml(state.fileName || 'current subtitles')}" to optimize reading flow and line lengths?`,
-        confirmText: 'Yes, Start Condensing',
+        confirmText: 'Yes, Condense',
         cancelText: 'Cancel',
         type: 'info'
       });
@@ -7582,7 +7582,7 @@ function wireHistoryActions(container, items, onListMutated, onCondenseChosen) {
         const confirmed = await showCustomConfirm({
           title: 'Start AI Subtitle Condensation?',
           message: `Do you want to condense "${escapeHtml(item.fileName || 'this subtitle')}" to optimize reading flow and line lengths?`,
-          confirmText: 'Yes, Start Condensing',
+          confirmText: 'Yes, Condense',
           cancelText: 'Cancel',
           type: 'info'
         });
