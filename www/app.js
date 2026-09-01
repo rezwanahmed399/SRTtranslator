@@ -820,7 +820,6 @@ function switchAppTab(tabId) {
   const viewSettings = $('viewSettings');
 
   if (tabId === 'translator') {
-    document.body.classList.remove('view-settings-active');
     if (tabBtnTranslator) {
       tabBtnTranslator.classList.add('active');
       tabBtnTranslator.setAttribute('aria-selected', 'true');
@@ -838,7 +837,6 @@ function switchAppTab(tabId) {
     if (viewTranslator) viewTranslator.classList.add('active');
     if (viewSettings) viewSettings.classList.remove('active');
   } else {
-    document.body.classList.add('view-settings-active');
     if (tabBtnTranslator) {
       tabBtnTranslator.classList.remove('active');
       tabBtnTranslator.setAttribute('aria-selected', 'false');
@@ -860,8 +858,7 @@ function switchAppTab(tabId) {
     switchSettingsSubTab('apikeys');
   }
 
-  // Instant scroll position reset without bouncing/moving
-  window.scrollTo(0, 0);
+  window.scrollTo({ top: 0, behavior: 'instant' });
 }
 
 // ── Sub-Tabs Navigation Controllers ──
@@ -2827,8 +2824,6 @@ function switchAppTab(tabId) {
   if (viewSettings) {
     viewSettings.classList.toggle('active', !isTranslator);
   }
-
-  document.body.classList.toggle('view-settings-active', !isTranslator);
 
   window.scrollTo({ top: 0, behavior: 'instant' });
 }

@@ -9365,34 +9365,10 @@ button:active:not(:disabled),
 
 #viewSettings.active {
   display: block !important;
-  overflow: hidden !important;
-  overscroll-behavior: none !important;
 }
 
 #viewSettings:not(.active) {
   display: none !important;
-}
-
-/* ── Rock-Solid Zero-Scroll Settings Mode (Prevents screen movement / bounce) ── */
-body.view-settings-active,
-html:has(body.view-settings-active) {
-  overflow: hidden !important;
-  overscroll-behavior: none !important;
-  touch-action: pan-x !important;
-}
-
-body.view-settings-active .app-shell {
-  overflow: hidden !important;
-  overscroll-behavior: none !important;
-}
-
-#viewSettings input,
-#viewSettings select,
-#viewSettings button,
-#viewSettings a,
-#viewSettings .sub-tab-pill,
-#viewSettings .failover-toggle-label {
-  touch-action: manipulation !important;
 }
 
 /* ── Disabled Select & Control States ── */
