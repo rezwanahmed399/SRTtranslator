@@ -6,11 +6,10 @@
   "server": {
     "androidScheme": "https"
   },
-  "backgroundColor": "#090d16",
   "plugins": {
     "StatusBar": {
-      "style": "DARK",
-      "backgroundColor": "#070a13",
+      "style": "LIGHT",
+      "backgroundColor": "#ffffff",
       "overlaysWebView": false
     }
   }
