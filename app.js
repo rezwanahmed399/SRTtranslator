@@ -6344,36 +6344,6 @@ function buildCustomSelect(selectEl) {
   });
   menu.appendChild(sheetHeader);
 
-  // If selecting Language, provide Quick Pinned Popular Chips on top
-  if (selectId === 'targetLang') {
-    const pinnedWrap = document.createElement('div');
-    pinnedWrap.className = 'custom-select-pinned-wrap';
-    pinnedWrap.innerHTML = `
-      <span class="pinned-label">⭐ Quick Pick:</span>
-      <div class="pinned-chips-scroll">
-        <button type="button" class="pinned-lang-chip" data-val="Bengali">Bengali (বাংলা)</button>
-        <button type="button" class="pinned-lang-chip" data-val="Hindi">Hindi (हिन्दी)</button>
-        <button type="button" class="pinned-lang-chip" data-val="English">English</button>
-        <button type="button" class="pinned-lang-chip" data-val="Spanish">Spanish (Español)</button>
-        <button type="button" class="pinned-lang-chip" data-val="Arabic">Arabic (العربية)</button>
-        <button type="button" class="pinned-lang-chip" data-val="Japanese">Japanese (日本語)</button>
-      </div>
-    `;
-    pinnedWrap.querySelectorAll('.pinned-lang-chip').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        triggerHaptic('light');
-        const v = btn.dataset.val;
-        selectEl.value = v;
-        const opt = Array.from(selectEl.options).find(o => o.value === v);
-        trigger.querySelector('.custom-select-value').textContent = opt ? opt.text : v;
-        selectEl.dispatchEvent(new Event('change', { bubbles: true }));
-        closeAllCustomSelects();
-      });
-    });
-    menu.appendChild(pinnedWrap);
-  }
-
   const totalOptionsCount = selectEl.options.length;
   let searchInput = null;
 
