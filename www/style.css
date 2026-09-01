@@ -9906,4 +9906,34 @@ button:active:not(:disabled),
   100% { left: 70%; width: 30%; }
 }
 
+/* Auth Sync Card Success Complete State */
+.auth-sync-overlay.success .modal-top-accent {
+  background: linear-gradient(90deg, #10b981, #06b6d4) !important;
+}
+
+.auth-sync-overlay.success .auth-sync-icon-wrap {
+  background: rgba(16, 185, 129, 0.15) !important;
+  border-color: rgba(16, 185, 129, 0.35) !important;
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.25);
+  animation: modalPopIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.auth-sync-overlay.success .auth-sync-title {
+  color: #10b981 !important;
+}
+
+[data-theme="light"] .auth-sync-overlay.success .auth-sync-title {
+  color: #059669 !important;
+}
+
+.auth-sync-overlay.success .auth-sync-progress-fill {
+  width: 100% !important;
+  left: 0 !important;
+  animation: none !important;
+  background: linear-gradient(90deg, #10b981, #06b6d4) !important;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+  transition: width 0.3s ease, background 0.3s ease;
+}
+
+
 

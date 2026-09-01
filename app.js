@@ -6880,13 +6880,37 @@ function initFirebaseAuthAndCloudSync() {
   function hideAuthSyncLoading() {
     const overlay = document.getElementById('authSyncOverlay');
     if (overlay) {
-      overlay.classList.remove('active');
+      overlay.classList.remove('active', 'success');
       setTimeout(() => {
         if (overlay.parentNode && !overlay.classList.contains('active')) {
           overlay.remove();
         }
       }, 250);
     }
+  }
+
+  function completeAuthSyncLoading(userName) {
+    const overlay = document.getElementById('authSyncOverlay');
+    if (!overlay || !overlay.classList.contains('active')) {
+      return;
+    }
+    overlay.classList.add('success');
+    const iconWrap = overlay.querySelector('.auth-sync-icon-wrap');
+    if (iconWrap) {
+      iconWrap.innerHTML = `
+        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 6L9 17l-5-5"/>
+        </svg>
+      `;
+    }
+    const titleEl = overlay.querySelector('#authSyncTitle');
+    if (titleEl) titleEl.textContent = `Signed in as ${userName}`;
+    const statusEl = overlay.querySelector('#authSyncStatus');
+    if (statusEl) statusEl.textContent = 'All API keys & cloud history synced!';
+
+    setTimeout(() => {
+      hideAuthSyncLoading();
+    }, 1300);
   }
 
   // Handle Google Sign-In
@@ -7086,11 +7110,10 @@ function initFirebaseAuthAndCloudSync() {
         await renderCloudHistoryUI();
       } finally {
         isRestoringCloudData = false;
-        hideAuthSyncLoading();
         updateApiGuardAndHeaderStatus();
         checkReadyToTranslate();
         const userName = user.displayName || user.email?.split('@')[0] || 'User';
-        showToast(`Signed in as ${userName} • Cloud data synced!`);
+        completeAuthSyncLoading(userName);
         if (typeof window.FirebaseCloudSync?.markInitialSyncComplete === 'function') {
           window.FirebaseCloudSync.markInitialSyncComplete();
         }
