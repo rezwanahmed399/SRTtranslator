@@ -7979,7 +7979,7 @@ function getDownloadedFiles() {
     const raw = localStorage.getItem(DOWNLOADS_STORAGE_KEY);
     if (!raw) return [];
     const list = JSON.parse(raw);
-    return Array.isArray(list) ? list : [];
+    return Array.isArray(list) ? list.slice(0, 10) : [];
   } catch (e) {
     return [];
   }
@@ -8016,17 +8016,12 @@ function saveDownloadedFile({ fileName, srtContent, lang = 'Bengali', lines = 0,
   const filtered = list.filter(item => item.fileName !== entry.fileName || (now - item.downloadedAt > 300000));
   filtered.unshift(entry);
 
-  // Keep max 60 files
-  const capped = filtered.slice(0, 60);
+  // Keep ONLY latest 10 files (older files are automatically dropped from the list)
+  const capped = filtered.slice(0, 10);
 
   try {
     localStorage.setItem(DOWNLOADS_STORAGE_KEY, JSON.stringify(capped));
-  } catch (err) {
-    try {
-      const lightweight = capped.slice(0, 25);
-      localStorage.setItem(DOWNLOADS_STORAGE_KEY, JSON.stringify(lightweight));
-    } catch (e) {}
-  }
+  } catch (err) {}
 
   // Trigger Header Button Animation & Update Badge
   triggerHeaderDownloadAnimation();
@@ -8039,20 +8034,29 @@ function saveDownloadedFile({ fileName, srtContent, lang = 'Bengali', lines = 0,
   }
 }
 
-function removeDownloadedFile(id) {
-  const list = getDownloadedFiles();
-  const updated = list.filter(item => item.id !== id);
-  try {
-    localStorage.setItem(DOWNLOADS_STORAGE_KEY, JSON.stringify(updated));
-  } catch (e) {}
-  updateHeaderDownloadsBadge();
-}
+async function syncDownloadsWithDeviceStorage(backdrop, closeFn) {
+  if (!window.Capacitor?.Plugins?.NativeStorage?.verifyFilesExist) return;
+  const currentList = getDownloadedFiles();
+  if (currentList.length === 0) return;
 
-function clearAllDownloadedFiles() {
   try {
-    localStorage.removeItem(DOWNLOADS_STORAGE_KEY);
-  } catch (e) {}
-  updateHeaderDownloadsBadge();
+    const fileNames = currentList.map(item => item.fileName).filter(Boolean);
+    const res = await window.Capacitor.Plugins.NativeStorage.verifyFilesExist({ fileNames });
+    if (res && res.existingMap) {
+      const existingMap = res.existingMap;
+      // Filter out any files that were deleted or moved by user in File Manager
+      const validFiles = currentList.filter(item => existingMap[item.fileName] !== false);
+      if (validFiles.length !== currentList.length) {
+        localStorage.setItem(DOWNLOADS_STORAGE_KEY, JSON.stringify(validFiles.slice(0, 10)));
+        updateHeaderDownloadsBadge();
+        if (backdrop) {
+          renderDownloadsModalContent(backdrop, closeFn);
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('[Sync with device storage failed]', err);
+  }
 }
 
 function updateHeaderDownloadsBadge() {
@@ -8138,13 +8142,6 @@ function showDownloadsManagerModal() {
           </div>
         </div>
         <div class="downloads-header-actions">
-          <button class="btn-downloads-clear" type="button" id="downloadsModalClearAllBtn" title="Clear download list">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;">
-              <polyline points="3 6 5 6 21 6"/>
-              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-            </svg>
-            <span>Clear All</span>
-          </button>
           <button class="btn-downloads-close" type="button" id="downloadsModalCloseBtn" title="Close">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;">
               <line x1="18" y1="6" x2="6" y2="18"/>
@@ -8174,31 +8171,11 @@ function showDownloadsManagerModal() {
     }
   });
 
-  const clearAllBtn = backdrop.querySelector('#downloadsModalClearAllBtn');
-  if (clearAllBtn) {
-    clearAllBtn.addEventListener('click', async () => {
-      const items = getDownloadedFiles();
-      if (items.length === 0) {
-        showToast('No downloads to clear.');
-        return;
-      }
-      const confirmed = await showCustomConfirm({
-        title: 'Clear Download History?',
-        message: 'Are you sure you want to clear your local download list? Saved files on your device will remain intact.',
-        confirmText: 'Clear List',
-        cancelText: 'Cancel',
-        type: 'warning'
-      });
-      if (confirmed) {
-        clearAllDownloadedFiles();
-        showToast('Download list cleared.');
-        renderDownloadsModalContent(backdrop, close);
-      }
-    });
-  }
-
   renderDownloadsModalContent(backdrop, close);
   document.body.appendChild(backdrop);
+
+  // Asynchronously verify files against physical device storage (auto-pruning if deleted in File Manager)
+  syncDownloadsWithDeviceStorage(backdrop, close);
 }
 
 function renderDownloadsModalContent(backdrop, closeFn) {
@@ -8230,7 +8207,7 @@ function renderDownloadsModalContent(backdrop, closeFn) {
     `;
   }
 
-  // 2. Completed Downloads List
+  // 2. Completed Downloads List (Latest 10)
   if (items.length === 0 && activeDownloadsQueue.length === 0) {
     html += `
       <div class="downloads-empty-state">
@@ -8315,12 +8292,6 @@ function renderDownloadsModalContent(backdrop, closeFn) {
             </svg>
             <span>AI Condenser</span>
           </button>
-          <button class="btn-download-delete" type="button" data-id="${item.id}" title="Remove from list">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;color:#ef4444;">
-              <line x1="18" y1="6" x2="6" y2="18"/>
-              <line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>
-          </button>
         </div>
       </div>
     `).join('');
@@ -8401,15 +8372,6 @@ function renderDownloadsModalContent(backdrop, closeFn) {
       }
     });
   });
-
-  container.querySelectorAll('.btn-download-delete').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const id = btn.getAttribute('data-id');
-      removeDownloadedFile(id);
-      renderDownloadsModalContent(backdrop, closeFn);
-      showToast('Removed from downloads.');
-    });
-  });
 }
 
 function initDownloadsManager() {
@@ -8418,6 +8380,8 @@ function initDownloadsManager() {
     headerBtn.addEventListener('click', showDownloadsManagerModal);
   }
   updateHeaderDownloadsBadge();
+  // Auto-sync existing list with device storage in background
+  syncDownloadsWithDeviceStorage();
 }
 
 async function triggerDirectSrtDownload(fileName, srtContent) {

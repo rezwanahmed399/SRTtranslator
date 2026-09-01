@@ -10,6 +10,7 @@ import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
 import androidx.core.content.FileProvider;
+import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
@@ -198,6 +199,53 @@ public class NativeStoragePlugin extends Plugin {
             call.resolve(ret);
         } catch (Exception e) {
             call.reject("Failed to share subtitle: " + e.getMessage(), e);
+        }
+    }
+
+    @PluginMethod
+    public void verifyFilesExist(PluginCall call) {
+        JSArray namesArray = call.getArray("fileNames");
+        if (namesArray == null) {
+            JSObject ret = new JSObject();
+            ret.put("existingMap", new JSObject());
+            call.resolve(ret);
+            return;
+        }
+
+        Context context = getContext();
+        ContentResolver resolver = context.getContentResolver();
+        JSObject existingMap = new JSObject();
+
+        File legacyDownloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+        File legacyTargetFolder = new File(legacyDownloadsDir, SUB_FOLDER);
+
+        try {
+            for (int i = 0; i < namesArray.length(); i++) {
+                String fileName = namesArray.getString(i);
+                if (fileName == null || fileName.trim().isEmpty()) continue;
+
+                boolean exists = false;
+
+                // 1. Direct file existence check in /Download/SRTtranslator/
+                File directFile = new File(legacyTargetFolder, fileName);
+                if (directFile.exists() && directFile.length() > 0) {
+                    exists = true;
+                }
+
+                // 2. MediaStore check for Android 10+ (API 29+)
+                if (!exists && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    exists = isFileNameInMediaStore(resolver, fileName);
+                }
+
+                existingMap.put(fileName, exists);
+            }
+
+            JSObject ret = new JSObject();
+            ret.put("existingMap", existingMap);
+            call.resolve(ret);
+
+        } catch (Exception e) {
+            call.reject("Failed to verify files: " + e.getMessage(), e);
         }
     }
 }

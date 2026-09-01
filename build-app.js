@@ -49,6 +49,7 @@ const cleanOldApks = (dir) => {
 
 cleanOldApks(__dirname);
 cleanOldApks(destDir);
+cleanOldApks(path.join(__dirname, 'android', 'app', 'src', 'main', 'assets', 'public'));
 
 // Generate fresh build metadata in version.json
 const now = new Date();
