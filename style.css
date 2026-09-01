@@ -8533,6 +8533,99 @@ body.is-native-app .provider-tab-pill {
     flex-direction: column !important;
   }
 
+  /* Top Drag Handle for Bottom Sheet */
+  .custom-select-drag-handle {
+    width: 38px !important;
+    height: 4px !important;
+    border-radius: 4px !important;
+    background: rgba(255, 255, 255, 0.25) !important;
+    margin: 0 auto 10px auto !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* Sheet Header with Title & Close */
+  .custom-select-sheet-header {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 0 4px 10px 4px !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+    margin-bottom: 10px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .custom-select-sheet-title {
+    font-size: 1rem !important;
+    font-weight: 700 !important;
+    color: var(--text-main) !important;
+  }
+
+  .btn-sheet-close {
+    background: none !important;
+    border: none !important;
+    color: var(--text-muted) !important;
+    cursor: pointer !important;
+    padding: 4px !important;
+    display: grid !important;
+    place-items: center !important;
+    border-radius: 8px !important;
+  }
+
+  .btn-sheet-close svg {
+    width: 18px !important;
+    height: 18px !important;
+  }
+
+  /* Pinned Quick Pick Languages */
+  .custom-select-pinned-wrap {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 6px !important;
+    padding: 0 4px 10px 4px !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+    margin-bottom: 8px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .pinned-label {
+    font-size: 0.74rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.04em !important;
+    color: #818cf8 !important;
+  }
+
+  .pinned-chips-scroll {
+    display: flex !important;
+    gap: 6px !important;
+    overflow-x: auto !important;
+    scrollbar-width: none !important;
+    padding-bottom: 2px !important;
+  }
+
+  .pinned-chips-scroll::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .pinned-lang-chip {
+    white-space: nowrap !important;
+    font-size: 0.80rem !important;
+    font-weight: 600 !important;
+    padding: 6px 12px !important;
+    border-radius: 12px !important;
+    background: rgba(99, 102, 241, 0.12) !important;
+    border: 1px solid rgba(99, 102, 241, 0.28) !important;
+    color: #c7d2fe !important;
+    cursor: pointer !important;
+    transition: all 0.15s ease !important;
+    flex-shrink: 0 !important;
+  }
+
+  .pinned-lang-chip:active {
+    transform: scale(0.95) !important;
+    background: rgba(99, 102, 241, 0.25) !important;
+  }
+
   body.is-native-app .custom-select-container.is-open::before,
   .is-native-app .custom-select-container.is-open::before {
     content: '' !important;
@@ -8661,6 +8754,203 @@ body.is-native-app .app-view.active {
     transform: translateY(0);
   }
 }
+
+/* 10. Native Settings Categorized Sub-Screens & Hub */
+.native-settings-hub {
+  display: none;
+}
+
+.native-back-nav-bar {
+  display: none;
+}
+
+body.is-native-app .desktop-settings-tabs {
+  display: none !important;
+}
+
+body.is-native-app .native-settings-hub {
+  display: block !important;
+  margin-bottom: 20px !important;
+}
+
+body.is-native-app.in-settings-subscreen .native-settings-hub {
+  display: none !important;
+}
+
+body.is-native-app:not(.in-settings-subscreen) #subViewApiKeys,
+body.is-native-app:not(.in-settings-subscreen) #subViewHistory {
+  display: none !important;
+}
+
+/* Back Navigation Header inside Sub-Screens */
+body.is-native-app.in-settings-subscreen .native-back-nav-bar {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 12px 16px !important;
+  margin-bottom: 16px !important;
+  background: rgba(15, 23, 42, 0.9) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 16px !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+}
+
+.settings-hub-banner {
+  padding: 18px 16px;
+  background: rgba(15, 23, 42, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  margin-bottom: 14px;
+}
+
+.settings-hub-banner h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+  color: var(--text-main);
+}
+
+.settings-hub-banner p {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.settings-hub-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.settings-hub-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 16px;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  text-align: left;
+  width: 100%;
+}
+
+.settings-hub-item:active {
+  transform: scale(0.98);
+  background: rgba(30, 41, 59, 0.95);
+  border-color: rgba(99, 102, 241, 0.3);
+}
+
+.hub-item-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.hub-icon-wrap {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.hub-icon-wrap svg {
+  width: 22px;
+  height: 22px;
+}
+
+.hub-icon-wrap.icon-key {
+  background: rgba(99, 102, 241, 0.16);
+  color: #818cf8;
+}
+
+.hub-icon-wrap.icon-health {
+  background: rgba(16, 185, 129, 0.16);
+  color: #34d399;
+}
+
+.hub-icon-wrap.icon-cloud {
+  background: rgba(56, 189, 248, 0.16);
+  color: #38bdf8;
+}
+
+.hub-icon-wrap.icon-info {
+  background: rgba(148, 163, 184, 0.16);
+  color: #94a3b8;
+}
+
+.hub-item-copy {
+  min-width: 0;
+}
+
+.hub-item-copy h4 {
+  font-size: 0.98rem;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 2px;
+}
+
+.hub-item-copy p {
+  font-size: 0.80rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hub-item-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  margin-left: 10px;
+}
+
+.hub-status-pill {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 8px;
+  background: rgba(99, 102, 241, 0.12);
+  color: #818cf8;
+}
+
+.hub-arrow {
+  width: 16px;
+  height: 16px;
+  color: var(--text-muted);
+}
+
+.btn-native-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  color: #818cf8;
+  font-size: 0.90rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 0;
+}
+
+.btn-native-back svg {
+  width: 20px;
+  height: 20px;
+}
+
+.native-subscreen-title {
+  font-size: 0.90rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
 
 
 

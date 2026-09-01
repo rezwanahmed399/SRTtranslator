@@ -595,10 +595,16 @@ function initNativeAppIntegrations() {
           return;
         }
 
-        // If a dropdown is open, close it
+        // If a dropdown / bottom sheet is open, close it
         const openDropdown = document.querySelector('.custom-select-container.is-open');
         if (openDropdown) {
           closeAllCustomSelects();
+          return;
+        }
+
+        // If in a Settings sub-screen, return to Settings Hub
+        if (document.body.classList.contains('in-settings-subscreen')) {
+          closeSettingsSubScreen();
           return;
         }
 
@@ -968,6 +974,103 @@ function switchSettingsSubTab(subTabId) {
     if (panelApiKeys) panelApiKeys.classList.add('active');
     if (panelHistory) panelHistory.classList.remove('active');
   }
+}
+
+// ── Native Mobile Settings Hub & Sub-Screen Navigator ──
+function openSettingsSubScreen(screenId) {
+  triggerHaptic('light');
+  document.body.classList.add('in-settings-subscreen');
+  
+  const backNav = $('nativeSettingsBackNav');
+  const titleEl = $('nativeSubscreenTitle');
+  if (backNav) backNav.classList.remove('hidden');
+
+  const authSection = $('authSettingsSection');
+  const apiSection = $('apiSection');
+  const checklistSection = $('apiRequiredChecklist');
+  const appInfoSection = $('appInfoSection');
+  const cloudHistorySection = $('cloudHistorySection');
+
+  // Reset internal visibility
+  if (authSection) authSection.style.display = '';
+  if (apiSection) apiSection.style.display = '';
+  if (checklistSection) checklistSection.style.display = '';
+  if (appInfoSection) appInfoSection.style.display = '';
+  if (cloudHistorySection) cloudHistorySection.style.display = '';
+
+  if (screenId === 'providers') {
+    if (titleEl) titleEl.textContent = 'AI Providers & API Keys';
+    switchSettingsSubTab('apikeys');
+    if (authSection) authSection.style.display = 'none';
+    if (checklistSection) checklistSection.style.display = 'none';
+    if (appInfoSection) appInfoSection.style.display = 'none';
+    if (apiSection) {
+      apiSection.style.display = 'block';
+      apiSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  } else if (screenId === 'status') {
+    if (titleEl) titleEl.textContent = 'Required AI Keys Status';
+    switchSettingsSubTab('apikeys');
+    if (authSection) authSection.style.display = 'none';
+    if (apiSection) apiSection.style.display = 'none';
+    if (appInfoSection) appInfoSection.style.display = 'none';
+    if (checklistSection) {
+      checklistSection.style.display = 'block';
+      checklistSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  } else if (screenId === 'history') {
+    if (titleEl) titleEl.textContent = 'Subtitle History & Sync';
+    switchSettingsSubTab('history');
+    if (cloudHistorySection) {
+      cloudHistorySection.style.display = 'block';
+      cloudHistorySection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  } else if (screenId === 'appinfo') {
+    if (titleEl) titleEl.textContent = 'App Info & Preferences';
+    switchSettingsSubTab('apikeys');
+    if (authSection) authSection.style.display = 'none';
+    if (apiSection) apiSection.style.display = 'none';
+    if (checklistSection) checklistSection.style.display = 'none';
+    if (appInfoSection) {
+      appInfoSection.style.display = 'block';
+      appInfoSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+}
+
+function closeSettingsSubScreen() {
+  triggerHaptic('light');
+  document.body.classList.remove('in-settings-subscreen');
+  const backNav = $('nativeSettingsBackNav');
+  if (backNav) backNav.classList.add('hidden');
+
+  const authSection = $('authSettingsSection');
+  const apiSection = $('apiSection');
+  const checklistSection = $('apiRequiredChecklist');
+  const appInfoSection = $('appInfoSection');
+  const cloudHistorySection = $('cloudHistorySection');
+
+  if (authSection) authSection.style.display = '';
+  if (apiSection) apiSection.style.display = '';
+  if (checklistSection) checklistSection.style.display = '';
+  if (appInfoSection) appInfoSection.style.display = '';
+  if (cloudHistorySection) cloudHistorySection.style.display = '';
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function initNativeSettingsHub() {
+  const hubItemProviders = $('hubItemProviders');
+  const hubItemStatus = $('hubItemStatus');
+  const hubItemHistory = $('hubItemHistory');
+  const hubItemAppInfo = $('hubItemAppInfo');
+  const btnBack = $('btnBackToSettingsHub');
+
+  if (hubItemProviders) hubItemProviders.addEventListener('click', () => openSettingsSubScreen('providers'));
+  if (hubItemStatus) hubItemStatus.addEventListener('click', () => openSettingsSubScreen('status'));
+  if (hubItemHistory) hubItemHistory.addEventListener('click', () => openSettingsSubScreen('history'));
+  if (hubItemAppInfo) hubItemAppInfo.addEventListener('click', () => openSettingsSubScreen('appinfo'));
+  if (btnBack) btnBack.addEventListener('click', closeSettingsSubScreen);
 }
 
 function hasGeminiApiKey() {
@@ -2861,6 +2964,9 @@ function setupEventListeners() {
   if (subTabBtnWorkspace) subTabBtnWorkspace.addEventListener('click', () => switchTranslatorSubTab('workspace'));
   if (subTabBtnApiKeys) subTabBtnApiKeys.addEventListener('click', () => switchSettingsSubTab('apikeys'));
   if (subTabBtnHistory) subTabBtnHistory.addEventListener('click', () => switchSettingsSubTab('history'));
+
+  // Initialize Native Mobile Settings Hub Navigation
+  initNativeSettingsHub();
 
   if (resetSessionDataBtn) {
     resetSessionDataBtn.addEventListener('click', async () => {
@@ -6172,10 +6278,65 @@ function buildCustomSelect(selectEl) {
     </svg>
   `;
 
-  // Floating Dropdown Menu
+  // Floating Dropdown Menu (Bottom Sheet on Mobile)
   const menu = document.createElement('div');
   menu.className = 'custom-select-menu';
   menu.setAttribute('role', 'listbox');
+
+  // Native Bottom Sheet Top Drag Handle & Title Header
+  const dragHandle = document.createElement('div');
+  dragHandle.className = 'custom-select-drag-handle';
+  menu.appendChild(dragHandle);
+
+  let sheetTitleText = 'Select an Option';
+  if (selectId === 'targetLang') sheetTitleText = 'Select Target Language';
+  else if (selectId === 'modelSelect') sheetTitleText = 'Select AI Model';
+  else if (selectId === 'styleMode') sheetTitleText = 'Select Subtitle Pacing';
+  else if (selectId === 'providerSelect') sheetTitleText = 'Select AI Provider';
+
+  const sheetHeader = document.createElement('div');
+  sheetHeader.className = 'custom-select-sheet-header';
+  sheetHeader.innerHTML = `
+    <span class="custom-select-sheet-title">${escapeHtml(sheetTitleText)}</span>
+    <button type="button" class="btn-sheet-close" title="Close">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  `;
+  sheetHeader.querySelector('.btn-sheet-close').addEventListener('click', (e) => {
+    e.stopPropagation();
+    closeAllCustomSelects();
+  });
+  menu.appendChild(sheetHeader);
+
+  // If selecting Language, provide Quick Pinned Popular Chips on top
+  if (selectId === 'targetLang') {
+    const pinnedWrap = document.createElement('div');
+    pinnedWrap.className = 'custom-select-pinned-wrap';
+    pinnedWrap.innerHTML = `
+      <span class="pinned-label">⭐ Quick Pick:</span>
+      <div class="pinned-chips-scroll">
+        <button type="button" class="pinned-lang-chip" data-val="Bengali">Bengali (বাংলা)</button>
+        <button type="button" class="pinned-lang-chip" data-val="Hindi">Hindi (हिन्दी)</button>
+        <button type="button" class="pinned-lang-chip" data-val="English">English</button>
+        <button type="button" class="pinned-lang-chip" data-val="Spanish">Spanish (Español)</button>
+        <button type="button" class="pinned-lang-chip" data-val="Arabic">Arabic (العربية)</button>
+        <button type="button" class="pinned-lang-chip" data-val="Japanese">Japanese (日本語)</button>
+      </div>
+    `;
+    pinnedWrap.querySelectorAll('.pinned-lang-chip').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        triggerHaptic('light');
+        const v = btn.dataset.val;
+        selectEl.value = v;
+        const opt = Array.from(selectEl.options).find(o => o.value === v);
+        trigger.querySelector('.custom-select-value').textContent = opt ? opt.text : v;
+        selectEl.dispatchEvent(new Event('change', { bubbles: true }));
+        closeAllCustomSelects();
+      });
+    });
+    menu.appendChild(pinnedWrap);
+  }
 
   const totalOptionsCount = selectEl.options.length;
   let searchInput = null;
@@ -6188,7 +6349,7 @@ function buildCustomSelect(selectEl) {
         <circle cx="11" cy="11" r="8"></circle>
         <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
       </svg>
-      <input type="text" class="custom-select-search-input" placeholder="Search..." autocomplete="off" />
+      <input type="text" class="custom-select-search-input" placeholder="Search language or model..." autocomplete="off" />
     `;
     menu.appendChild(searchWrap);
     searchInput = searchWrap.querySelector('input');
