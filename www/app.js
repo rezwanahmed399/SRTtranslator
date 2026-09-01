@@ -10,12 +10,13 @@ const AI_PROVIDERS = {
     storageKey: 'gemini_api_key',
     docLink: 'https://aistudio.google.com/app/apikey',
     type: 'gemini',
-    defaultModel: 'gemini-2.5-flash',
+    defaultModel: 'gemini-2.0-flash-lite',
     badge: 'Required',
     models: [
+      { id: 'gemini-2.0-flash-lite', displayName: 'Gemini 2.0 Flash Lite', version: '2.0', inputTokens: 1048576, outputTokens: 8192, rpm: '30 RPM', rpd: '1,500 RPD', desc: 'Ultra-Fast High Throughput Lite (Google AI)' },
       { id: 'gemini-2.5-flash', displayName: 'Gemini 2.5 Flash', version: '2.5', inputTokens: 1048576, outputTokens: 8192, rpm: '15 RPM', rpd: '1,500 RPD', desc: 'Latest Ultra-Fast High Quality (Google AI)' },
-      { id: 'gemini-2.5-pro', displayName: 'Gemini 2.5 Pro', version: '2.5', inputTokens: 2097152, outputTokens: 8192, rpm: '5 RPM', rpd: '1,000 RPD', desc: 'Flagship Pro Reasoning (Google AI)' },
       { id: 'gemini-2.0-flash', displayName: 'Gemini 2.0 Flash', version: '2.0', inputTokens: 1048576, outputTokens: 8192, rpm: '15 RPM', rpd: '1,500 RPD', desc: 'Stable Production Gemini (Google AI)' },
+      { id: 'gemini-2.5-pro', displayName: 'Gemini 2.5 Pro', version: '2.5', inputTokens: 2097152, outputTokens: 8192, rpm: '5 RPM', rpd: '1,000 RPD', desc: 'Flagship Pro Reasoning (Google AI)' },
       { id: 'gemini-1.5-flash', displayName: 'Gemini 1.5 Flash', version: '1.5', inputTokens: 1048576, outputTokens: 8192, rpm: '15 RPM', rpd: '1,500 RPD', desc: 'Reliable Production Flash' },
       { id: 'gemini-1.5-pro', displayName: 'Gemini 1.5 Pro', version: '1.5', inputTokens: 2097152, outputTokens: 8192, rpm: '5 RPM', rpd: '1,000 RPD', desc: 'Pro Deep Context Reasoning' }
     ]
@@ -30,10 +31,12 @@ const AI_PROVIDERS = {
     defaultModel: 'anthropic/claude-3.7-sonnet',
     badge: 'Required',
     models: [
+      { id: 'google/gemini-2.0-flash-lite', displayName: 'Gemini 2.0 Flash Lite (OpenRouter)', version: '2.0', inputTokens: 1048576, outputTokens: 8192, rpm: 'Dynamic', rpd: 'Unlimited', desc: 'Ultra-Light via OpenRouter' },
+      { id: 'google/gemini-3.0-flash-lite', displayName: 'Gemini 3.0 Flash Lite (OpenRouter)', version: '3.0', inputTokens: 1048576, outputTokens: 8192, rpm: 'Dynamic', rpd: 'Unlimited', desc: 'Ultra-Light via OpenRouter' },
+      { id: 'google/gemini-2.5-flash', displayName: 'Gemini 2.5 Flash (OpenRouter)', version: '2.5', inputTokens: 1048576, outputTokens: 8192, rpm: 'Dynamic', rpd: 'Unlimited', desc: 'Ultra-Fast High Quality via OpenRouter' },
+      { id: 'google/gemini-2.0-flash', displayName: 'Gemini 2.0 Flash (OpenRouter)', version: '2.0', inputTokens: 1048576, outputTokens: 8192, rpm: 'Dynamic', rpd: 'Unlimited', desc: 'Ultra-Fast via OpenRouter' },
       { id: 'google/gemini-3.5-pro', displayName: 'Gemini 3.5 Pro (OpenRouter)', version: '3.5', inputTokens: 2097152, outputTokens: 8192, rpm: 'Dynamic', rpd: 'Unlimited', desc: 'Top Nuance Reasoning via OpenRouter' },
       { id: 'google/gemini-3.5-flash', displayName: 'Gemini 3.5 Flash (OpenRouter)', version: '3.5', inputTokens: 1048576, outputTokens: 8192, rpm: 'Dynamic', rpd: 'Unlimited', desc: 'Ultra-Fast High Quality via OpenRouter' },
-      { id: 'google/gemini-3.0-flash', displayName: 'Gemini 3.0 Flash (OpenRouter)', version: '3.0', inputTokens: 1048576, outputTokens: 8192, rpm: 'Dynamic', rpd: 'Unlimited', desc: 'Ultra-Fast via OpenRouter' },
-      { id: 'google/gemini-3.0-flash-lite', displayName: 'Gemini 3.0 Flash Lite (OpenRouter)', version: '3.0', inputTokens: 1048576, outputTokens: 8192, rpm: 'Dynamic', rpd: 'Unlimited', desc: 'Ultra-Light via OpenRouter' },
       { id: 'anthropic/claude-3.7-sonnet', displayName: 'Claude 3.7 Sonnet', version: '3.7', inputTokens: 200000, outputTokens: 8192, rpm: 'Dynamic', rpd: 'Unlimited', desc: 'Flagship Cinematic Subtitles' },
       { id: 'anthropic/claude-3.5-sonnet', displayName: 'Claude 3.5 Sonnet', version: '3.5', inputTokens: 200000, outputTokens: 8192, rpm: 'Dynamic', rpd: 'Unlimited', desc: 'Top Dialogue Flow' },
       { id: 'deepseek/deepseek-chat', displayName: 'DeepSeek V3 (Chat)', version: 'V3', inputTokens: 64000, outputTokens: 8192, rpm: 'Dynamic', rpd: 'Unlimited', desc: 'Top Multilingual Subtitles' },
@@ -101,26 +104,30 @@ const AI_PROVIDERS = {
 // ── Translation Quality & Auto-Switch Priority Hierarchy ──
 // Ranked by: Dialogue translation naturalness, nuance/slang retention, speed, and rate-limit resilience
 const TRANSLATION_MODEL_RANKING = [
-  // ── Tier 1A: Google Gemini (Direct) Pro & Flash Models ──
-  { providerId: 'gemini', modelId: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro', tier: 'Tier 1A (Gemini Pro)', desc: 'Next-Gen Flagship Pro Reasoning (Google AI)' },
-  { providerId: 'gemini', modelId: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', tier: 'Tier 1A (Gemini Flash)', desc: 'Latest Ultra-Fast High Quality (Google AI)' },
-  { providerId: 'gemini', modelId: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash', tier: 'Tier 1A (Gemini Flash)', desc: 'Stable Production Gemini (Google AI)' },
-  { providerId: 'gemini', modelId: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash', tier: 'Tier 1A (Gemini Flash)', desc: 'Reliable Production Flash (Google AI)' },
-  { providerId: 'gemini', modelId: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro', tier: 'Tier 1A (Gemini Pro)', desc: 'Pro Deep Context Reasoning (Google AI)' },
+  // ── Tier 1A: Google Gemini (Direct) Lite Models (First Priority) ──
+  { providerId: 'gemini', modelId: 'gemini-2.0-flash-lite', name: 'Gemini 2.0 Flash Lite', tier: 'Tier 1A (Gemini Lite)', desc: 'Ultra-Fast 30 RPM Lite (Google AI)' },
 
-  // ── Tier 1B: Google Gemini (Direct) Lite Models ──
-  { providerId: 'gemini', modelId: 'gemini-2.0-flash-lite', name: 'Gemini 2.0 Flash Lite', tier: 'Tier 1B (Gemini Lite)', desc: 'Gemini Ultra-Fast Lite' },
+  // ── Tier 1B: Google Gemini (Direct) Flash & Pro Models ──
+  { providerId: 'gemini', modelId: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', tier: 'Tier 1B (Gemini Flash)', desc: 'Latest Ultra-Fast High Quality (Google AI)' },
+  { providerId: 'gemini', modelId: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash', tier: 'Tier 1B (Gemini Flash)', desc: 'Stable Production Gemini (Google AI)' },
+  { providerId: 'gemini', modelId: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro', tier: 'Tier 1B (Gemini Pro)', desc: 'Next-Gen Flagship Pro Reasoning (Google AI)' },
+  { providerId: 'gemini', modelId: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash', tier: 'Tier 1B (Gemini Flash)', desc: 'Reliable Production Flash (Google AI)' },
+  { providerId: 'gemini', modelId: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro', tier: 'Tier 1B (Gemini Pro)', desc: 'Pro Deep Context Reasoning (Google AI)' },
 
-  // ── Tier 2A: OpenRouter Gemini Models ──
-  { providerId: 'openrouter', modelId: 'google/gemini-2.5-pro', name: 'Gemini 2.5 Pro (OpenRouter)', tier: 'Tier 2A (OpenRouter Gemini)', desc: 'Top Nuance via OpenRouter' },
-  { providerId: 'openrouter', modelId: 'google/gemini-2.5-flash', name: 'Gemini 2.5 Flash (OpenRouter)', tier: 'Tier 2A (OpenRouter Gemini)', desc: 'Next-Gen Speed via OpenRouter' },
-  { providerId: 'openrouter', modelId: 'google/gemini-2.0-flash', name: 'Gemini 2.0 Flash (OpenRouter)', tier: 'Tier 2A (OpenRouter Gemini)', desc: 'Ultra-Fast via OpenRouter' },
+  // ── Tier 2A: OpenRouter Gemini Lite Models (First Priority for OpenRouter Gemini) ──
+  { providerId: 'openrouter', modelId: 'google/gemini-2.0-flash-lite', name: 'Gemini 2.0 Flash Lite (OpenRouter)', tier: 'Tier 2A (OpenRouter Gemini Lite)', desc: 'Ultra-Light via OpenRouter' },
+  { providerId: 'openrouter', modelId: 'google/gemini-3.0-flash-lite', name: 'Gemini 3.0 Flash Lite (OpenRouter)', tier: 'Tier 2A (OpenRouter Gemini Lite)', desc: 'Ultra-Light via OpenRouter' },
 
-  // ── Tier 2B: OpenRouter Other Top Cinematic / Dialogue AI Models ──
-  { providerId: 'openrouter', modelId: 'deepseek/deepseek-chat', name: 'DeepSeek V3 (OpenRouter)', tier: 'Tier 2B (OpenRouter DeepSeek)', desc: 'Top Cinematic Dialogue & Idioms' },
-  { providerId: 'openrouter', modelId: 'meta-llama/llama-3.3-70b-instruct', name: 'Meta Llama 3.3 70B (OpenRouter)', tier: 'Tier 2B (OpenRouter Llama)', desc: 'Natural Conversational Flow' },
-  { providerId: 'openrouter', modelId: 'anthropic/claude-3.5-haiku', name: 'Claude 3.5 Haiku (OpenRouter)', tier: 'Tier 2B (OpenRouter Claude)', desc: 'Natural Spoken Dubbing' },
-  { providerId: 'openrouter', modelId: 'deepseek/deepseek-r1', name: 'DeepSeek R1 (OpenRouter)', tier: 'Tier 2B (OpenRouter Reasoning)', desc: 'Deep Reasoning for Ambiguous Lines' },
+  // ── Tier 2B: OpenRouter Gemini Flash & Pro Models ──
+  { providerId: 'openrouter', modelId: 'google/gemini-2.5-flash', name: 'Gemini 2.5 Flash (OpenRouter)', tier: 'Tier 2B (OpenRouter Gemini Flash)', desc: 'Next-Gen Speed via OpenRouter' },
+  { providerId: 'openrouter', modelId: 'google/gemini-2.0-flash', name: 'Gemini 2.0 Flash (OpenRouter)', tier: 'Tier 2B (OpenRouter Gemini Flash)', desc: 'Ultra-Fast via OpenRouter' },
+  { providerId: 'openrouter', modelId: 'google/gemini-2.5-pro', name: 'Gemini 2.5 Pro (OpenRouter)', tier: 'Tier 2B (OpenRouter Gemini Pro)', desc: 'Top Nuance via OpenRouter' },
+
+  // ── Tier 2C: OpenRouter Other Top Cinematic / Dialogue AI Models ──
+  { providerId: 'openrouter', modelId: 'deepseek/deepseek-chat', name: 'DeepSeek V3 (OpenRouter)', tier: 'Tier 2C (OpenRouter DeepSeek)', desc: 'Top Cinematic Dialogue & Idioms' },
+  { providerId: 'openrouter', modelId: 'meta-llama/llama-3.3-70b-instruct', name: 'Meta Llama 3.3 70B (OpenRouter)', tier: 'Tier 2C (OpenRouter Llama)', desc: 'Natural Conversational Flow' },
+  { providerId: 'openrouter', modelId: 'anthropic/claude-3.5-haiku', name: 'Claude 3.5 Haiku (OpenRouter)', tier: 'Tier 2C (OpenRouter Claude)', desc: 'Natural Spoken Dubbing' },
+  { providerId: 'openrouter', modelId: 'deepseek/deepseek-r1', name: 'DeepSeek R1 (OpenRouter)', tier: 'Tier 2C (OpenRouter Reasoning)', desc: 'Deep Reasoning for Ambiguous Lines' },
 
   // ── Tier 3: Groq High-Speed Models ──
   { providerId: 'groq', modelId: 'llama-3.3-70b-versatile', name: 'Groq Llama 3.3 70B', tier: 'Tier 3 (Groq)', desc: '14,400 RPD • 300 tok/s' },
@@ -1435,20 +1442,21 @@ async function verifyAndLoadProvider(providerId, key) {
         throw new Error('No compatible translation models available for this Gemini API Key.');
       }
 
-      // Dynamic real-time sorting by mathematical version number descending (e.g. 10.0 > 6.0 > 5.0 > 4.5 > 4.0 > 3.5 > 3.0)
+      // Dynamic real-time sorting by mathematical version number descending; Lite models prioritized first
       textModels.sort((a, b) => {
         const idA = a.name.replace(/^models\//, '').toLowerCase();
         const idB = b.name.replace(/^models\//, '').toLowerCase();
-        const vA = getGeminiVersionNumber(idA);
-        const vB = getGeminiVersionNumber(idB);
-        if (vB !== vA) return vB - vA;
         const score = (id) => {
-          if (id.includes('pro')) return 3;
-          if (id.includes('flash') && !id.includes('lite')) return 2;
-          if (id.includes('lite')) return 1;
+          if (id.includes('lite')) return 3;
+          if (id.includes('flash')) return 2;
+          if (id.includes('pro')) return 1;
           return 0;
         };
-        return score(idB) - score(idA);
+        const scoreDiff = score(idB) - score(idA);
+        if (scoreDiff !== 0) return scoreDiff;
+        const vA = getGeminiVersionNumber(idA);
+        const vB = getGeminiVersionNumber(idB);
+        return vB - vA;
       });
 
       loadedModels = textModels.map(m => {
@@ -2193,23 +2201,8 @@ function resolveRealTimeBestModel() {
     }
   }
 
-  // 1. Phase 1: Google Gemini Pro & Flash (Highest Version to Lowest, Dynamic)
+  // 1. Phase 1: Google Gemini Lite Models (First Priority: Highest Version to Lowest, Dynamic)
   if (state.apiKeys.gemini && state.providerStatus.gemini?.connected !== false) {
-    const proFlashList = getAllGeminiProFlashModels('gemini');
-    for (const mId of proFlashList) {
-      if (modelHealthTracker.isAvailable('gemini', mId)) {
-        const mObj = (AI_PROVIDERS.gemini.models || []).find(m => m.id === mId) || 
-                     (state.providerStatus.gemini?.models || []).find(m => m.id === mId) || { displayName: mId };
-        return {
-          providerId: 'gemini',
-          model: mId,
-          key: state.apiKeys.gemini,
-          displayName: mObj.displayName || mId
-        };
-      }
-    }
-
-    // 2. Phase 2: Google Gemini Lite (Highest Version to Lowest, Dynamic)
     const liteList = getAllGeminiLiteModels('gemini');
     for (const mId of liteList) {
       if (modelHealthTracker.isAvailable('gemini', mId)) {
@@ -2223,24 +2216,25 @@ function resolveRealTimeBestModel() {
         };
       }
     }
-  }
 
-  // 3. Phase 3: OpenRouter Gemini Pro/Flash & Lite (Highest Version to Lowest, Dynamic)
-  if (state.apiKeys.openrouter && state.providerStatus.openrouter?.connected !== false) {
-    const orProFlash = getAllGeminiProFlashModels('openrouter');
-    for (const mId of orProFlash) {
-      if (modelHealthTracker.isAvailable('openrouter', mId)) {
-        const mObj = (AI_PROVIDERS.openrouter.models || []).find(m => m.id === mId) || 
-                     (state.providerStatus.openrouter?.models || []).find(m => m.id === mId) || { displayName: mId };
+    // 2. Phase 2: Google Gemini Pro & Flash Models (Highest Version to Lowest, Dynamic)
+    const proFlashList = getAllGeminiProFlashModels('gemini');
+    for (const mId of proFlashList) {
+      if (modelHealthTracker.isAvailable('gemini', mId)) {
+        const mObj = (AI_PROVIDERS.gemini.models || []).find(m => m.id === mId) || 
+                     (state.providerStatus.gemini?.models || []).find(m => m.id === mId) || { displayName: mId };
         return {
-          providerId: 'openrouter',
+          providerId: 'gemini',
           model: mId,
-          key: state.apiKeys.openrouter,
+          key: state.apiKeys.gemini,
           displayName: mObj.displayName || mId
         };
       }
     }
+  }
 
+  // 3. Phase 3: OpenRouter Gemini Lite Models (First Priority for OpenRouter: Highest Version to Lowest, Dynamic)
+  if (state.apiKeys.openrouter && state.providerStatus.openrouter?.connected !== false) {
     const orLite = getAllGeminiLiteModels('openrouter');
     for (const mId of orLite) {
       if (modelHealthTracker.isAvailable('openrouter', mId)) {
@@ -2254,9 +2248,24 @@ function resolveRealTimeBestModel() {
         };
       }
     }
+
+    // 4. Phase 4: OpenRouter Gemini Pro & Flash Models (Highest Version to Lowest, Dynamic)
+    const orProFlash = getAllGeminiProFlashModels('openrouter');
+    for (const mId of orProFlash) {
+      if (modelHealthTracker.isAvailable('openrouter', mId)) {
+        const mObj = (AI_PROVIDERS.openrouter.models || []).find(m => m.id === mId) || 
+                     (state.providerStatus.openrouter?.models || []).find(m => m.id === mId) || { displayName: mId };
+        return {
+          providerId: 'openrouter',
+          model: mId,
+          key: state.apiKeys.openrouter,
+          displayName: mObj.displayName || mId
+        };
+      }
+    }
   }
 
-  // 4. Phase 4: Non-Gemini models from TRANSLATION_MODEL_RANKING (OpenRouter DeepSeek/Llama/Claude -> Groq -> DeepSeek Official -> OpenAI -> Custom)
+  // 5. Phase 5: Non-Gemini models from TRANSLATION_MODEL_RANKING (OpenRouter DeepSeek/Llama/Claude -> Groq -> DeepSeek Official -> OpenAI -> Custom)
   for (const entry of TRANSLATION_MODEL_RANKING) {
     const pid = entry.providerId;
     const mid = entry.modelId;
@@ -2272,7 +2281,7 @@ function resolveRealTimeBestModel() {
     }
   }
 
-  // 5. Fallback to other connected providers
+  // 6. Fallback to other connected providers
   for (const pid of ['openrouter', 'groq', 'deepseek', 'openai', 'custom']) {
     if (state.apiKeys[pid] && state.providerStatus[pid]?.connected) {
       return {
@@ -2284,7 +2293,7 @@ function resolveRealTimeBestModel() {
     }
   }
 
-  return { providerId: 'gemini', model: 'gemini-2.5-flash', key: state.apiKeys.gemini || '', displayName: 'Gemini 2.5 Flash' };
+  return { providerId: 'gemini', model: 'gemini-2.0-flash-lite', key: state.apiKeys.gemini || '', displayName: 'Gemini 2.0 Flash Lite' };
 }
 
 function getActiveProviderAndKey(modelId) {
@@ -2332,7 +2341,7 @@ function getActiveProviderAndKey(modelId) {
     }
   }
 
-  return { providerId: 'gemini', model: 'gemini-2.5-flash', key: state.apiKeys.gemini || '' };
+  return { providerId: 'gemini', model: 'gemini-2.0-flash-lite', key: state.apiKeys.gemini || '' };
 }
 
 function findFailoverBackup(currentProviderId, currentModelId) {
@@ -2348,26 +2357,8 @@ function findFailoverBackup(currentProviderId, currentModelId) {
     return true;
   }
 
-  // ── RULE 1: Google Gemini Pro & Flash (Highest Version to Lowest, Dynamic) ──
+  // ── RULE 1: Google Gemini Lite (First Priority: Highest Version to Lowest, Dynamic) ──
   if (state.providerStatus.gemini?.connected && state.apiKeys.gemini) {
-    const proFlashList = getAllGeminiProFlashModels('gemini');
-    for (const mId of proFlashList) {
-      if (isModelHealthy('gemini', mId)) {
-        const mObj = (AI_PROVIDERS.gemini.models || []).find(m => m.id === mId) ||
-                     (state.providerStatus.gemini?.models || []).find(m => m.id === mId) || { displayName: mId };
-        return {
-          providerId: 'gemini',
-          providerName: AI_PROVIDERS.gemini.name,
-          model: mId,
-          modelName: mObj.displayName || mId,
-          tier: 'Tier 1A (Gemini Pro/Flash)',
-          desc: mObj.desc || 'High-Precision Translation',
-          key: state.apiKeys.gemini
-        };
-      }
-    }
-
-    // ── RULE 2: Google Gemini Lite (Highest Version to Lowest, Dynamic) ──
     const liteList = getAllGeminiLiteModels('gemini');
     for (const mId of liteList) {
       if (isModelHealthy('gemini', mId)) {
@@ -2378,33 +2369,34 @@ function findFailoverBackup(currentProviderId, currentModelId) {
           providerName: AI_PROVIDERS.gemini.name,
           model: mId,
           modelName: mObj.displayName || mId,
-          tier: 'Tier 1B (Gemini Lite)',
-          desc: mObj.desc || 'High-Speed Translation',
+          tier: 'Tier 1A (Gemini Lite)',
+          desc: mObj.desc || 'Ultra-Fast Lite Translation',
+          key: state.apiKeys.gemini
+        };
+      }
+    }
+
+    // ── RULE 2: Google Gemini Pro & Flash (Highest Version to Lowest, Dynamic) ──
+    const proFlashList = getAllGeminiProFlashModels('gemini');
+    for (const mId of proFlashList) {
+      if (isModelHealthy('gemini', mId)) {
+        const mObj = (AI_PROVIDERS.gemini.models || []).find(m => m.id === mId) ||
+                     (state.providerStatus.gemini?.models || []).find(m => m.id === mId) || { displayName: mId };
+        return {
+          providerId: 'gemini',
+          providerName: AI_PROVIDERS.gemini.name,
+          model: mId,
+          modelName: mObj.displayName || mId,
+          tier: 'Tier 1B (Gemini Pro/Flash)',
+          desc: mObj.desc || 'High-Precision Translation',
           key: state.apiKeys.gemini
         };
       }
     }
   }
 
-  // ── RULE 3: OpenRouter Gemini Pro/Flash & Lite (Highest Version to Lowest, Dynamic) ──
+  // ── RULE 3: OpenRouter Gemini Lite (First Priority: Highest Version to Lowest, Dynamic) ──
   if (state.providerStatus.openrouter?.connected && state.apiKeys.openrouter) {
-    const orProFlash = getAllGeminiProFlashModels('openrouter');
-    for (const mId of orProFlash) {
-      if (isModelHealthy('openrouter', mId)) {
-        const mObj = (AI_PROVIDERS.openrouter.models || []).find(m => m.id === mId) ||
-                     (state.providerStatus.openrouter?.models || []).find(m => m.id === mId) || { displayName: mId };
-        return {
-          providerId: 'openrouter',
-          providerName: AI_PROVIDERS.openrouter.name,
-          model: mId,
-          modelName: mObj.displayName || mId,
-          tier: 'Tier 2A (OpenRouter Gemini Pro/Flash)',
-          desc: mObj.desc || 'Top Nuance via OpenRouter',
-          key: state.apiKeys.openrouter
-        };
-      }
-    }
-
     const orLite = getAllGeminiLiteModels('openrouter');
     for (const mId of orLite) {
       if (isModelHealthy('openrouter', mId)) {
@@ -2417,6 +2409,24 @@ function findFailoverBackup(currentProviderId, currentModelId) {
           modelName: mObj.displayName || mId,
           tier: 'Tier 2A (OpenRouter Gemini Lite)',
           desc: mObj.desc || 'Ultra-Light via OpenRouter',
+          key: state.apiKeys.openrouter
+        };
+      }
+    }
+
+    // ── RULE 4: OpenRouter Gemini Pro/Flash (Highest Version to Lowest, Dynamic) ──
+    const orProFlash = getAllGeminiProFlashModels('openrouter');
+    for (const mId of orProFlash) {
+      if (isModelHealthy('openrouter', mId)) {
+        const mObj = (AI_PROVIDERS.openrouter.models || []).find(m => m.id === mId) ||
+                     (state.providerStatus.openrouter?.models || []).find(m => m.id === mId) || { displayName: mId };
+        return {
+          providerId: 'openrouter',
+          providerName: AI_PROVIDERS.openrouter.name,
+          model: mId,
+          modelName: mObj.displayName || mId,
+          tier: 'Tier 2B (OpenRouter Gemini Pro/Flash)',
+          desc: mObj.desc || 'Top Nuance via OpenRouter',
           key: state.apiKeys.openrouter
         };
       }
