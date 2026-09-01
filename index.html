@@ -98,11 +98,8 @@
   <link rel="stylesheet" href="style.css?v=5.6.0" />
   <script>
     (function() {
-      const savedTheme = localStorage.getItem('srt_theme') || 'dark';
+      const savedTheme = localStorage.getItem('srt_theme') || 'light';
       document.documentElement.setAttribute('data-theme', savedTheme);
-      if (window.Capacitor || window.innerWidth <= 768 || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-        document.documentElement.classList.add('is-native-app');
-      }
     })();
   </script>
 </head>
@@ -799,80 +796,12 @@
 
 
       <!-- ============================================== -->
-      <!-- VIEW: Settings & Configuration                  -->
+      <!-- TAB 2: SETTINGS VIEW                           -->
       <!-- ============================================== -->
       <div class="app-view" id="viewSettings">
 
-        <!-- NATIVE SETTINGS HUB (Mobile & Native Android Categorized Sub-Screens) -->
-        <div class="native-settings-hub" id="nativeSettingsHub">
-          <div class="settings-hub-banner">
-            <h3>Settings &amp; Configuration</h3>
-            <p>Select a category to configure AI providers, quotas, or cloud backup.</p>
-          </div>
-
-          <div class="settings-hub-grid">
-            <!-- Hub Item 1: Providers & API Keys -->
-            <button type="button" class="settings-hub-item" id="hubItemProviders">
-              <div class="hub-item-left">
-                <div class="hub-icon-wrap icon-key">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M2 18v3c0 .6.4 1 1 1h4v-3h3v-3h2l1.4-1.4a6.5 6.5 0 1 0-4-4Z"/>
-                    <circle cx="16.5" cy="7.5" r=".75" fill="currentColor"/>
-                  </svg>
-                </div>
-                <div class="hub-item-copy">
-                  <h4>AI Providers &amp; API Keys</h4>
-                  <p>Configure Gemini, OpenRouter, Groq, DeepSeek, OpenAI</p>
-                </div>
-              </div>
-              <div class="hub-item-right">
-                <span class="hub-status-pill" id="hubProvidersStatus">Configured</span>
-                <svg class="hub-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-              </div>
-            </button>
-
-            <!-- Hub Item 2: Required Keys & Quota Health -->
-            <button type="button" class="settings-hub-item" id="hubItemStatus">
-              <div class="hub-item-left">
-                <div class="hub-icon-wrap icon-health">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                  </svg>
-                </div>
-                <div class="hub-item-copy">
-                  <h4>Required AI Keys &amp; System Health</h4>
-                  <p>Live quota specs, connection checklist &amp; auto-failover</p>
-                </div>
-              </div>
-              <div class="hub-item-right">
-                <span class="hub-status-pill" id="hubHealthStatus">Optimal</span>
-                <svg class="hub-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-              </div>
-            </button>
-
-            <!-- Hub Item 3: Cloud History, Sync & App Preferences -->
-            <button type="button" class="settings-hub-item" id="hubItemHistory">
-              <div class="hub-item-left">
-                <div class="hub-icon-wrap icon-cloud">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9z"/>
-                  </svg>
-                </div>
-                <div class="hub-item-copy">
-                  <h4>Cloud Sync, History &amp; Preferences</h4>
-                  <p>Google Backup, 7-day history, version info &amp; storage</p>
-                </div>
-              </div>
-              <div class="hub-item-right">
-                <span class="hub-status-pill" id="hubHistoryStatus">Cloud Ready</span>
-                <svg class="hub-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-              </div>
-            </button>
-          </div>
-        </div>
-
-        <!-- Settings Sub-Tabs Switcher (API Keys vs History - Desktop Web View) -->
-        <div class="sub-tabs-container desktop-settings-tabs">
+        <!-- Settings Sub-Tabs Switcher (API Keys vs History) -->
+        <div class="sub-tabs-container">
           <div class="sub-tabs-bar" role="tablist" aria-label="Settings Navigation">
             <button type="button" class="sub-tab-pill active" id="subTabBtnApiKeys" role="tab" aria-selected="true" aria-controls="subViewApiKeys">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -888,17 +817,6 @@
               <span>History</span>
             </button>
           </div>
-        </div>
-
-        <!-- Back Navigation Bar for Mobile Sub-Screens -->
-        <div class="native-back-nav-bar hidden" id="nativeSettingsBackNav">
-          <button type="button" class="btn-native-back" id="btnBackToSettingsHub">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <polyline points="15 18 9 12 15 6"></polyline>
-            </svg>
-            <span>Back to Settings</span>
-          </button>
-          <span class="native-subscreen-title" id="nativeSubscreenTitle">Configuration</span>
         </div>
 
         <!-- SUB-PANEL 1: API Keys (Default Active) -->

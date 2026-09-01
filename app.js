@@ -573,179 +573,56 @@ window.addEventListener('beforeunload', e => {
   }
 });
 
-// ── Android Native App & Theme Integration ──
-function updateNativeStatusBar(theme) {
-  try {
-    if (typeof window !== 'undefined' && window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.StatusBar) {
-      const isDark = theme === 'dark';
-      window.Capacitor.Plugins.StatusBar.setOverlaysWebView({ overlay: false }).catch(() => {});
-      window.Capacitor.Plugins.StatusBar.setBackgroundColor({
-        color: isDark ? '#07090e' : '#ffffff'
-      }).catch(() => {});
-      // In Capacitor StatusBar: DARK style means light (white) text/icons, LIGHT style means dark (black) text/icons
-      window.Capacitor.Plugins.StatusBar.setStyle({
-        style: isDark ? 'DARK' : 'LIGHT'
-      }).catch(() => {});
-    }
-  } catch (err) {
-    console.warn('[StatusBar] Update failed:', err);
-  }
-}
-
-function applyTheme(theme) {
-  const safeTheme = theme === 'light' ? 'light' : 'dark';
-  document.documentElement.setAttribute('data-theme', safeTheme);
-  localStorage.setItem('srt_theme', safeTheme);
-
-  const themeToggleBtn = $('themeToggleBtn');
-  const themeLabel = $('themeLabelText');
-  if (themeLabel) {
-    themeLabel.textContent = safeTheme === 'dark' ? 'Dark Mode' : 'Light Mode';
-  }
-  if (themeToggleBtn) {
-    themeToggleBtn.setAttribute('title', safeTheme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode');
-  }
-  updateNativeStatusBar(safeTheme);
-}
-
-function initTheme() {
-  const savedTheme = localStorage.getItem('srt_theme') || 'dark';
-  applyTheme(savedTheme);
-
-  const themeToggleBtn = $('themeToggleBtn');
-  if (themeToggleBtn && !themeToggleBtn._hasThemeListener) {
-    themeToggleBtn._hasThemeListener = true;
-    themeToggleBtn.addEventListener('click', () => {
-      triggerHaptic('light');
-      const current = document.documentElement.getAttribute('data-theme') || 'dark';
-      const next = current === 'dark' ? 'light' : 'dark';
-      applyTheme(next);
-      showToast(`Switched to ${next === 'dark' ? 'Dark' : 'Light'} Mode`, 'info');
-    });
-  }
-}
-
+// ── Android Native App Integration (Capacitor) ──
 function initNativeAppIntegrations() {
-  const isNative = !!(
-    (typeof window !== 'undefined' && window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform()) ||
-    (typeof window !== 'undefined' && window.location.protocol === 'capacitor:') ||
-    (typeof window !== 'undefined' && window.location.hostname === 'localhost' && /Android/i.test(navigator.userAgent))
-  );
-
-  const isMobile = isNative || (typeof window !== 'undefined' && (window.innerWidth <= 768 || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)));
-
-  if (isMobile) {
-    document.documentElement.classList.add('is-native-app');
+  if (typeof window !== 'undefined' && window.Capacitor && window.Capacitor.isNativePlatform()) {
+    console.log('[Native App] Running inside Android via Capacitor.');
     document.body.classList.add('is-native-app');
-  }
 
-  const headerApkBtn = document.getElementById('headerApkBtn') || document.querySelector('.header-apk-btn');
-  if (isNative) {
-    document.body.classList.add('is-native-platform');
-    if (headerApkBtn) headerApkBtn.style.display = 'none';
-  } else if (/Android/i.test(navigator.userAgent)) {
-    if (headerApkBtn) {
-      headerApkBtn.style.display = 'inline-flex';
-      headerApkBtn.addEventListener('click', () => {
-        headerApkBtn.href = `SRTtranslator-latest.apk?t=${Date.now()}`;
+    // 1. Android Status Bar Styling
+    if (window.Capacitor.Plugins && window.Capacitor.Plugins.StatusBar) {
+      window.Capacitor.Plugins.StatusBar.setBackgroundColor({ color: '#070a13' }).catch(() => {});
+      window.Capacitor.Plugins.StatusBar.setStyle({ style: 'DARK' }).catch(() => {});
+    }
+
+    // 2. Hardware Back Button Handling
+    if (window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
+      window.Capacitor.Plugins.App.addListener('backButton', async () => {
+        // If custom modal is open, close it
+        if (customModalBackdrop && !customModalBackdrop.classList.contains('hidden')) {
+          closeCustomModal(false);
+          return;
+        }
+
+        // If a dropdown is open, close it
+        const openDropdown = document.querySelector('.custom-select-container.is-open');
+        if (openDropdown) {
+          closeAllCustomSelects();
+          return;
+        }
+
+        // If translation is currently running, ask before exiting
+        if ((state.isTranslating || state.isCondensing) && !state.isCancelled) {
+          const confirmed = await showCustomConfirm({
+            title: 'Exit App?',
+            message: 'Translation is currently in progress. Exiting the app will stop translation. Are you sure you want to exit?',
+            confirmText: 'Exit App',
+            cancelText: 'Keep Running',
+            type: 'warning'
+          });
+          if (confirmed) {
+            state.isCancelled = true;
+            window.Capacitor.Plugins.App.exitApp();
+          }
+          return;
+        }
+
+        // Default: exit app
+        window.Capacitor.Plugins.App.exitApp();
       });
     }
-  } else {
-    if (headerApkBtn) headerApkBtn.style.display = 'none';
   }
 
-  // 1. Android Status Bar Styling
-  const curTheme = document.documentElement.getAttribute('data-theme') || 'dark';
-  updateNativeStatusBar(curTheme);
-
-  let lastBackPressTime = 0;
-
-  // 2. Hardware Back Button Handling
-  if (typeof window !== 'undefined' && window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
-    window.Capacitor.Plugins.App.addListener('backButton', async () => {
-      // Step 1: If custom modal is open, close it
-      if (customModalBackdrop && !customModalBackdrop.classList.contains('hidden')) {
-        closeCustomModal(false);
-        return;
-      }
-
-      // Step 2: If a dropdown / bottom sheet is open, close it
-      const openDropdown = document.querySelector('.custom-select-container.is-open');
-      if (openDropdown) {
-        closeAllCustomSelects();
-        return;
-      }
-
-      // Step 3: If in a Settings sub-screen, return to Settings Hub
-      if (document.body.classList.contains('in-settings-subscreen')) {
-        closeSettingsSubScreen();
-        return;
-      }
-
-      // Step 4: If on Settings view, switch back to Translator main view
-      const viewSettings = $('viewSettings');
-      if (viewSettings && viewSettings.classList.contains('active')) {
-        switchAppTab('translator');
-        return;
-      }
-
-      // Step 5: If translation is currently running, ask before exiting
-      if ((state.isTranslating || state.isCondensing) && !state.isCancelled) {
-        const confirmed = await showCustomConfirm({
-          title: 'Exit App?',
-          message: 'Translation is currently in progress. Exiting the app will stop translation. Are you sure you want to exit?',
-          confirmText: 'Exit App',
-          cancelText: 'Keep Running',
-          type: 'warning'
-        });
-        if (confirmed) {
-          state.isCancelled = true;
-          window.Capacitor.Plugins.App.exitApp();
-        }
-        return;
-      }
-
-      // Step 6: On Translator root view — Double-tap back within 2s to exit app
-      const now = Date.now();
-      if (now - lastBackPressTime < 2000) {
-        window.Capacitor.Plugins.App.exitApp();
-      } else {
-        lastBackPressTime = now;
-        triggerHaptic('light');
-        showToast('Press back again to exit app');
-      }
-    });
-  }
-}
-
-// ── Tactile Mobile Haptic Feedback Engine ──
-function triggerHaptic(type = 'light') {
-  // 1. Capacitor Native Haptics Plugin (Android / iOS native bridge)
-  try {
-    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Haptics) {
-      const Haptics = window.Capacitor.Plugins.Haptics;
-      if (type === 'light') Haptics.impact({ style: 'LIGHT' }).catch(() => {});
-      else if (type === 'medium') Haptics.impact({ style: 'MEDIUM' }).catch(() => {});
-      else if (type === 'heavy') Haptics.impact({ style: 'HEAVY' }).catch(() => {});
-      else if (type === 'success') Haptics.notification({ type: 'SUCCESS' }).catch(() => {});
-      else if (type === 'warning') Haptics.notification({ type: 'WARNING' }).catch(() => {});
-      return;
-    }
-  } catch (e) {}
-
-  // 2. Web Vibration API Standard Fallback
-  try {
-    if (typeof navigator !== 'undefined' && navigator.vibrate) {
-      if (type === 'light') navigator.vibrate(14);
-      else if (type === 'medium') navigator.vibrate(28);
-      else if (type === 'heavy') navigator.vibrate(50);
-      else if (type === 'success') navigator.vibrate([18, 50, 28]);
-      else if (type === 'warning') navigator.vibrate([35, 75, 35]);
-    }
-  } catch (e) {}
-}
-
-function initAppSessionReset() {
   // Clear Saved Subtitle Session Data Button
   const resetBtn = $('resetSessionDataBtn');
   if (resetBtn) {
@@ -906,15 +783,17 @@ async function waitForWebsiteFullLoad() {
 
 window.addEventListener('DOMContentLoaded', () => {
   window._pendingProviderVerifications = [];
-  try { initTheme(); } catch (e) { console.warn(e); }
-  try { initNativeAppIntegrations(); } catch (e) { console.warn(e); }
-  try { initCustomSelects(); } catch (e) { console.warn(e); }
-  try { initFaqAccordion(); } catch (e) { console.warn(e); }
-  try { initSeoGuideToggle(); } catch (e) { console.warn(e); }
-  try { initFirebaseAuthAndCloudSync(); } catch (e) { console.warn(e); }
-  try { updateApiGuardAndHeaderStatus(); } catch (e) { console.warn(e); }
-  try { checkReadyToTranslate(); } catch (e) { console.warn(e); }
-  try { restoreSessionIfAvailable(); } catch (e) { console.warn(e); }
+  initTheme();
+  initCustomSelects();
+  initFaqAccordion();
+  initSeoGuideToggle();
+  initMultiProviderHub();
+  setupEventListeners();
+  updateApiGuardAndHeaderStatus();
+  checkReadyToTranslate();
+  restoreSessionIfAvailable();
+  initNativeAppIntegrations();
+  initFirebaseAuthAndCloudSync();
 
   // Begin monitoring full website load state
   waitForWebsiteFullLoad();
@@ -923,9 +802,36 @@ window.addEventListener('DOMContentLoaded', () => {
 // Single global failsafe in case all listeners fail
 setTimeout(dismissInitialLoader, 4000);
 
+// ── Native App Platform & Android Browser Detection ──
+function initNativeAppIntegrations() {
+  const isNative = !!(
+    (window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform()) ||
+    window.location.protocol === 'capacitor:' ||
+    (window.location.hostname === 'localhost' && /Android/i.test(navigator.userAgent))
+  );
+
+  const isAndroidBrowser = /Android/i.test(navigator.userAgent) && !isNative;
+  const headerApkBtn = document.getElementById('headerApkBtn') || document.querySelector('.header-apk-btn');
+
+  if (isNative) {
+    document.body.classList.add('is-native-platform');
+    if (headerApkBtn) headerApkBtn.style.display = 'none';
+  } else if (isAndroidBrowser) {
+    // Show Get APK button ONLY on Android mobile browsers
+    if (headerApkBtn) {
+      headerApkBtn.style.display = 'inline-flex';
+      headerApkBtn.addEventListener('click', () => {
+        headerApkBtn.href = `SRTtranslator-latest.apk?t=${Date.now()}`;
+      });
+    }
+  } else {
+    // Desktop (Windows, Mac, Linux) & iOS (iPhone, iPad): Hide Get APK button completely
+    if (headerApkBtn) headerApkBtn.style.display = 'none';
+  }
+}
+
 // ── 2-Tab Navigation Engine (Translator vs Settings) ──
 function switchAppTab(tabId) {
-  triggerHaptic('light');
   const tabBtnTranslator = $('tabBtnTranslator');
   const tabBtnSettings = $('tabBtnSettings');
   const bottomTabBtnTranslator = $('bottomTabBtnTranslator');
@@ -968,12 +874,8 @@ function switchAppTab(tabId) {
     if (viewTranslator) viewTranslator.classList.remove('active');
     if (viewSettings) viewSettings.classList.add('active');
 
-    // On mobile / native app, start with clean Settings Hub view
-    if (document.body.classList.contains('is-native-app') || window.innerWidth <= 768) {
-      closeSettingsSubScreen();
-    } else {
-      switchSettingsSubTab('apikeys');
-    }
+    // Default to API Keys sub-tab when entering Settings
+    switchSettingsSubTab('apikeys');
   }
 
   // Smooth scroll to top of view on tab switch
@@ -982,7 +884,6 @@ function switchAppTab(tabId) {
 
 // ── Sub-Tabs Navigation Controllers ──
 function switchTranslatorSubTab(subTabId) {
-  triggerHaptic('light');
   const btnSettings = $('subTabBtnEngineSettings');
   const btnWorkspace = $('subTabBtnWorkspace');
   const panelSettings = $('subViewEngineSettings');
@@ -1014,7 +915,6 @@ function switchTranslatorSubTab(subTabId) {
 }
 
 function switchSettingsSubTab(subTabId) {
-  triggerHaptic('light');
   const btnApiKeys = $('subTabBtnApiKeys');
   const btnHistory = $('subTabBtnHistory');
   const panelApiKeys = $('subViewApiKeys');
@@ -1049,93 +949,6 @@ function switchSettingsSubTab(subTabId) {
     if (panelApiKeys) panelApiKeys.classList.add('active');
     if (panelHistory) panelHistory.classList.remove('active');
   }
-}
-
-// ── Native Mobile Settings Hub & Sub-Screen Navigator ──
-function openSettingsSubScreen(screenId) {
-  triggerHaptic('light');
-  document.body.classList.add('in-settings-subscreen');
-  
-  const backNav = $('nativeSettingsBackNav');
-  const titleEl = $('nativeSubscreenTitle');
-  if (backNav) backNav.classList.remove('hidden');
-
-  const authSection = $('authSettingsSection');
-  const apiSection = $('apiSection');
-  const checklistSection = $('apiRequiredChecklist');
-  const appInfoSection = $('appInfoSection');
-  const cloudHistorySection = $('cloudHistorySection');
-
-  // Reset internal visibility
-  if (authSection) authSection.style.display = '';
-  if (apiSection) apiSection.style.display = '';
-  if (checklistSection) checklistSection.style.display = '';
-  if (appInfoSection) appInfoSection.style.display = '';
-  if (cloudHistorySection) cloudHistorySection.style.display = '';
-
-  if (screenId === 'providers') {
-    if (titleEl) titleEl.textContent = 'AI Providers & API Keys';
-    switchSettingsSubTab('apikeys');
-    if (authSection) authSection.style.display = 'none';
-    if (checklistSection) checklistSection.style.display = 'none';
-    if (appInfoSection) appInfoSection.style.display = 'none';
-    if (apiSection) {
-      apiSection.style.display = 'block';
-      apiSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  } else if (screenId === 'status') {
-    if (titleEl) titleEl.textContent = 'Required AI Keys Status';
-    switchSettingsSubTab('apikeys');
-    if (authSection) authSection.style.display = 'none';
-    if (apiSection) apiSection.style.display = 'none';
-    if (appInfoSection) appInfoSection.style.display = 'none';
-    if (checklistSection) {
-      checklistSection.style.display = 'block';
-      checklistSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  } else if (screenId === 'history') {
-    if (titleEl) titleEl.textContent = 'Cloud Sync, History & Preferences';
-    switchSettingsSubTab('history');
-    if (authSection) authSection.style.display = 'block';
-    if (cloudHistorySection) cloudHistorySection.style.display = 'block';
-    if (appInfoSection) appInfoSection.style.display = 'block';
-    if (cloudHistorySection) {
-      cloudHistorySection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  }
-}
-
-function closeSettingsSubScreen() {
-  triggerHaptic('light');
-  document.body.classList.remove('in-settings-subscreen');
-  const backNav = $('nativeSettingsBackNav');
-  if (backNav) backNav.classList.add('hidden');
-
-  const authSection = $('authSettingsSection');
-  const apiSection = $('apiSection');
-  const checklistSection = $('apiRequiredChecklist');
-  const appInfoSection = $('appInfoSection');
-  const cloudHistorySection = $('cloudHistorySection');
-
-  if (authSection) authSection.style.display = '';
-  if (apiSection) apiSection.style.display = '';
-  if (checklistSection) checklistSection.style.display = '';
-  if (appInfoSection) appInfoSection.style.display = '';
-  if (cloudHistorySection) cloudHistorySection.style.display = '';
-
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-function initNativeSettingsHub() {
-  const hubItemProviders = $('hubItemProviders');
-  const hubItemStatus = $('hubItemStatus');
-  const hubItemHistory = $('hubItemHistory');
-  const btnBack = $('btnBackToSettingsHub');
-
-  if (hubItemProviders) hubItemProviders.addEventListener('click', () => openSettingsSubScreen('providers'));
-  if (hubItemStatus) hubItemStatus.addEventListener('click', () => openSettingsSubScreen('status'));
-  if (hubItemHistory) hubItemHistory.addEventListener('click', () => openSettingsSubScreen('history'));
-  if (btnBack) btnBack.addEventListener('click', closeSettingsSubScreen);
 }
 
 function hasGeminiApiKey() {
@@ -2854,7 +2667,6 @@ function toggleTheme() {
 // ── Pause / Resume & Cancel Handlers ──
 async function togglePauseTranslation() {
   if (!state.isTranslating && !state.isCondensing) return;
-  triggerHaptic('light');
 
   if (!state.isPaused) {
     const isCondense = !!state.isCondensing;
@@ -2931,7 +2743,6 @@ async function cancelTranslationProcess() {
     type: 'danger'
   });
   if (!confirmed) return;
-  triggerHaptic('medium');
 
   state.isCancelled = true;
   state.isPaused = false;
@@ -3029,9 +2840,6 @@ function setupEventListeners() {
   if (subTabBtnWorkspace) subTabBtnWorkspace.addEventListener('click', () => switchTranslatorSubTab('workspace'));
   if (subTabBtnApiKeys) subTabBtnApiKeys.addEventListener('click', () => switchSettingsSubTab('apikeys'));
   if (subTabBtnHistory) subTabBtnHistory.addEventListener('click', () => switchSettingsSubTab('history'));
-
-  // Initialize Native Mobile Settings Hub Navigation
-  initNativeSettingsHub();
 
   if (resetSessionDataBtn) {
     resetSessionDataBtn.addEventListener('click', async () => {
@@ -3322,38 +3130,23 @@ function setupEventListeners() {
   }
 
   // Retry Incomplete Batches
-  if (retryIncompleteBtn) retryIncompleteBtn.addEventListener('click', () => {
-    triggerHaptic('medium');
-    retryIncompleteBatchesPipeline();
-  });
+  if (retryIncompleteBtn) retryIncompleteBtn.addEventListener('click', retryIncompleteBatchesPipeline);
 
   // AI Condenser (2nd-Pass Refinement)
-  if (condenseSrtBtn) condenseSrtBtn.addEventListener('click', () => {
-    triggerHaptic('medium');
-    runAiCondensePipeline();
-  });
+  if (condenseSrtBtn) condenseSrtBtn.addEventListener('click', runAiCondensePipeline);
 
   // Restore Original Uncompressed Translation
-  if (restoreOriginalBtn) restoreOriginalBtn.addEventListener('click', () => {
-    triggerHaptic('light');
-    restoreOriginalTranslation();
-  });
+  if (restoreOriginalBtn) restoreOriginalBtn.addEventListener('click', restoreOriginalTranslation);
 
   // Download Action
   if (downloadBtn) {
     downloadBtn.addEventListener('click', () => {
-      triggerHaptic('medium');
       if (state.translatedBlocks.length > 0) downloadSRTFile(state.translatedBlocks);
     });
   }
 
   // Copy Action
-  if (copySrtBtn) {
-    copySrtBtn.addEventListener('click', () => {
-      triggerHaptic('medium');
-      copyFullSRTCode();
-    });
-  }
+  if (copySrtBtn) copySrtBtn.addEventListener('click', copyFullSRTCode);
 
   // Translate In (Target Language) Selection Change & Persistent Sync
   if (targetLang) {
@@ -3497,7 +3290,6 @@ function setupEventListeners() {
   // Tab switching
   document.querySelectorAll('.preview-tab').forEach(btn => {
     btn.addEventListener('click', function() {
-      triggerHaptic('light');
       document.querySelectorAll('.preview-tab').forEach(t => t.classList.remove('active'));
       this.classList.add('active');
       renderActiveTab(this.dataset.tab, state.translatedBlocks);
@@ -5843,7 +5635,6 @@ async function condenseSingleBlock(index) {
 
 // ── Render Results View ──
 function showTranslationResults(blocks, percentSaved, origWords, condWords) {
-  triggerHaptic('success');
   progressCard.classList.add('hidden');
   resultCard.classList.remove('hidden');
 
@@ -6359,35 +6150,10 @@ function buildCustomSelect(selectEl) {
     </svg>
   `;
 
-  // Floating Dropdown Menu (Bottom Sheet on Mobile)
+  // Floating Dropdown Menu
   const menu = document.createElement('div');
   menu.className = 'custom-select-menu';
   menu.setAttribute('role', 'listbox');
-
-  // Native Bottom Sheet Top Drag Handle & Title Header
-  const dragHandle = document.createElement('div');
-  dragHandle.className = 'custom-select-drag-handle';
-  menu.appendChild(dragHandle);
-
-  let sheetTitleText = 'Select an Option';
-  if (selectId === 'targetLang') sheetTitleText = 'Select Target Language';
-  else if (selectId === 'modelSelect') sheetTitleText = 'Select AI Model';
-  else if (selectId === 'styleMode') sheetTitleText = 'Select Subtitle Pacing';
-  else if (selectId === 'providerSelect') sheetTitleText = 'Select AI Provider';
-
-  const sheetHeader = document.createElement('div');
-  sheetHeader.className = 'custom-select-sheet-header';
-  sheetHeader.innerHTML = `
-    <span class="custom-select-sheet-title">${escapeHtml(sheetTitleText)}</span>
-    <button type="button" class="btn-sheet-close" title="Close">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-    </button>
-  `;
-  sheetHeader.querySelector('.btn-sheet-close').addEventListener('click', (e) => {
-    e.stopPropagation();
-    closeAllCustomSelects();
-  });
-  menu.appendChild(sheetHeader);
 
   const totalOptionsCount = selectEl.options.length;
   let searchInput = null;
@@ -6400,7 +6166,7 @@ function buildCustomSelect(selectEl) {
         <circle cx="11" cy="11" r="8"></circle>
         <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
       </svg>
-      <input type="text" class="custom-select-search-input" placeholder="Search language or model..." autocomplete="off" />
+      <input type="text" class="custom-select-search-input" placeholder="Search..." autocomplete="off" />
     `;
     menu.appendChild(searchWrap);
     searchInput = searchWrap.querySelector('input');
@@ -6428,7 +6194,6 @@ function buildCustomSelect(selectEl) {
       `;
       optEl.addEventListener('click', (e) => {
         e.stopPropagation();
-        triggerHaptic('light');
         selectEl.value = opt.value;
         trigger.querySelector('.custom-select-value').textContent = opt.text;
         selectEl.dispatchEvent(new Event('change', { bubbles: true }));
