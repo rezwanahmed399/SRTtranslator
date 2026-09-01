@@ -2040,7 +2040,7 @@ function populateCombinedModelDropdown() {
   // Add Real-Time Dynamic Auto-Selection Option at top
   const autoOpt = document.createElement('option');
   autoOpt.value = 'auto';
-  autoOpt.textContent = 'Auto Select';
+  autoOpt.textContent = 'Auto Select (Recommended)';
   modelSelect.appendChild(autoOpt);
 
   let totalModelsCount = 0;
@@ -2501,7 +2501,7 @@ function findFailoverBackup(currentProviderId, currentModelId) {
 function getSelectedModelFriendlyDescription() {
   const selVal = (modelSelect && modelSelect.value) ? modelSelect.value : (state.selectedModel || 'auto');
   if (selVal === 'auto') {
-    return 'Auto Select';
+    return 'Auto (Recommended)';
   }
 
   // Check if option text exists in modelSelect dropdown
@@ -2539,7 +2539,7 @@ function updateQuotaDashboardForActiveModel() {
     const qRpm = $('quotaRpm');
     const qRpd = $('quotaRpd');
 
-    if (qName) qName.textContent = `Auto Select: ${pConf?.name || 'AI'} (${resolved.displayName || resolved.model})`;
+    if (qName) qName.textContent = `Auto (Recommended): ${pConf?.name || 'AI'} (${resolved.displayName || resolved.model})`;
     if (qVer) qVer.textContent = `Real-Time Dynamic Selection`;
     if (qContext) qContext.textContent = 'Auto-Adaptive (1M+ Max)';
     if (qOut) qOut.textContent = 'Auto-Adaptive (32k Max)';
