@@ -1,9 +1,9 @@
 {
-  "latestVersion": "1.8.0",
-  "buildTime": "2026-09-01T10:05:03.173Z",
-  "buildTimestamp": 1788257103173,
-  "buildDateFormatted": "9/1/2026, 4:05:03 PM",
-  "apkFileName": "SRTtranslator-v1.8.0.apk",
-  "apkUrl": "/SRTtranslator-v1.8.0.apk",
+  "latestVersion": "1.8.1",
+  "buildTime": "2026-09-01T10:14:17.199Z",
+  "buildTimestamp": 1788257657199,
+  "buildDateFormatted": "9/1/2026, 4:14:17 PM",
+  "apkFileName": "SRTtranslator-v1.8.1.apk",
+  "apkUrl": "/SRTtranslator-v1.8.1.apk",
   "forceUpdate": false
 }
