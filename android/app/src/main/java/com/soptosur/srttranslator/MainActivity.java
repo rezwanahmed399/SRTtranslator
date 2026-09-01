@@ -13,6 +13,7 @@ import android.webkit.CookieManager;
 import android.webkit.DownloadListener;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import androidx.core.splashscreen.SplashScreen;
 import com.getcapacitor.BridgeActivity;
 
 public class MainActivity extends BridgeActivity {
@@ -22,17 +23,20 @@ public class MainActivity extends BridgeActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // 1. Install SplashScreen compat before super.onCreate to cleanly transition to postSplashScreenTheme
+        SplashScreen.installSplashScreen(this);
+
         registerPlugin(NativeGoogleAuthPlugin.class);
         registerPlugin(NativeStoragePlugin.class);
         super.onCreate(savedInstanceState);
         
-        // 1. Keep screen on while interacting and allow high-performance execution
+        // 2. Keep screen on while interacting and allow high-performance execution
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         
-        // 2. Eliminate cold start white/black flash by matching decor view exactly to app theme
+        // 3. Match decor view exactly to app theme
         getWindow().getDecorView().setBackgroundColor(Color.parseColor("#07090e"));
 
-        // 3. Acquire CPU Partial WakeLock for 100% uninterrupted background translation & network
+        // 4. Acquire CPU Partial WakeLock for 100% uninterrupted background translation & network
         acquireCpuWakeLock();
     }
 
@@ -85,7 +89,9 @@ public class MainActivity extends BridgeActivity {
         acquireCpuWakeLock();
         try {
             if (getBridge() != null && getBridge().getWebView() != null) {
-                getBridge().getWebView().resumeTimers();
+                WebView webView = getBridge().getWebView();
+                webView.resumeTimers();
+                webView.invalidate();
             }
         } catch (Exception e) {}
     }
@@ -117,8 +123,8 @@ public class MainActivity extends BridgeActivity {
             if (getBridge() != null && getBridge().getWebView() != null) {
                 WebView webView = getBridge().getWebView();
                 
-                // Set once on startup to eliminate re-rendering flicker on minimize/resume
-                webView.setBackgroundColor(Color.parseColor("#07090e"));
+                // Transparent background so Android compositor does not paint a solid layer on resume
+                webView.setBackgroundColor(Color.TRANSPARENT);
 
                 CookieManager cookieManager = CookieManager.getInstance();
                 cookieManager.setAcceptCookie(true);

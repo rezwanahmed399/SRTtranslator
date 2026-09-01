@@ -720,6 +720,8 @@ document.addEventListener('visibilitychange', () => {
 
 // ── Initialization & Full Website Load Synchronization ──
 let isAppFullyLoaded = false;
+const appLaunchTime = Date.now();
+const MIN_LOADER_DURATION_MS = 1400; // Premium 1.4s branded loader duration
 
 function dismissInitialLoader() {
   const loader = $('appInitialLoader');
@@ -728,28 +730,33 @@ function dismissInitialLoader() {
   loader.classList.add('loader-hidden');
   setTimeout(() => {
     if (loader.parentNode) loader.remove();
-  }, 400);
+  }, 480);
 }
 
-// Reveal app smoothly and immediately without holding up startup for remote network pings
+// Reveal app smoothly with a polished branded display duration
 async function waitForWebsiteFullLoad() {
-  // Give a tiny 100ms tick so initial DOM layout & fonts settle cleanly
+  // Wait for web fonts layout & rendering
   if (document.fonts && document.fonts.ready) {
     try {
       await Promise.race([
         document.fonts.ready,
-        new Promise(resolve => setTimeout(resolve, 150))
+        new Promise(resolve => setTimeout(resolve, 800))
       ]);
     } catch (e) {}
-  } else {
-    await new Promise(resolve => setTimeout(resolve, 100));
   }
 
-  // Update initial UI states from local storage immediately
+  // Update initial UI states from local storage
   updateApiGuardAndHeaderStatus();
   checkReadyToTranslate();
 
-  // Reveal the app smoothly without delay!
+  // Enforce comfortable minimum loader display duration so it doesn't vanish in a blink
+  const elapsed = Date.now() - appLaunchTime;
+  const remaining = Math.max(0, MIN_LOADER_DURATION_MS - elapsed);
+  if (remaining > 0) {
+    await new Promise(resolve => setTimeout(resolve, remaining));
+  }
+
+  // Smoothly dissolve the loader into the app
   dismissInitialLoader();
 }
 
@@ -773,7 +780,7 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 // Single global failsafe in case all listeners fail
-setTimeout(dismissInitialLoader, 800);
+setTimeout(dismissInitialLoader, 3500);
 
 // ── Native App Platform & Android Browser Detection ──
 function initNativeAppIntegrations() {

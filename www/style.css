@@ -9480,7 +9480,7 @@ button:active:not(:disabled),
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
 }
 
-/* ── Initial Minimalistic Fast App Loader ── */
+/* ── Initial Branded App Loader ── */
 .app-initial-loader {
   position: fixed;
   inset: 0;
@@ -9489,11 +9489,12 @@ button:active:not(:disabled),
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.25s ease;
+  transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1), transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.45s ease;
   opacity: 1;
   visibility: visible;
   pointer-events: all;
-  transform: translateZ(0);
+  transform: translateZ(0) scale(1);
+  will-change: opacity, transform;
 }
 
 [data-theme="light"] .app-initial-loader {
@@ -9503,6 +9504,7 @@ button:active:not(:disabled),
 .app-initial-loader.loader-hidden {
   opacity: 0;
   visibility: hidden;
+  transform: translateZ(0) scale(1.025);
   pointer-events: none;
 }
 
