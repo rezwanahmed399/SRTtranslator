@@ -739,45 +739,25 @@ function dismissInitialLoader() {
   }, 400);
 }
 
-// Ensure the website is 100% loaded (window resources, fonts, cloud sync & key verifications) before revealing
+// Reveal app smoothly and immediately without holding up startup for remote network pings
 async function waitForWebsiteFullLoad() {
-  const loadTasks = [];
-
-  // 1. Wait for Full Window Load (stylesheets, scripts, images, and sub-resources)
-  if (document.readyState === 'complete') {
-    loadTasks.push(Promise.resolve());
-  } else {
-    loadTasks.push(new Promise(resolve => {
-      window.addEventListener('load', resolve, { once: true });
-    }));
-  }
-
-  // 2. Wait for Web Fonts Layout & Rendering (Plus Jakarta Sans, JetBrains Mono, etc.)
+  // Give a tiny 100ms tick so initial DOM layout & fonts settle cleanly
   if (document.fonts && document.fonts.ready) {
-    loadTasks.push(document.fonts.ready.catch(() => {}));
+    try {
+      await Promise.race([
+        document.fonts.ready,
+        new Promise(resolve => setTimeout(resolve, 150))
+      ]);
+    } catch (e) {}
+  } else {
+    await new Promise(resolve => setTimeout(resolve, 100));
   }
 
-  // 3. Wait for Firebase Auth & Cloud Sync (if user logged in, wait for cloud keys/history)
-  if (window.FirebaseCloudSync && typeof window.FirebaseCloudSync.waitForInitialSync === 'function') {
-    loadTasks.push(window.FirebaseCloudSync.waitForInitialSync().catch(() => {}));
-  }
-
-  // 4. Wait for local stored API keys verifications
-  if (Array.isArray(window._pendingProviderVerifications) && window._pendingProviderVerifications.length > 0) {
-    loadTasks.push(Promise.allSettled(window._pendingProviderVerifications).catch(() => {}));
-  }
-
-  // Race all full-load tasks against a failsafe timeout (max 3.5s so offline/slow network never hangs)
-  const allLoadedPromise = Promise.all(loadTasks);
-  const timeoutPromise = new Promise(resolve => setTimeout(resolve, 3500));
-
-  await Promise.race([allLoadedPromise, timeoutPromise]);
-
-  // Final UI sync pass right before unveiling
+  // Update initial UI states from local storage immediately
   updateApiGuardAndHeaderStatus();
   checkReadyToTranslate();
 
-  // Dismiss loader and reveal the fully prepared, fully styled website seamlessly
+  // Reveal the app smoothly without delay!
   dismissInitialLoader();
 }
 
@@ -801,7 +781,7 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 // Single global failsafe in case all listeners fail
-setTimeout(dismissInitialLoader, 4000);
+setTimeout(dismissInitialLoader, 800);
 
 // ── Native App Platform & Android Browser Detection ──
 function initNativeAppIntegrations() {

@@ -8,8 +8,8 @@
   },
   "plugins": {
     "StatusBar": {
-      "style": "LIGHT",
-      "backgroundColor": "#ffffff",
+      "style": "DARK",
+      "backgroundColor": "#07090e",
       "overlaysWebView": false
     }
   }
