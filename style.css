@@ -3143,6 +3143,37 @@ input[type="text"]:focus {
   box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
 }
 
+@media (max-width: 768px), (pointer: coarse) {
+  .top-api-key-alert-banner {
+    margin-bottom: 12px !important;
+    border-radius: 13px !important;
+  }
+  .top-alert-content {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+    padding: 11px 13px !important;
+  }
+  .top-alert-content > div:first-child,
+  .top-alert-content {
+    text-align: left !important;
+  }
+  .top-alert-text {
+    font-size: 0.78rem !important;
+    line-height: 1.35 !important;
+    display: block !important;
+  }
+  .top-alert-btn {
+    width: 100% !important;
+    justify-content: center !important;
+    height: 36px !important;
+    padding: 0 14px !important;
+    font-size: 0.80rem !important;
+    border-radius: 10px !important;
+    margin-top: 2px !important;
+  }
+}
+
 .top-alert-btn:hover {
   background: #dc2626;
   transform: translateY(-1px) scale(1.02);
@@ -8488,8 +8519,9 @@ body.is-native-app .terminal-log-item {
   margin-bottom: 4px !important;
 }
 
-/* 10. Native Bottom Sheet Drawer */
+/* 10. Universal Mobile & Native Bottom Sheet Drawer */
 @media (max-width: 768px), (pointer: coarse) {
+  .custom-select-container.is-open .custom-select-menu,
   body.is-native-app .custom-select-container.is-open .custom-select-menu,
   .is-native-app .custom-select-container.is-open .custom-select-menu {
     position: fixed !important;
@@ -8516,7 +8548,7 @@ body.is-native-app .terminal-log-item {
     width: 36px !important;
     height: 4px !important;
     border-radius: 4px !important;
-    background: rgba(255, 255, 255, 0.25) !important;
+    background: rgba(128, 128, 128, 0.35) !important;
     margin: 0 auto 8px auto !important;
     flex-shrink: 0 !important;
   }
@@ -8550,6 +8582,7 @@ body.is-native-app .terminal-log-item {
     height: 18px !important;
   }
 
+  .custom-select-container.is-open::before,
   body.is-native-app .custom-select-container.is-open::before,
   .is-native-app .custom-select-container.is-open::before {
     content: '' !important;
@@ -8562,6 +8595,7 @@ body.is-native-app .terminal-log-item {
     animation: nativeSheetFadeIn 0.2s ease forwards !important;
   }
 
+  .custom-select-search-wrap,
   body.is-native-app .custom-select-search-wrap,
   .is-native-app .custom-select-search-wrap {
     padding: 8px 10px !important;
@@ -8569,19 +8603,30 @@ body.is-native-app .terminal-log-item {
     background: var(--surface-inner) !important;
     border: 1px solid var(--border-subtle) !important;
     margin-bottom: 6px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
   }
 
+  .custom-select-search-input,
   body.is-native-app .custom-select-search-input,
   .is-native-app .custom-select-search-input {
     font-size: 0.88rem !important;
+    background: transparent !important;
+    color: var(--text-main) !important;
+    border: none !important;
+    outline: none !important;
+    width: 100% !important;
   }
 
+  .custom-select-options-list,
   body.is-native-app .custom-select-options-list,
   .is-native-app .custom-select-options-list {
     max-height: 56vh !important;
     padding: 2px !important;
   }
 
+  .custom-select-option,
   body.is-native-app .custom-select-option,
   .is-native-app .custom-select-option {
     min-height: 42px !important;
@@ -8589,6 +8634,7 @@ body.is-native-app .terminal-log-item {
     font-size: 0.86rem !important;
     border-radius: 9px !important;
     margin-bottom: 2px !important;
+    color: var(--text-main) !important;
   }
 }
 
