@@ -470,13 +470,17 @@ async function saveCurrentSession() {
 
     const db = await openSessionDB();
     if (!db) {
-      localStorage.setItem('subsync_session_backup', JSON.stringify(sessionData));
+      try {
+        localStorage.setItem('subsync_session_backup', JSON.stringify(sessionData));
+      } catch (e) {
+        console.warn('LocalStorage backup quota exceeded:', e);
+      }
       return;
     }
     const tx = db.transaction(STORE_NAME, 'readwrite');
     tx.objectStore(STORE_NAME).put(sessionData, 'active_session');
   } catch (err) {
-    console.warn('Could not save session to IndexedDB:', err);
+    console.warn('Could not save session:', err);
   }
 }
 
@@ -2893,26 +2897,6 @@ window.goToApiSettingsTab = function() {
   }, 100);
 };
 
-function downloadSRTFile(blocks) {
-  if (!blocks || blocks.length === 0) return;
-  const srtContent = buildSRTContent(blocks);
-  const baseName = state.fileName ? state.fileName.replace(/\.srt$/i, '') : 'translated_subtitle';
-  const langSuffix = (targetLang?.value || 'Bengali').toLowerCase().replace(/[^a-z0-9]/g, '_');
-  const safeName = `${baseName}_${langSuffix}.srt`;
-  triggerDirectSrtDownload(safeName, srtContent);
-}
-
-function buildSRTContent(blocks) {
-  return blocks.map((b, idx) => {
-    const num = idx + 1;
-    const time = `${b.startTime} --> ${b.endTime}`;
-    const text = (b.translatedLines && b.translatedLines.length > 0)
-      ? b.translatedLines.join('\n')
-      : (b.lines ? b.lines.join('\n') : '');
-    return `${num}\n${time}\n${text}`;
-  }).join('\n\n') + '\n';
-}
-
 // ── Event Setup ──
 function setupEventListeners() {
   // Modal dialog listeners
@@ -3439,7 +3423,7 @@ function sanitizeFileName(rawName, maxBaseLen = 60) {
 // ── File Selection & Adaptive Batching ──
 function handleFileSelection(file) {
   if (!file.name.toLowerCase().endsWith('.srt')) {
-    alert('Please upload a valid .srt subtitle file.');
+    showCustomAlert({ title: 'Invalid File', message: 'Please upload a valid .srt subtitle file.', type: 'warning' });
     return;
   }
 
@@ -3466,7 +3450,7 @@ function handleFileSelection(file) {
     const blocks = parseSRT(rawContent);
 
     if (!blocks || blocks.length === 0) {
-      alert('Could not detect valid subtitles in this file. Please check if the SRT file is formatted properly.');
+      showCustomAlert({ title: 'Invalid Subtitle Format', message: 'Could not detect valid subtitles in this file. Please check if the SRT file is formatted properly.', type: 'warning' });
       return;
     }
 
@@ -3593,19 +3577,23 @@ function parseSRT(raw) {
 }
 
 function isValidSRTTimecode(tc) {
-  return /\d{1,2}:\d{2}:\d{2}[,.]\d{1,3}\s*-->\s*\d{1,2}:\d{2}:\d{2}[,.]\d{1,3}/.test(tc);
+  if (!tc || typeof tc !== 'string') return false;
+  return /\d{1,2}:\d{2}:\d{2}(?:[,.]\d{1,3})?\s*-->\s*\d{1,2}:\d{2}:\d{2}(?:[,.]\d{1,3})?/.test(tc);
 }
 
 function parseTimeRange(tc) {
+  if (!tc || typeof tc !== 'string') return null;
   const parts = tc.split('-->').map(s => s.trim());
   if (parts.length !== 2) return null;
   return { start: tcToMs(parts[0]), end: tcToMs(parts[1]) };
 }
 
 function tcToMs(tc) {
-  const m = tc.replace(',', '.').match(/(\d{1,2}):(\d{2}):(\d{2})\.(\d{1,3})/);
+  if (!tc || typeof tc !== 'string') return 0;
+  const clean = tc.trim().replace(',', '.');
+  const m = clean.match(/(\d{1,2}):(\d{2}):(\d{2})(?:\.(\d{1,3}))?/);
   if (!m) return 0;
-  const msPart = m[4].padEnd(3, '0');
+  const msPart = (m[4] || '0').padEnd(3, '0').slice(0, 3);
   return (+m[1] * 3600 + +m[2] * 60 + +m[3]) * 1000 + +msPart;
 }
 
@@ -4825,7 +4813,7 @@ OUTPUT (JSON Array):`;
 async function retryIncompleteBatchesPipeline() {
   const { providerId, model: initialModel, key: activeKey } = getActiveProviderAndKey();
   if (!activeKey) {
-    alert('Please enter and connect at least one AI API Key before proceeding.');
+    showCustomAlert({ title: 'API Key Required', message: 'Please enter and connect at least one AI API Key before proceeding.', type: 'warning' });
     return;
   }
 
@@ -4837,7 +4825,7 @@ async function retryIncompleteBatchesPipeline() {
   });
 
   if (incompleteIndices.length === 0) {
-    alert('All subtitles are already 100% translated!');
+    showToast('All subtitles are already 100% translated!', 'success');
     return;
   }
 
@@ -5077,7 +5065,7 @@ function postProcessSubtitles(blocks) {
   const result = blocks.map(b => ({ ...b }));
 
   // 1. Recover empty lines & sanitize Bengali vocabulary
-  const isBengaliTarget = (targetLang.value || '').toLowerCase().includes('bengali') || targetLang.value === 'Bengali';
+  const isBengaliTarget = (targetLang?.value || '').toLowerCase().includes('bengali') || targetLang?.value === 'Bengali';
 
   for (let i = 0; i < result.length; i++) {
     if (!result[i].translatedLines || result[i].translatedLines.length === 0) {
@@ -5104,7 +5092,9 @@ function postProcessSubtitles(blocks) {
     }
   }
 
-  statOverlaps.textContent = String(state.stats.overlapsFixed);
+  if (statOverlaps) {
+    statOverlaps.textContent = String(state.stats.overlapsFixed);
+  }
   return result;
 }
 
@@ -5136,19 +5126,6 @@ function getReadingSpeedPill(lines) {
   }
 }
 
-// ── Universal AI Condenser Dispatcher ──
-async function callAiBatchCondense(batch, key, attemptNumber, overrideModel) {
-  const modelToUse = overrideModel || modelSelect?.value || state.selectedModel;
-  const { providerId, model, key: providerKey } = getActiveProviderAndKey(modelToUse);
-  const effectiveKey = providerKey || state.apiKeys[providerId] || key;
-
-  if (providerId === 'gemini') {
-    return await callGeminiBatchCondense(batch, effectiveKey, attemptNumber, model);
-  } else {
-    return await callOpenAiCompatibleBatchCondense(batch, providerId, model, effectiveKey, attemptNumber);
-  }
-}
-
 // ── Helper: Generate distinct filename for condensed subtitles ──
 function getCondensedFileName(origName) {
   if (!origName) return 'subtitles_condensed.srt';
@@ -5171,7 +5148,7 @@ async function runAiCondensePipeline() {
 
   const { providerId, model: activeModel, key: activeKey } = getActiveProviderAndKey();
   if (!activeKey) {
-    alert('Please enter and connect at least one AI API Key before proceeding.');
+    showCustomAlert({ title: 'API Key Required', message: 'Please enter and connect at least one AI API Key before proceeding.', type: 'warning' });
     return;
   }
 
@@ -5724,7 +5701,7 @@ async function condenseSingleBlock(index) {
   if (!block) return;
   const { providerId, model: currentModel, key: activeKey } = getActiveProviderAndKey();
   if (!activeKey) {
-    alert('Please enter and connect an AI API Key first.');
+    showCustomAlert({ title: 'API Key Required', message: 'Please enter and connect an AI API Key first.', type: 'warning' });
     return;
   }
 
@@ -5750,7 +5727,7 @@ async function condenseSingleBlock(index) {
     }
   } catch (err) {
     console.error('Error shortening line:', err);
-    alert('Could not shorten line: ' + err.message);
+    showToast('Could not shorten line: ' + (err.message || 'Unknown error'), true);
   } finally {
     const shortenIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;display:inline-block;vertical-align:-1px;"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>`;
     buttons.forEach(b => {
@@ -6055,8 +6032,9 @@ function unicodeToBase64(str) {
   }
 }
 
-// ── Download .SRT File (Web + Android Native & External Browser Engine) ──
+// ── Download .SRT File (Web + Android Native Storage Engine) ──
 async function downloadSRTFile(blocks) {
+  if (!blocks || !Array.isArray(blocks) || blocks.length === 0) return;
   const content = generateSRTString(blocks);
   let fileName = state.fileName || 'translated_subtitle.srt';
   if (state.isCondensed && !/condens|glance/i.test(fileName)) {
@@ -6066,74 +6044,7 @@ async function downloadSRTFile(blocks) {
     fileName += '.srt';
   }
 
-  // Record to Download Manager
-  saveDownloadedFile({
-    fileName: fileName,
-    srtContent: content,
-    lang: targetLang?.value || 'Bengali',
-    lines: Array.isArray(blocks) ? blocks.length : 0,
-    size: new Blob([content]).size,
-    isCondensed: !!state.isCondensed
-  });
-
-  const isNative = !!(
-    (window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform()) ||
-    window.location.protocol === 'capacitor:' ||
-    (window.location.hostname === 'localhost' && /Android/i.test(navigator.userAgent))
-  );
-
-  // 1. If running inside Native Android App: Open External Browser to download cleanly
-  if (isNative) {
-    addTerminalLog('info', `Opening external browser to download "${fileName}"...`);
-    
-    // Construct External Browser Download URL with Base64 Payload
-    const encodedData = unicodeToBase64(content);
-    const downloadUrl = `https://srttranslator.vercel.app/download.html#filename=${encodeURIComponent(fileName)}&data=${encodeURIComponent(encodedData)}`;
-
-    // Open in External Browser (Chrome / Android Default Browser)
-    try {
-      if (window.Capacitor?.Plugins?.Browser?.open) {
-        await window.Capacitor.Plugins.Browser.open({ url: downloadUrl, windowName: '_system' });
-      } else {
-        window.open(downloadUrl, '_system');
-      }
-    } catch (browserErr) {
-      console.warn('Capacitor Browser open failed, using fallback:', browserErr);
-      window.open(downloadUrl, '_blank');
-    }
-
-    // Native Filesystem Save (saves directly to phone storage if available)
-    try {
-      if (window.Capacitor?.Plugins?.Filesystem?.writeFile) {
-        await window.Capacitor.Plugins.Filesystem.writeFile({
-          path: `Download/${fileName}`,
-          data: content,
-          directory: 'DOCUMENTS',
-          encoding: 'utf8',
-          recursive: true
-        });
-      }
-    } catch (fsErr) {}
-
-    return;
-  }
-
-  // 2. Standard Web Browser Download (Desktop & Mobile Browser)
-  try {
-    const blob = new Blob(['\uFEFF' + content], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = fileName;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(() => URL.revokeObjectURL(url), 2000);
-  } catch (err) {
-    console.error('Web download error:', err);
-    const encodedData = unicodeToBase64(content);
-    window.location.href = `https://srttranslator.vercel.app/download.html#filename=${encodeURIComponent(fileName)}&data=${encodeURIComponent(encodedData)}`;
-  }
+  await triggerDirectSrtDownload(fileName, content);
 }
 
 // ── Copy Full SRT Code ──
@@ -6159,7 +6070,10 @@ async function copyFullSRTCode() {
 }
 
 function showCopyFeedback(btn, text) {
-  const originalHtml = btn.innerHTML;
+  if (!btn) return;
+  if (!btn.dataset.originalHtml) {
+    btn.dataset.originalHtml = btn.innerHTML;
+  }
   btn.innerHTML = `
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:15px;height:15px;color:var(--status-success)">
       <polyline points="20 6 9 17 4 12"/>
@@ -6167,8 +6081,12 @@ function showCopyFeedback(btn, text) {
     <span style="color:var(--status-success); font-weight:700;">${text}</span>
   `;
 
-  setTimeout(() => {
-    btn.innerHTML = originalHtml;
+  if (btn._copyFeedbackTimer) clearTimeout(btn._copyFeedbackTimer);
+  btn._copyFeedbackTimer = setTimeout(() => {
+    if (btn.dataset.originalHtml) {
+      btn.innerHTML = btn.dataset.originalHtml;
+      delete btn.dataset.originalHtml;
+    }
   }, 2200);
 }
 
@@ -8020,7 +7938,15 @@ function saveDownloadedFile({ fileName, srtContent, lang = 'Bengali', lines = 0,
 
   try {
     localStorage.setItem(DOWNLOADS_STORAGE_KEY, JSON.stringify(capped));
-  } catch (err) {}
+  } catch (err) {
+    try {
+      // If quota exceeded, strip raw subtitle content from older items and preserve latest 3
+      const lightweight = capped.map((item, idx) => idx < 3 ? item : { ...item, srtContent: '' });
+      localStorage.setItem(DOWNLOADS_STORAGE_KEY, JSON.stringify(lightweight));
+    } catch (e2) {
+      console.warn('Downloads storage quota exceeded:', e2);
+    }
+  }
 
   // Trigger Header Button Animation & Update Badge
   triggerHeaderDownloadAnimation();
