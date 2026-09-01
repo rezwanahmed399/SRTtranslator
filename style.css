@@ -9012,6 +9012,112 @@ body.is-native-app.in-settings-subscreen .native-back-nav-bar {
   color: var(--text-main);
 }
 
+/* 11. Complete Zero Horizontal Overflow Guarantee across all Settings components */
+body.is-native-app #viewSettings,
+body.is-native-app #subViewApiKeys,
+body.is-native-app #subViewHistory,
+body.is-native-app .settings-grid,
+body.is-native-app .api-section,
+body.is-native-app .auth-card-section,
+body.is-native-app .compact-checklist,
+body.is-native-app .quota-dashboard,
+body.is-native-app .history-section,
+body.is-native-app .app-info-section,
+body.is-native-app .terminal-log-wrapper {
+  max-width: 100% !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  overflow-x: hidden !important;
+}
+
+body.is-native-app .provider-selector-wrap,
+body.is-native-app .provider-tabs {
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+body.is-native-app .auth-sync-banner-simple {
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 12px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+body.is-native-app .auth-banner-text-group {
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+body.is-native-app .btn-google-connect {
+  width: 100% !important;
+  justify-content: center !important;
+  box-sizing: border-box !important;
+}
+
+body.is-native-app .api-form-row {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+body.is-native-app .input-glow-wrapper {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+body.is-native-app .input-glow-wrapper input {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+body.is-native-app .compact-checklist-grid {
+  grid-template-columns: 1fr !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+body.is-native-app .checklist-item {
+  width: 100% !important;
+  box-sizing: border-box !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+}
+
+body.is-native-app .checklist-item-left {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+}
+
+body.is-native-app .checklist-item-right {
+  margin-left: auto !important;
+  flex-shrink: 0 !important;
+}
+
+body.is-native-app .quota-grid {
+  grid-template-columns: 1fr 1fr !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+body.is-native-app .quota-stat-card {
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+}
+
+body.is-native-app .terminal-log-content {
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+  white-space: pre-wrap !important;
+}
+
 
 
 

@@ -586,36 +586,38 @@ function initNativeAppIntegrations() {
       window.Capacitor.Plugins.StatusBar.setStyle({ style: 'DARK' }).catch(() => {});
     }
 
+    let lastBackPressTime = 0;
+
     // 2. Hardware Back Button Handling
     if (window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
       window.Capacitor.Plugins.App.addListener('backButton', async () => {
-        // If custom modal is open, close it
+        // Step 1: If custom modal is open, close it
         if (customModalBackdrop && !customModalBackdrop.classList.contains('hidden')) {
           closeCustomModal(false);
           return;
         }
 
-        // If a dropdown / bottom sheet is open, close it
+        // Step 2: If a dropdown / bottom sheet is open, close it
         const openDropdown = document.querySelector('.custom-select-container.is-open');
         if (openDropdown) {
           closeAllCustomSelects();
           return;
         }
 
-        // If in a Settings sub-screen, return to Settings Hub
+        // Step 3: If in a Settings sub-screen, return to Settings Hub
         if (document.body.classList.contains('in-settings-subscreen')) {
           closeSettingsSubScreen();
           return;
         }
 
-        // If on Settings view, switch back to Translator main view
+        // Step 4: If on Settings view, switch back to Translator main view
         const viewSettings = $('viewSettings');
         if (viewSettings && viewSettings.classList.contains('active')) {
           switchAppTab('translator');
           return;
         }
 
-        // If translation is currently running, ask before exiting
+        // Step 5: If translation is currently running, ask before exiting
         if ((state.isTranslating || state.isCondensing) && !state.isCancelled) {
           const confirmed = await showCustomConfirm({
             title: 'Exit App?',
@@ -631,8 +633,15 @@ function initNativeAppIntegrations() {
           return;
         }
 
-        // Default: exit app
-        window.Capacitor.Plugins.App.exitApp();
+        // Step 6: On Translator root view — Double-tap back within 2s to exit app
+        const now = Date.now();
+        if (now - lastBackPressTime < 2000) {
+          window.Capacitor.Plugins.App.exitApp();
+        } else {
+          lastBackPressTime = now;
+          triggerHaptic('light');
+          showToast('Press back again to exit app');
+        }
       });
     }
   }
@@ -1040,21 +1049,13 @@ function openSettingsSubScreen(screenId) {
       checklistSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   } else if (screenId === 'history') {
-    if (titleEl) titleEl.textContent = 'Subtitle History & Sync';
+    if (titleEl) titleEl.textContent = 'Cloud Sync, History & Preferences';
     switchSettingsSubTab('history');
+    if (authSection) authSection.style.display = 'block';
+    if (cloudHistorySection) cloudHistorySection.style.display = 'block';
+    if (appInfoSection) appInfoSection.style.display = 'block';
     if (cloudHistorySection) {
-      cloudHistorySection.style.display = 'block';
       cloudHistorySection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  } else if (screenId === 'appinfo') {
-    if (titleEl) titleEl.textContent = 'App Info & Preferences';
-    switchSettingsSubTab('apikeys');
-    if (authSection) authSection.style.display = 'none';
-    if (apiSection) apiSection.style.display = 'none';
-    if (checklistSection) checklistSection.style.display = 'none';
-    if (appInfoSection) {
-      appInfoSection.style.display = 'block';
-      appInfoSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }
 }
@@ -1084,13 +1085,11 @@ function initNativeSettingsHub() {
   const hubItemProviders = $('hubItemProviders');
   const hubItemStatus = $('hubItemStatus');
   const hubItemHistory = $('hubItemHistory');
-  const hubItemAppInfo = $('hubItemAppInfo');
   const btnBack = $('btnBackToSettingsHub');
 
   if (hubItemProviders) hubItemProviders.addEventListener('click', () => openSettingsSubScreen('providers'));
   if (hubItemStatus) hubItemStatus.addEventListener('click', () => openSettingsSubScreen('status'));
   if (hubItemHistory) hubItemHistory.addEventListener('click', () => openSettingsSubScreen('history'));
-  if (hubItemAppInfo) hubItemAppInfo.addEventListener('click', () => openSettingsSubScreen('appinfo'));
   if (btnBack) btnBack.addEventListener('click', closeSettingsSubScreen);
 }
 
