@@ -489,8 +489,34 @@
     return null;
   }
 
-  // ── Global FIFO Auto-Purge & 3-Day Auto-Expiring Translation Engine ──
-  const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000;
+  // ── Global FIFO Auto-Purge & Strict 3-Day Auto-Expiring Translation Engine ──
+  const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000; // Exactly 72 Hours (Strict Maximum Lifespan)
+
+  function resolveStrict3DayLifespan(data, docId, now) {
+    let createdAt = Number(data.createdAtMs) || 0;
+    if (!createdAt && docId && docId.startsWith('trans_')) {
+      const parts = docId.split('_');
+      if (parts[1] && !isNaN(Number(parts[1]))) {
+        createdAt = Number(parts[1]);
+      }
+    }
+    if (!createdAt) {
+      createdAt = data.expiresAtMs ? Math.max(now - THREE_DAYS_MS, data.expiresAtMs - THREE_DAYS_MS) : now;
+    }
+
+    // Absolute strict 3-day expiration time: exactly createdAt + 3 days
+    const strictExpiresAt = createdAt + THREE_DAYS_MS;
+    const diffMs = strictExpiresAt - now;
+    const isExpired = diffMs <= 0;
+    const daysLeft = Math.min(3, Math.max(0, Math.ceil(diffMs / (24 * 60 * 60 * 1000))));
+
+    return {
+      createdAtMs: createdAt,
+      expiresAtMs: strictExpiresAt,
+      daysLeft: daysLeft,
+      isExpired: isExpired
+    };
+  }
 
   async function saveTranslationToCloud(translationData) {
     if (!currentUser) return null;
@@ -537,7 +563,7 @@
         dbInstance.collection('translations').doc(docId).set(sdkPayload).catch(() => {});
       }
 
-      console.log('[Firebase Sync] Translation archive saved:', docId);
+      console.log('[Firebase Sync] Translation archive saved (Strict 3-day lifespan):', docId);
       return docId;
     } catch (err) {
       console.error('[Firebase Sync] Error saving translation to cloud:', err);
@@ -560,12 +586,27 @@
             const snap = await dbInstance.collection('users').doc(k).collection('translations').get();
             snap.forEach(doc => {
               const data = doc.data();
-              const expiresAt = data.expiresAtMs || 0;
-              if (expiresAt > 0 && expiresAt >= now && !activeMap.has(doc.id)) {
+              const lifespan = resolveStrict3DayLifespan(data, doc.id, now);
+
+              // Auto-purge if expired (>3 days old)
+              if (lifespan.isExpired) {
+                console.log('[Firebase Sync] Auto-purging >3-day expired subtitle:', doc.id);
+                deleteCloudTranslation(doc.id).catch(() => {});
+                return;
+              }
+
+              if (!activeMap.has(doc.id)) {
+                // If cloud had old 7-day expiresAtMs, update to strict 3-day in background
+                if (data.expiresAtMs !== lifespan.expiresAtMs) {
+                  doc.ref.update({ expiresAtMs: lifespan.expiresAtMs }).catch(() => {});
+                }
+
                 activeMap.set(doc.id, {
                   ...data,
                   docId: doc.id,
-                  daysLeft: Math.max(0, Math.ceil((expiresAt - now) / (24 * 60 * 60 * 1000)))
+                  createdAtMs: lifespan.createdAtMs,
+                  expiresAtMs: lifespan.expiresAtMs,
+                  daysLeft: lifespan.daysLeft
                 });
               }
             });
@@ -579,12 +620,29 @@
           const restItems = await restListDocs(`users/${k}/translations`);
           restItems.forEach(item => {
             const docId = item.docId || item.id;
-            const expiresAt = item.expiresAtMs || 0;
-            if (docId && expiresAt > 0 && expiresAt >= now && !activeMap.has(docId)) {
+            if (!docId) return;
+
+            const lifespan = resolveStrict3DayLifespan(item, docId, now);
+
+            // Auto-purge if expired (>3 days old)
+            if (lifespan.isExpired) {
+              console.log('[Firebase Sync] Auto-purging >3-day expired subtitle (REST):', docId);
+              deleteCloudTranslation(docId).catch(() => {});
+              return;
+            }
+
+            if (!activeMap.has(docId)) {
+              // Patch strict 3-day expiration if needed
+              if (item.expiresAtMs !== lifespan.expiresAtMs) {
+                restPatchDoc(`users/${k}/translations/${docId}`, { expiresAtMs: lifespan.expiresAtMs });
+              }
+
               activeMap.set(docId, {
                 ...item,
                 docId: docId,
-                daysLeft: Math.max(0, Math.ceil((expiresAt - now) / (24 * 60 * 60 * 1000)))
+                createdAtMs: lifespan.createdAtMs,
+                expiresAtMs: lifespan.expiresAtMs,
+                daysLeft: lifespan.daysLeft
               });
             }
           });

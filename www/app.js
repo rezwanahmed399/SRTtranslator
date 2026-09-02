@@ -7720,9 +7720,22 @@ function generateHistoryCardsHtml(items) {
       minute: '2-digit'
     }) : 'Recently';
 
-    const expiresAt = item.expiresAtMs || (item.createdAtMs ? item.createdAtMs + (3 * 24 * 60 * 60 * 1000) : 0);
+    // ── Strict 3-Day Lifespan (Max 72 Hours) ──
+    const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000;
+    let createdAtMs = Number(item.createdAtMs) || 0;
+    if (!createdAtMs && item.id && item.id.startsWith('trans_')) {
+      const parts = item.id.split('_');
+      if (parts[1] && !isNaN(Number(parts[1]))) {
+        createdAtMs = Number(parts[1]);
+      }
+    }
+    if (!createdAtMs) {
+      createdAtMs = Date.now();
+    }
+
+    const strictExpiresAt = createdAtMs + THREE_DAYS_MS;
     const nowMs = Date.now();
-    const diffMs = expiresAt ? Math.max(0, expiresAt - nowMs) : (item.daysLeft ? item.daysLeft * 24 * 3600 * 1000 : 3 * 24 * 3600 * 1000);
+    const diffMs = Math.max(0, strictExpiresAt - nowMs);
     const diffHours = diffMs / (1000 * 60 * 60);
 
     let expiryShortText = '3d';
@@ -7732,7 +7745,7 @@ function generateHistoryCardsHtml(items) {
       expiryShortText = 'Exp';
       isUrgent = true;
     } else if (diffHours > 24) {
-      const days = Math.ceil(diffHours / 24);
+      const days = Math.min(3, Math.ceil(diffHours / 24));
       expiryShortText = `${days}d`;
       isUrgent = days <= 1;
     } else if (diffHours >= 1) {
