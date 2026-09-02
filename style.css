@@ -2753,6 +2753,17 @@ body.is-native-app .app-info-section {
   transform: translateY(0) scale(1);
 }
 
+.custom-select-container.opens-up .custom-select-menu {
+  top: auto !important;
+  bottom: calc(100% + 4px) !important;
+  transform-origin: bottom center !important;
+  transform: translateY(6px) scale(0.97);
+}
+
+.custom-select-container.opens-up.is-open .custom-select-menu {
+  transform: translateY(0) scale(1);
+}
+
 .field-card:has(.custom-select-container.is-open),
 .field-item:has(.custom-select-container.is-open),
 .settings-grid:has(.custom-select-container.is-open),
@@ -2823,6 +2834,23 @@ body.is-native-app .app-info-section {
   gap: 2px;
 }
 
+/* Subtitle Pacing Dropdown - Compact 2-item height so it never cuts off at the bottom */
+.custom-select-container[data-select-id="styleMode"] .custom-select-options-list,
+.select-styleMode .custom-select-options-list {
+  max-height: 125px !important;
+}
+
+.custom-select-container[data-select-id="styleMode"] .custom-select-group-header,
+.select-styleMode .custom-select-group-header {
+  padding: 6px 8px 3px;
+  font-size: 0.63rem;
+}
+
+.custom-select-container[data-select-id="styleMode"] .custom-select-option,
+.select-styleMode .custom-select-option {
+  padding: 6px 8px;
+}
+
 @media (max-width: 640px) {
   .custom-select-menu {
     max-height: calc(100vh - 170px) !important;
@@ -2830,6 +2858,10 @@ body.is-native-app .app-info-section {
   .custom-select-options-list {
     max-height: min(240px, calc(100vh - 220px)) !important;
     overflow-y: auto !important;
+  }
+  .custom-select-container[data-select-id="styleMode"] .custom-select-options-list,
+  .select-styleMode .custom-select-options-list {
+    max-height: 122px !important;
   }
 }
 

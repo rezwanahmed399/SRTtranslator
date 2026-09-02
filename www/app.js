@@ -6652,7 +6652,7 @@ function buildCustomSelect(selectEl) {
   selectEl.classList.add('custom-hidden-select');
 
   const container = document.createElement('div');
-  container.className = 'custom-select-container';
+  container.className = `custom-select-container select-${selectId}`;
   container.dataset.selectId = selectId;
   if (selectEl.disabled) container.classList.add('is-disabled');
 
@@ -6823,14 +6823,15 @@ function buildCustomSelect(selectEl) {
 
       // Determine smart direction: if space below is too tight (< 160px) and above has more space, flip UP!
       const shouldOpenUp = (spaceBelow < 160 && spaceAbove > spaceBelow);
+      const capH = (selectId === 'targetLanguage' || selectId === 'sourceLanguage') ? 220 : 280;
 
       if (shouldOpenUp) {
         container.classList.add('opens-up');
-        const maxH = Math.min(280, Math.max(180, spaceAbove - 20));
+        const maxH = Math.min(capH, Math.max(140, spaceAbove - 20));
         list.style.maxHeight = `${maxH}px`;
       } else {
         container.classList.remove('opens-up');
-        const maxH = Math.min(280, Math.max(180, spaceBelow - 16));
+        const maxH = Math.min(capH, Math.max(140, spaceBelow - 16));
         list.style.maxHeight = `${maxH}px`;
       }
 
