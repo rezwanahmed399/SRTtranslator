@@ -5909,6 +5909,66 @@ body.is-native-platform #apkDownloadSection {
   display: none !important;
 }
 
+/* Native App Compact Cloud History Adjustments */
+body.is-native-platform .cloud-history-item {
+  padding: 6px 8px;
+  gap: 3px;
+}
+
+body.is-native-platform .cloud-item-meta {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 3px;
+  flex-wrap: nowrap;
+  width: 100%;
+  margin: 1px 0 3px 0;
+  font-size: 0.55rem;
+  line-height: 1;
+}
+
+body.is-native-platform .meta-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 0.55rem;
+  white-space: nowrap;
+  padding: 0;
+  margin: 0;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+body.is-native-platform .meta-pill span {
+  font-size: 0.55rem;
+  line-height: 1;
+}
+
+body.is-native-platform .meta-svg {
+  width: 8.5px;
+  height: 8.5px;
+  flex-shrink: 0;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+body.is-native-platform .meta-expiry-pill {
+  font-size: 0.55rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+body.is-native-platform .history-modal-box {
+  max-width: 96vw;
+  width: 96vw;
+  margin: auto 6px;
+}
+
+body.is-native-platform .history-modal-content-list {
+  padding: 6px 6px;
+  gap: 4px;
+}
+
 /* ── Ultra-Modern Google Sign-In & Cloud Sync Navigation Styles ── */
 .user-auth-badge {
   position: relative;
@@ -9195,29 +9255,40 @@ button:active:not(:disabled),
     justify-content: flex-start;
     gap: 3px;
     flex-wrap: nowrap;
-    overflow-x: auto;
-    scrollbar-width: none;
     width: 100%;
-    margin: 0 0 3px 0;
-  }
-
-  .cloud-item-meta::-webkit-scrollbar {
-    display: none;
+    margin: 1px 0 3px 0;
+    font-size: 0.55rem;
+    line-height: 1;
   }
 
   .meta-pill {
     display: inline-flex;
     align-items: center;
     gap: 2px;
-    font-size: 0.58rem;
+    font-size: 0.55rem;
     white-space: nowrap;
-    padding: 1px 3px;
+    padding: 0;
+    margin: 0;
     flex-shrink: 0;
+    line-height: 1;
+  }
+
+  .meta-pill span {
+    font-size: 0.55rem;
+    line-height: 1;
   }
 
   .meta-svg {
-    width: 9px;
-    height: 9px;
+    width: 8.5px;
+    height: 8.5px;
+    flex-shrink: 0;
+    display: inline-block;
+    vertical-align: middle;
+  }
+
+  .meta-expiry-pill {
+    font-size: 0.55rem;
+    font-weight: 700;
     flex-shrink: 0;
   }
 
