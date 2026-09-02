@@ -103,6 +103,14 @@ filesToCopy.forEach(file => {
   }
 });
 
+// Also create SRTtranslator-latest.apk in www for generic download links
+const latestApkDest = path.join(destDir, 'SRTtranslator-latest.apk');
+const currentApkSrc = path.join(__dirname, currentApkName);
+if (fs.existsSync(currentApkSrc)) {
+  fs.copyFileSync(currentApkSrc, latestApkDest);
+  console.log(`✓ Created www/SRTtranslator-latest.apk (alias for ${currentApkName})`);
+}
+
 // Dedicated Clean Output Folder: D:\SRTtranslator APK
 const dedicatedApkDir = 'D:\\SRTtranslator APK';
 try {

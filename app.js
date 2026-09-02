@@ -837,9 +837,12 @@ function initNativeAppIntegrations() {
       // Show Get APK button ONLY on Android mobile browsers
       if (headerApkBtn) {
         headerApkBtn.style.display = 'inline-flex';
-        headerApkBtn.addEventListener('click', () => {
-          headerApkBtn.href = `SRTtranslator-latest.apk?t=${Date.now()}`;
-        });
+        fetch('/version.json?t=' + Date.now()).then(r => r.json()).then(v => {
+          if (v && v.apkFileName) {
+            headerApkBtn.href = `${v.apkFileName}?t=${Date.now()}`;
+            headerApkBtn.setAttribute('download', v.apkFileName);
+          }
+        }).catch(() => {});
       }
     } else {
       // Desktop (Windows, Mac, Linux) & iOS (iPhone, iPad): Hide Get APK button completely
