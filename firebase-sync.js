@@ -489,15 +489,15 @@
     return null;
   }
 
-  // ── Global FIFO Auto-Purge & 7-Day Auto-Expiring Translation Engine ──
-  const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+  // ── Global FIFO Auto-Purge & 3-Day Auto-Expiring Translation Engine ──
+  const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000;
 
   async function saveTranslationToCloud(translationData) {
     if (!currentUser) return null;
 
     try {
       const now = Date.now();
-      const expiresAt = now + SEVEN_DAYS_MS;
+      const expiresAt = now + THREE_DAYS_MS;
       const docId = 'trans_' + now + '_' + Math.random().toString(36).substr(2, 6);
       const emailKey = getEmailDocKey(currentUser) || currentUser.uid;
 

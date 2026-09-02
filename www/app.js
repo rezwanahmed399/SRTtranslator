@@ -6228,7 +6228,7 @@ function showTranslationResults(blocks, percentSaved, origWords, condWords) {
   $('tabCode').classList.add('active');
   renderActiveTab('code', blocks);
 
-  // ── Auto-Save to Google Cloud 7-Day History if signed in ──
+  // ── Auto-Save to Google Cloud 3-Day History if signed in ──
   if (window.FirebaseCloudSync && window.FirebaseCloudSync.getUser()) {
     try {
       const srtContent = generateSRTString(blocks);
@@ -6248,7 +6248,7 @@ function showTranslationResults(blocks, percentSaved, origWords, condWords) {
         fileSizeFormatted: sizeFormatted
       }).then(docId => {
         if (docId) {
-          showToast('Saved to Cloud History (Kept for 7 days)');
+          showToast('Saved to Cloud History (Kept for 3 days)');
           if (typeof renderCloudHistoryUI === 'function') {
             renderCloudHistoryUI();
           }
@@ -7302,7 +7302,7 @@ function initFirebaseAuthAndCloudSync() {
 
     const confirmed = await showConfirmModal({
       title: 'Sign Out of Google?',
-      message: 'Are you sure you want to sign out? Your saved API keys will remain on this device, but new translations won\'t sync to your 7-Day Cloud Archive until you sign in again.',
+      message: 'Are you sure you want to sign out? Your saved API keys will remain on this device, but new translations won\'t sync to your 3-Day Cloud Archive until you sign in again.',
       confirmText: 'Yes, Sign Out',
       cancelText: 'Stay Signed In',
       iconType: 'warning',
@@ -7462,7 +7462,7 @@ function initFirebaseAuthAndCloudSync() {
           });
         }
 
-        // 3. Load 7-Day Cloud Subtitle Archive
+        // 3. Load 3-Day Cloud Subtitle Archive
         await renderCloudHistoryUI();
       } finally {
         isRestoringCloudData = false;
@@ -7724,7 +7724,7 @@ function updateAuthUI(user) {
   }
 }
 
-// ── 7-Day Cloud Subtitle Archive Controller ──
+// ── 3-Day Cloud Subtitle Archive Controller ──
 
 function generateHistoryCardsHtml(items) {
   const escapeTxt = (str) => {
@@ -7813,12 +7813,12 @@ function generateHistoryCardsHtml(items) {
       minute: '2-digit'
     }) : 'Recently';
 
-    const expiresAt = item.expiresAtMs || (item.createdAtMs ? item.createdAtMs + (7 * 24 * 60 * 60 * 1000) : 0);
+    const expiresAt = item.expiresAtMs || (item.createdAtMs ? item.createdAtMs + (3 * 24 * 60 * 60 * 1000) : 0);
     const nowMs = Date.now();
-    const diffMs = expiresAt ? Math.max(0, expiresAt - nowMs) : (item.daysLeft ? item.daysLeft * 24 * 3600 * 1000 : 7 * 24 * 3600 * 1000);
+    const diffMs = expiresAt ? Math.max(0, expiresAt - nowMs) : (item.daysLeft ? item.daysLeft * 24 * 3600 * 1000 : 3 * 24 * 3600 * 1000);
     const diffHours = diffMs / (1000 * 60 * 60);
 
-    let expiryShortText = '7d';
+    let expiryShortText = '3d';
     let isUrgent = false;
 
     if (diffMs <= 0) {
@@ -8147,7 +8147,7 @@ function showAllCloudHistoryModal(initialItems) {
             <span>All Translation History</span>
             <span class="history-count-badge" id="historyModalCountBadge">${currentItems.length} Subtitles</span>
           </div>
-          <p class="history-modal-subline">7-Day Cloud Archive • Auto-removes after 7 days</p>
+          <p class="history-modal-subline">3-Day Cloud Archive • Auto-removes after 3 days</p>
         </div>
         <button class="btn-history-modal-close" type="button" id="historyModalCloseBtn" title="Close">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;">
