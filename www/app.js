@@ -6675,6 +6675,10 @@ function buildCustomSelect(selectEl) {
   const menu = document.createElement('div');
   menu.className = 'custom-select-menu';
   menu.setAttribute('role', 'listbox');
+  menu.addEventListener('click', e => e.stopPropagation());
+  menu.addEventListener('pointerdown', e => e.stopPropagation());
+  menu.addEventListener('touchstart', e => e.stopPropagation(), { passive: true });
+  menu.addEventListener('touchmove', e => e.stopPropagation(), { passive: true });
 
   const totalOptionsCount = selectEl.options.length;
   let searchInput = null;
@@ -6817,16 +6821,16 @@ function buildCustomSelect(selectEl) {
       const spaceBelow = viewportHeight - triggerRect.bottom - bottomNavHeight;
       const spaceAbove = triggerRect.top - topHeaderHeight;
 
-      // Determine smart direction: if space below < 230px and above has more space, flip UP!
-      const shouldOpenUp = (spaceBelow < 230 && spaceAbove > spaceBelow);
+      // Determine smart direction: if space below is too tight (< 160px) and above has more space, flip UP!
+      const shouldOpenUp = (spaceBelow < 160 && spaceAbove > spaceBelow);
 
       if (shouldOpenUp) {
         container.classList.add('opens-up');
-        const maxH = Math.min(320, Math.max(160, spaceAbove - 20));
+        const maxH = Math.min(280, Math.max(180, spaceAbove - 20));
         list.style.maxHeight = `${maxH}px`;
       } else {
         container.classList.remove('opens-up');
-        const maxH = Math.min(320, Math.max(160, spaceBelow - 16));
+        const maxH = Math.min(280, Math.max(180, spaceBelow - 16));
         list.style.maxHeight = `${maxH}px`;
       }
 

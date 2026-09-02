@@ -2713,10 +2713,11 @@ body.is-native-app .app-info-section {
   transform: rotate(180deg);
 }
 
-/* Floating Glass Dropdown Menu */
+/* Floating Glass Dropdown Menu (Always opens downwards) */
 .custom-select-menu {
   position: absolute;
-  top: calc(100% + 4px);
+  top: calc(100% + 4px) !important;
+  bottom: auto !important;
   left: 0;
   right: 0;
   width: 100%;
@@ -2733,6 +2734,7 @@ body.is-native-app .app-info-section {
   opacity: 0;
   visibility: hidden;
   transform: translateY(-6px) scale(0.97);
+  transform-origin: top center !important;
   transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.2s ease;
   will-change: opacity, transform;
   display: flex;
@@ -2748,23 +2750,6 @@ body.is-native-app .app-info-section {
 .custom-select-container.is-open .custom-select-menu {
   opacity: 1;
   visibility: visible;
-  transform: translateY(0) scale(1);
-}
-
-/* Smart Upward Opening Menu for fields near bottom of viewport */
-.custom-select-container.opens-up .custom-select-menu {
-  top: auto !important;
-  bottom: calc(100% + 6px) !important;
-  transform-origin: bottom center;
-  transform: translateY(6px) scale(0.97);
-  box-shadow: 0 -14px 40px rgba(0, 0, 0, 0.5), 0 0 15px var(--accent-glow);
-}
-
-[data-theme="light"] .custom-select-container.opens-up .custom-select-menu {
-  box-shadow: 0 -14px 40px rgba(15, 23, 42, 0.15), 0 -2px 8px rgba(15, 23, 42, 0.05);
-}
-
-.custom-select-container.opens-up.is-open .custom-select-menu {
   transform: translateY(0) scale(1);
 }
 
@@ -2826,19 +2811,25 @@ body.is-native-app .app-info-section {
 
 .custom-select-options-list {
   max-height: 260px;
-  overflow-y: auto;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
   padding: 4px 6px;
   scrollbar-width: thin;
   scrollbar-color: var(--brand-primary-light) transparent;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
 @media (max-width: 640px) {
+  .custom-select-menu {
+    max-height: calc(100vh - 170px) !important;
+  }
   .custom-select-options-list {
-    max-height: 48vh;
+    max-height: min(240px, calc(100vh - 220px)) !important;
+    overflow-y: auto !important;
   }
 }
 
@@ -10095,13 +10086,6 @@ button:active:not(:disabled),
   gap: 8px !important;
 }
 
-.custom-select-container.opens-up .custom-select-menu {
-  top: auto !important;
-  bottom: calc(100% + 4px) !important;
-  transform-origin: bottom center;
-  transform: translateY(6px) scale(0.98);
-  box-shadow: 0 -14px 40px rgba(0, 0, 0, 0.5), 0 0 15px var(--accent-glow);
-}
 
 /* ══════════════════════════════════════════════════════════════════════════
    GOOGLE SIGN-IN & CLOUD SYNC PROGRESS OVERLAY
