@@ -125,6 +125,12 @@ try {
     const destDedicatedApk = path.join(dedicatedApkDir, currentApkName);
     fs.copyFileSync(activeApkSrc, destDedicatedApk);
     console.log(`📁 Synced active APK to clean folder -> ${destDedicatedApk}`);
+
+    // Also copy to D:\ root
+    const dRootApk = path.join('D:\\', currentApkName);
+    fs.copyFileSync(activeApkSrc, dRootApk);
+    console.log(`📁 Synced active APK to D:\\ root -> ${dRootApk}`);
+    cleanOldApks('D:\\');
   }
 } catch (e) {
   console.warn(`Could not sync to dedicated APK folder (${dedicatedApkDir}):`, e.message);

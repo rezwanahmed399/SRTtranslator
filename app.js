@@ -361,11 +361,20 @@ function showCustomConfirm({
 
     document.body.appendChild(backdrop);
 
+    let isClosed = false;
     const close = (result) => {
+      if (isClosed) return;
+      isClosed = true;
+      window.removeEventListener('keydown', onKeyDown);
       backdrop.style.opacity = '0';
       setTimeout(() => backdrop.remove(), 150);
       resolve(result);
     };
+
+    const onKeyDown = (e) => {
+      if (e.key === 'Escape') close(false);
+    };
+    window.addEventListener('keydown', onKeyDown);
 
     const cancelBtnEl = backdrop.querySelector('#modalCancelBtn');
     const confirmBtnEl = backdrop.querySelector('#modalConfirmBtn');
@@ -419,11 +428,20 @@ function showCustomAlert({
 
     document.body.appendChild(backdrop);
 
+    let isClosed = false;
     const close = () => {
+      if (isClosed) return;
+      isClosed = true;
+      window.removeEventListener('keydown', onKeyDown);
       backdrop.style.opacity = '0';
       setTimeout(() => backdrop.remove(), 150);
       resolve(true);
     };
+
+    const onKeyDown = (e) => {
+      if (e.key === 'Escape' || e.key === 'Enter') close();
+    };
+    window.addEventListener('keydown', onKeyDown);
 
     const confirmBtnEl = backdrop.querySelector('#modalConfirmBtn');
     if (confirmBtnEl) {
@@ -1680,13 +1698,12 @@ async function handleRemoveProviderKey(providerId) {
     return;
   }
 
-  const confirmed = await showConfirmModal({
+  const confirmed = await showCustomConfirm({
     title: `Disconnect ${pConf.name}?`,
     message: `Are you sure you want to disconnect and remove your ${pConf.name} API key? It will be removed from this session.`,
     confirmText: 'Yes, Disconnect',
     cancelText: 'Cancel',
-    iconType: 'warning',
-    confirmBtnClass: 'btn btn-modal-confirm'
+    type: 'danger'
   });
 
   if (!confirmed) return;
@@ -3261,20 +3278,6 @@ window.goToApiSettingsTab = function() {
 
 // ── Event Setup ──
 function setupEventListeners() {
-  // Modal dialog listeners
-  if (modalCancelBtn) modalCancelBtn.addEventListener('click', () => closeCustomModal(false));
-  if (modalConfirmBtn) modalConfirmBtn.addEventListener('click', () => closeCustomModal(true));
-  if (customModalBackdrop) {
-    customModalBackdrop.addEventListener('click', e => {
-      if (e.target === customModalBackdrop) closeCustomModal(false);
-    });
-  }
-  window.addEventListener('keydown', e => {
-    if (e.key === 'Escape' && customModalBackdrop && !customModalBackdrop.classList.contains('hidden')) {
-      closeCustomModal(false);
-    }
-  });
-
   // 2-Tab Navigation Switcher (Desktop Header & Mobile Bottom Bar)
   const tabBtnTranslator = $('tabBtnTranslator');
   const tabBtnSettings = $('tabBtnSettings');
@@ -7038,123 +7041,23 @@ function showToast(message, type = 'success') {
   }, 2200);
 }
 
-// ── Custom Alert & Information Modal Helper ──
+// ── Custom Alert & Confirmation Modal Helpers (Universal Delegator) ──
 function showCustomModal(title, message, iconType = 'info') {
-  const backdrop = $('customModalBackdrop');
-  const modalTitle = $('modalTitle');
-  const modalMessage = $('modalMessage');
-  const badge = $('modalIconBadge');
-  const svgWarning = $('modalIconSvgWarning');
-  const svgInfo = $('modalIconSvgInfo');
-  const cancelBtn = $('modalCancelBtn');
-  const confirmBtn = $('modalConfirmBtn');
-
-  if (!backdrop) {
-    alert(`${title}\n\n${message}`);
-    return;
-  }
-
-  if (modalTitle) modalTitle.textContent = title;
-  if (modalMessage) modalMessage.textContent = message;
-
-  if (iconType === 'info') {
-    if (badge) badge.className = 'modal-icon-badge modal-icon-info';
-    if (svgWarning) svgWarning.classList.add('hidden');
-    if (svgInfo) svgInfo.classList.remove('hidden');
-  } else {
-    if (badge) badge.className = 'modal-icon-badge modal-icon-warning';
-    if (svgWarning) svgWarning.classList.remove('hidden');
-    if (svgInfo) svgInfo.classList.add('hidden');
-  }
-
-  if (cancelBtn) cancelBtn.classList.add('hidden');
-  if (confirmBtn) {
-    confirmBtn.textContent = 'OK';
-    confirmBtn.className = 'btn btn-modal-confirm';
-    const closeHandler = () => {
-      backdrop.classList.add('hidden');
-      if (cancelBtn) cancelBtn.classList.remove('hidden');
-      confirmBtn.removeEventListener('click', closeHandler);
-    };
-    confirmBtn.addEventListener('click', closeHandler);
-  }
-
-  backdrop.classList.remove('hidden');
+  return showCustomAlert({
+    title: title || 'Notification',
+    message: message || '',
+    buttonText: 'Got it',
+    type: iconType
+  });
 }
 
-// ── Custom Confirmation Dialog Helper (Returns Promise<boolean>) ──
-function showConfirmModal({
-  title = 'Confirmation',
-  message = 'Are you sure you want to proceed?',
-  confirmText = 'Confirm',
-  cancelText = 'Cancel',
-  iconType = 'warning',
-  confirmBtnClass = 'btn btn-modal-confirm'
-}) {
-  return new Promise((resolve) => {
-    const backdrop = $('customModalBackdrop');
-    const modalTitle = $('modalTitle');
-    const modalMessage = $('modalMessage');
-    const badge = $('modalIconBadge');
-    const svgWarning = $('modalIconSvgWarning');
-    const svgInfo = $('modalIconSvgInfo');
-    const cancelBtn = $('modalCancelBtn');
-    const confirmBtn = $('modalConfirmBtn');
-
-    if (!backdrop || !confirmBtn || !cancelBtn) {
-      const ok = window.confirm(`${title}\n\n${message}`);
-      resolve(ok);
-      return;
-    }
-
-    if (modalTitle) modalTitle.textContent = title;
-    if (modalMessage) modalMessage.textContent = message;
-
-    if (iconType === 'info') {
-      if (badge) badge.className = 'modal-icon-badge modal-icon-info';
-      if (svgWarning) svgWarning.classList.add('hidden');
-      if (svgInfo) svgInfo.classList.remove('hidden');
-    } else {
-      if (badge) badge.className = 'modal-icon-badge modal-icon-warning';
-      if (svgWarning) svgWarning.classList.remove('hidden');
-      if (svgInfo) svgInfo.classList.add('hidden');
-    }
-
-    cancelBtn.textContent = cancelText;
-    cancelBtn.classList.remove('hidden');
-
-    confirmBtn.textContent = confirmText;
-    confirmBtn.className = confirmBtnClass;
-
-    const cleanup = () => {
-      backdrop.classList.add('hidden');
-      confirmBtn.removeEventListener('click', onConfirm);
-      cancelBtn.removeEventListener('click', onCancel);
-      backdrop.removeEventListener('click', onBackdropClick);
-    };
-
-    const onConfirm = () => {
-      cleanup();
-      resolve(true);
-    };
-
-    const onCancel = () => {
-      cleanup();
-      resolve(false);
-    };
-
-    const onBackdropClick = (e) => {
-      if (e.target === backdrop) {
-        cleanup();
-        resolve(false);
-      }
-    };
-
-    confirmBtn.addEventListener('click', onConfirm);
-    cancelBtn.addEventListener('click', onCancel);
-    backdrop.addEventListener('click', onBackdropClick);
-
-    backdrop.classList.remove('hidden');
+function showConfirmModal(opts) {
+  return showCustomConfirm({
+    title: opts?.title || 'Confirmation',
+    message: opts?.message || 'Are you sure you want to proceed?',
+    confirmText: opts?.confirmText || 'Confirm',
+    cancelText: opts?.cancelText || 'Cancel',
+    type: (opts?.iconType === 'danger' || opts?.type === 'danger') ? 'danger' : ((opts?.iconType === 'info' || opts?.type === 'info') ? 'info' : 'warning')
   });
 }
 
@@ -7300,13 +7203,12 @@ function initFirebaseAuthAndCloudSync() {
       return;
     }
 
-    const confirmed = await showConfirmModal({
+    const confirmed = await showCustomConfirm({
       title: 'Sign Out of Google?',
       message: 'Are you sure you want to sign out? Your saved API keys will remain on this device, but new translations won\'t sync to your 3-Day Cloud Archive until you sign in again.',
       confirmText: 'Yes, Sign Out',
       cancelText: 'Stay Signed In',
-      iconType: 'warning',
-      confirmBtnClass: 'btn btn-modal-confirm'
+      type: 'warning'
     });
 
     if (!confirmed) return;
