@@ -856,10 +856,10 @@
   height: 15px;
 }
 
-/* Header Downloads Manager Button */
+/* Header Downloads Manager Button (App Only) */
 .header-downloads-btn {
   position: relative;
-  display: inline-flex;
+  display: none !important;
   align-items: center;
   justify-content: center;
   background: var(--surface-inner);
@@ -871,6 +871,10 @@
   cursor: pointer;
   transition: all 0.2s ease;
   flex-shrink: 0;
+}
+
+body.is-native-platform .header-downloads-btn {
+  display: inline-flex !important;
 }
 
 .header-downloads-btn:hover {
@@ -4408,12 +4412,16 @@ input[type="text"]:focus {
 }
 
 .bottom-auto-status {
-  display: inline-flex;
+  display: none !important;
   align-items: center;
   gap: 6px;
   color: var(--text-muted);
   font-size: 0.76rem;
   white-space: nowrap;
+}
+
+body.is-native-platform .bottom-auto-status {
+  display: inline-flex !important;
 }
 
 .bottom-auto-status span {

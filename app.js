@@ -821,21 +821,30 @@ function initNativeAppIntegrations() {
 
   const isAndroidBrowser = /Android/i.test(navigator.userAgent) && !isNative;
   const headerApkBtn = document.getElementById('headerApkBtn') || document.querySelector('.header-apk-btn');
+  const headerDownloadsBtn = $('headerDownloadsBtn');
+  const bottomAutoStatus = document.querySelector('.bottom-auto-status');
 
   if (isNative) {
     document.body.classList.add('is-native-platform');
     if (headerApkBtn) headerApkBtn.style.display = 'none';
-  } else if (isAndroidBrowser) {
-    // Show Get APK button ONLY on Android mobile browsers
-    if (headerApkBtn) {
-      headerApkBtn.style.display = 'inline-flex';
-      headerApkBtn.addEventListener('click', () => {
-        headerApkBtn.href = `SRTtranslator-latest.apk?t=${Date.now()}`;
-      });
-    }
+    if (headerDownloadsBtn) headerDownloadsBtn.style.display = 'inline-flex';
+    if (bottomAutoStatus) bottomAutoStatus.style.display = 'inline-flex';
   } else {
-    // Desktop (Windows, Mac, Linux) & iOS (iPhone, iPad): Hide Get APK button completely
-    if (headerApkBtn) headerApkBtn.style.display = 'none';
+    document.body.classList.remove('is-native-platform');
+    if (headerDownloadsBtn) headerDownloadsBtn.style.display = 'none';
+    if (bottomAutoStatus) bottomAutoStatus.style.display = 'none';
+    if (isAndroidBrowser) {
+      // Show Get APK button ONLY on Android mobile browsers
+      if (headerApkBtn) {
+        headerApkBtn.style.display = 'inline-flex';
+        headerApkBtn.addEventListener('click', () => {
+          headerApkBtn.href = `SRTtranslator-latest.apk?t=${Date.now()}`;
+        });
+      }
+    } else {
+      // Desktop (Windows, Mac, Linux) & iOS (iPhone, iPad): Hide Get APK button completely
+      if (headerApkBtn) headerApkBtn.style.display = 'none';
+    }
   }
 }
 
@@ -8734,13 +8743,26 @@ function renderDownloadsModalContent(backdrop, closeFn) {
 }
 
 function initDownloadsManager() {
+  const isNative = !!(
+    (window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform()) ||
+    window.location.protocol === 'capacitor:' ||
+    (window.location.hostname === 'localhost' && /Android/i.test(navigator.userAgent)) ||
+    document.body.classList.contains('is-native-platform')
+  );
   const headerBtn = $('headerDownloadsBtn');
   if (headerBtn) {
-    headerBtn.addEventListener('click', showDownloadsManagerModal);
+    if (isNative) {
+      headerBtn.style.display = 'inline-flex';
+      headerBtn.addEventListener('click', showDownloadsManagerModal);
+    } else {
+      headerBtn.style.display = 'none';
+    }
   }
-  updateHeaderDownloadsBadge();
-  // Auto-sync existing list with device storage in background
-  syncDownloadsWithDeviceStorage();
+  if (isNative) {
+    updateHeaderDownloadsBadge();
+    // Auto-sync existing list with device storage in background
+    syncDownloadsWithDeviceStorage();
+  }
 }
 
 async function triggerDirectSrtDownload(fileName, srtContent) {
@@ -8794,7 +8816,15 @@ async function triggerDirectSrtDownload(fileName, srtContent) {
   });
 
   if (typeof triggerHaptic === 'function') triggerHaptic('success');
-  showToast(`Saved to ${finalSavedPath}`);
+  // Only show "Saved to..." toast on the native mobile app
+  const isNativeApp = !!(
+    savedNatively ||
+    (window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform()) ||
+    document.body.classList.contains('is-native-platform')
+  );
+  if (isNativeApp) {
+    showToast(`Saved to ${finalSavedPath}`);
+  }
 }
 
 // ── Refresh & Page Exit Confirmation Guard ──
