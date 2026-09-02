@@ -6232,9 +6232,10 @@ function showTranslationResults(blocks, percentSaved, origWords, condWords) {
   renderActiveTab('code', blocks);
 
   // ── Auto-Save to Google Cloud 3-Day History if signed in ──
-  if (window.FirebaseCloudSync && window.FirebaseCloudSync.getUser()) {
+  if (window.FirebaseCloudSync && window.FirebaseCloudSync.getUser() && Array.isArray(blocks) && blocks.length > 0) {
     try {
       const srtContent = generateSRTString(blocks);
+      if (!srtContent || !srtContent.trim()) return;
       const sizeBytes = new Blob([srtContent]).size;
       const sizeFormatted = sizeBytes > 1024 * 1024 
         ? (sizeBytes / (1024 * 1024)).toFixed(1) + ' MB'

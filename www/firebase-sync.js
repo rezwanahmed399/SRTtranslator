@@ -99,9 +99,16 @@
     }
   }
 
-  async function restPatchDoc(docPath, data) {
+  async function restPatchDoc(docPath, data, updateMaskFields = null) {
     try {
-      const url = `${FIRESTORE_REST_BASE}/${docPath}?key=${FIREBASE_API_KEY}`;
+      let url = `${FIRESTORE_REST_BASE}/${docPath}?key=${FIREBASE_API_KEY}`;
+      const maskFields = Array.isArray(updateMaskFields) && updateMaskFields.length > 0
+        ? updateMaskFields
+        : (data && typeof data === 'object' ? Object.keys(data) : []);
+      if (maskFields.length > 0) {
+        const maskParams = maskFields.map(f => `updateMask.fieldPaths=${encodeURIComponent(f)}`).join('&');
+        url += `&${maskParams}`;
+      }
       const body = encodeFirestoreFields(data);
       const res = await fetch(url, {
         method: 'PATCH',
@@ -111,6 +118,19 @@
       return res.ok;
     } catch (e) {
       console.warn('[Firebase Sync REST] Patch error:', e);
+      return false;
+    }
+  }
+
+  async function restDeleteDoc(docPath) {
+    try {
+      const url = `${FIRESTORE_REST_BASE}/${docPath}?key=${FIREBASE_API_KEY}`;
+      const res = await fetch(url, {
+        method: 'DELETE'
+      });
+      return res.ok;
+    } catch (e) {
+      console.warn('[Firebase Sync REST] Delete error:', e);
       return false;
     }
   }
@@ -521,6 +541,12 @@
   async function saveTranslationToCloud(translationData) {
     if (!currentUser) return null;
 
+    // Reject 0-line or empty subtitle content to prevent empty items in cloud history
+    if (!translationData || !translationData.blockCount || translationData.blockCount <= 0 || !translationData.srtContent || !translationData.srtContent.trim()) {
+      console.warn('[Firebase Sync] Blocked saving 0-line or empty subtitle to cloud history');
+      return null;
+    }
+
     try {
       const now = Date.now();
       const expiresAt = now + THREE_DAYS_MS;
@@ -545,7 +571,7 @@
 
       const docKeys = getUserDocKeys(currentUser);
 
-      // Save via REST
+      // Save via REST (sends all fields)
       for (const k of docKeys) {
         restPatchDoc(`users/${k}/translations/${docId}`, payload);
       }
@@ -588,9 +614,9 @@
               const data = doc.data();
               const lifespan = resolveStrict3DayLifespan(data, doc.id, now);
 
-              // Auto-purge if expired (>3 days old)
-              if (lifespan.isExpired) {
-                console.log('[Firebase Sync] Auto-purging >3-day expired subtitle:', doc.id);
+              // Auto-purge if expired (>3 days old) or corrupted 0-line with no content
+              if (lifespan.isExpired || (data.blockCount === 0 && (!data.srtContent || !data.srtContent.trim()))) {
+                console.log('[Firebase Sync] Auto-purging expired or empty subtitle:', doc.id);
                 deleteCloudTranslation(doc.id).catch(() => {});
                 return;
               }
@@ -624,17 +650,17 @@
 
             const lifespan = resolveStrict3DayLifespan(item, docId, now);
 
-            // Auto-purge if expired (>3 days old)
-            if (lifespan.isExpired) {
-              console.log('[Firebase Sync] Auto-purging >3-day expired subtitle (REST):', docId);
+            // Auto-purge if expired (>3 days old) or corrupted 0-line with no content
+            if (lifespan.isExpired || (item.blockCount === 0 && (!item.srtContent || !item.srtContent.trim()))) {
+              console.log('[Firebase Sync] Auto-purging expired or empty subtitle (REST):', docId);
               deleteCloudTranslation(docId).catch(() => {});
               return;
             }
 
             if (!activeMap.has(docId)) {
-              // Patch strict 3-day expiration if needed
+              // Patch strict 3-day expiration if needed (using updateMask so no fields are dropped)
               if (item.expiresAtMs !== lifespan.expiresAtMs) {
-                restPatchDoc(`users/${k}/translations/${docId}`, { expiresAtMs: lifespan.expiresAtMs });
+                restPatchDoc(`users/${k}/translations/${docId}`, { expiresAtMs: lifespan.expiresAtMs }, ['expiresAtMs']);
               }
 
               activeMap.set(docId, {
@@ -664,12 +690,22 @@
 
     try {
       const docKeys = getUserDocKeys(currentUser);
+
+      // 1. Delete via REST API (ensures permanent deletion across all devices & APK)
+      for (const k of docKeys) {
+        restDeleteDoc(`users/${k}/translations/${docId}`);
+      }
+      restDeleteDoc(`translations/${docId}`);
+
+      // 2. Delete via SDK
       if (isFirebaseReady && dbInstance) {
         docKeys.forEach(k => {
           dbInstance.collection('users').doc(k).collection('translations').doc(docId).delete().catch(() => {});
         });
         dbInstance.collection('translations').doc(docId).delete().catch(() => {});
       }
+
+      console.log('[Firebase Sync] Translation deleted from cloud database:', docId);
       return true;
     } catch (err) {
       console.error('[Firebase Sync] Error deleting translation from cloud:', err);
@@ -685,11 +721,11 @@
       const docKeys = getUserDocKeys(currentUser);
       const payload = { fileName: cleanName };
 
-      // Update via REST
+      // Update via REST with explicit updateMask ['fileName'] so srtContent and blockCount are never lost!
       for (const k of docKeys) {
-        restPatchDoc(`users/${k}/translations/${docId}`, payload);
+        restPatchDoc(`users/${k}/translations/${docId}`, payload, ['fileName']);
       }
-      restPatchDoc(`translations/${docId}`, payload);
+      restPatchDoc(`translations/${docId}`, payload, ['fileName']);
 
       // Update via SDK
       if (isFirebaseReady && dbInstance) {
@@ -698,7 +734,7 @@
         });
         dbInstance.collection('translations').doc(docId).update(payload).catch(() => {});
       }
-      console.log('[Firebase Sync] Translation renamed in cloud:', docId, '->', cleanName);
+      console.log('[Firebase Sync] Translation renamed in cloud database:', docId, '->', cleanName);
       return true;
     } catch (err) {
       console.error('[Firebase Sync] Error renaming translation in cloud:', err);
