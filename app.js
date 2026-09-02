@@ -747,10 +747,10 @@ document.addEventListener('visibilitychange', () => {
   }
 });
 
-// ── Initialization & Full Website Load Synchronization ──
+// ── Initialization & True Full App Load Synchronization ──
 let isAppFullyLoaded = false;
-const appLaunchTime = Date.now();
-const MIN_LOADER_DURATION_MS = 1400; // Premium 1.4s branded loader duration
+window._pendingProviderVerifications = [];
+window._geoLanguageDetectionPromise = null;
 
 function dismissInitialLoader() {
   const loader = $('appInitialLoader');
@@ -762,28 +762,67 @@ function dismissInitialLoader() {
   }, 480);
 }
 
-// Reveal app smoothly with a polished branded display duration
+// Reveal app only when true application loading is 100% complete (IP language check, fonts, providers, layout)
 async function waitForWebsiteFullLoad() {
-  // Wait for web fonts layout & rendering
+  const tasks = [];
+
+  // 1. Web fonts layout & rendering
   if (document.fonts && document.fonts.ready) {
-    try {
-      await Promise.race([
+    tasks.push(
+      Promise.race([
         document.fonts.ready,
-        new Promise(resolve => setTimeout(resolve, 800))
-      ]);
-    } catch (e) {}
+        new Promise(resolve => setTimeout(resolve, 1500))
+      ])
+    );
   }
 
-  // Update initial UI states from local storage
+  // 2. Full Window and asset readiness
+  if (document.readyState !== 'complete') {
+    tasks.push(
+      new Promise(resolve => {
+        window.addEventListener('load', resolve, { once: true });
+        setTimeout(resolve, 2000);
+      })
+    );
+  }
+
+  // 3. IP Geolocation check and automatic language selection (must finish before dismissing loader)
+  if (window._geoLanguageDetectionPromise) {
+    tasks.push(
+      Promise.race([
+        window._geoLanguageDetectionPromise,
+        new Promise(resolve => setTimeout(resolve, 3200))
+      ])
+    );
+  }
+
+  // 4. Stored Provider API key connection & model discovery verifications
+  if (Array.isArray(window._pendingProviderVerifications) && window._pendingProviderVerifications.length > 0) {
+    tasks.push(
+      Promise.race([
+        Promise.allSettled(window._pendingProviderVerifications),
+        new Promise(resolve => setTimeout(resolve, 2500))
+      ])
+    );
+  }
+
+  // Await completion of ALL true background initialization tasks
+  try {
+    await Promise.allSettled(tasks);
+  } catch (e) {}
+
+  // Finalize UI sync: API guard, CTA hints, custom selects (language, models, styles)
   updateApiGuardAndHeaderStatus();
   checkReadyToTranslate();
-
-  // Enforce comfortable minimum loader display duration so it doesn't vanish in a blink
-  const elapsed = Date.now() - appLaunchTime;
-  const remaining = Math.max(0, MIN_LOADER_DURATION_MS - elapsed);
-  if (remaining > 0) {
-    await new Promise(resolve => setTimeout(resolve, remaining));
+  if (typeof refreshCustomSelect === 'function') {
+    refreshCustomSelect('targetLang');
+    refreshCustomSelect('modelSelect');
+    refreshCustomSelect('styleMode');
+    refreshCustomSelect('providerSelect');
   }
+
+  // Allow browser to execute full layout & paint cycles before unmasking
+  await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 
   // Smoothly dissolve the loader into the app
   dismissInitialLoader();
@@ -804,12 +843,12 @@ window.addEventListener('DOMContentLoaded', () => {
   initFirebaseAuthAndCloudSync();
   initDownloadsManager();
 
-  // Begin monitoring full website load state
+  // Monitor true full application load state and dismiss loader when fully ready
   waitForWebsiteFullLoad();
 });
 
-// Single global failsafe in case all listeners fail
-setTimeout(dismissInitialLoader, 3500);
+// Single global failsafe safety net (in case of total offline freeze or aborted scripts)
+setTimeout(dismissInitialLoader, 5500);
 
 // ── Native App Platform & Android Browser Detection ──
 function initNativeAppIntegrations() {
@@ -1556,9 +1595,10 @@ function initMultiProviderHub() {
   if (savedLang && targetLang) {
     targetLang.value = savedLang;
     refreshCustomSelect('targetLang');
+    window._geoLanguageDetectionPromise = Promise.resolve();
   } else {
-    // If no user preference saved yet, detect and apply IP/Locale based language
-    detectAndApplyGeoLanguage();
+    // If no user preference saved yet, detect and apply IP/Locale based language (tracked by loader)
+    window._geoLanguageDetectionPromise = detectAndApplyGeoLanguage();
   }
 
   const savedPacing = localStorage.getItem('preferred_pacing_preset');
