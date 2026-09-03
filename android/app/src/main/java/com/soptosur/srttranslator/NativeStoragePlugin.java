@@ -24,7 +24,7 @@ import java.nio.charset.StandardCharsets;
 @CapacitorPlugin(name = "NativeStorage")
 public class NativeStoragePlugin extends Plugin {
 
-    private static final String SUB_FOLDER = "SRTtranslator";
+    private static final String SUB_FOLDER = "SubMorph";
     private static final String RELATIVE_DOWNLOAD_PATH = Environment.DIRECTORY_DOWNLOADS + "/" + SUB_FOLDER + "/";
 
     @PluginMethod
