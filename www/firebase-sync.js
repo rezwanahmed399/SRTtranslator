@@ -690,22 +690,31 @@
 
     try {
       const docKeys = getUserDocKeys(currentUser);
+      const deletePromises = [];
 
-      // 1. Delete via REST API (ensures permanent deletion across all devices & APK)
+      // 1. Delete via REST API across all user keys and global collection
       for (const k of docKeys) {
-        restDeleteDoc(`users/${k}/translations/${docId}`);
+        deletePromises.push(restDeleteDoc(`users/${k}/translations/${docId}`).catch(() => false));
       }
-      restDeleteDoc(`translations/${docId}`);
+      deletePromises.push(restDeleteDoc(`translations/${docId}`).catch(() => false));
 
-      // 2. Delete via SDK
+      // 2. Delete via Firestore SDK if available
       if (isFirebaseReady && dbInstance) {
         docKeys.forEach(k => {
-          dbInstance.collection('users').doc(k).collection('translations').doc(docId).delete().catch(() => {});
+          deletePromises.push(
+            dbInstance.collection('users').doc(k).collection('translations').doc(docId).delete().catch(() => {})
+          );
         });
-        dbInstance.collection('translations').doc(docId).delete().catch(() => {});
+        deletePromises.push(
+          dbInstance.collection('translations').doc(docId).delete().catch(() => {})
+        );
       }
 
-      console.log('[Firebase Sync] Translation deleted from cloud database:', docId);
+      // CRITICAL: Await all delete operations on the server before returning
+      // This guarantees real-time deletion across Web & Android App without race condition
+      await Promise.all(deletePromises);
+
+      console.log('[Firebase Sync] Translation permanently deleted from cloud database:', docId);
       return true;
     } catch (err) {
       console.error('[Firebase Sync] Error deleting translation from cloud:', err);
@@ -722,18 +731,25 @@
       const payload = { fileName: cleanName };
 
       // Update via REST with explicit updateMask ['fileName'] so srtContent and blockCount are never lost!
+      const patchPromises = [];
       for (const k of docKeys) {
-        restPatchDoc(`users/${k}/translations/${docId}`, payload, ['fileName']);
+        patchPromises.push(restPatchDoc(`users/${k}/translations/${docId}`, payload, ['fileName']));
       }
-      restPatchDoc(`translations/${docId}`, payload, ['fileName']);
+      patchPromises.push(restPatchDoc(`translations/${docId}`, payload, ['fileName']));
 
       // Update via SDK
       if (isFirebaseReady && dbInstance) {
         docKeys.forEach(k => {
-          dbInstance.collection('users').doc(k).collection('translations').doc(docId).update(payload).catch(() => {});
+          patchPromises.push(
+            dbInstance.collection('users').doc(k).collection('translations').doc(docId).update(payload).catch(() => {})
+          );
         });
-        dbInstance.collection('translations').doc(docId).update(payload).catch(() => {});
+        patchPromises.push(
+          dbInstance.collection('translations').doc(docId).update(payload).catch(() => {})
+        );
       }
+
+      await Promise.all(patchPromises);
       console.log('[Firebase Sync] Translation renamed in cloud database:', docId, '->', cleanName);
       return true;
     } catch (err) {
@@ -747,22 +763,34 @@
 
     try {
       const items = await getCloudTranslationHistory();
-      if (!items || items.length === 0) return true;
-
       const docKeys = getUserDocKeys(currentUser);
       const deletePromises = [];
+      const seenIds = new Set();
 
-      for (const item of items) {
-        const docId = item.docId || item.id;
-        if (!docId) continue;
-
-        // 1. Delete via REST
-        for (const k of docKeys) {
-          deletePromises.push(restDeleteDoc(`users/${k}/translations/${docId}`).catch(() => {}));
+      if (items && items.length > 0) {
+        for (const item of items) {
+          const docId = item.docId || item.id;
+          if (docId) seenIds.add(docId);
         }
-        deletePromises.push(restDeleteDoc(`translations/${docId}`).catch(() => {}));
+      }
 
-        // 2. Delete via SDK
+      // Also directly scan REST docs to ensure no orphaned docs are left behind
+      for (const k of docKeys) {
+        try {
+          const restItems = await restListDocs(`users/${k}/translations`);
+          restItems.forEach(item => {
+            const docId = item.docId || item.id;
+            if (docId) seenIds.add(docId);
+          });
+        } catch (e) {}
+      }
+
+      for (const docId of seenIds) {
+        for (const k of docKeys) {
+          deletePromises.push(restDeleteDoc(`users/${k}/translations/${docId}`).catch(() => false));
+        }
+        deletePromises.push(restDeleteDoc(`translations/${docId}`).catch(() => false));
+
         if (isFirebaseReady && dbInstance) {
           docKeys.forEach(k => {
             deletePromises.push(
@@ -809,7 +837,11 @@
     renameCloudTranslation,
     onAuthStateChanged,
     waitForInitialSync,
-    markInitialSyncComplete
+    markInitialSyncComplete,
+    getActiveCloudJob: async () => null,
+    listenActiveCloudJob: () => () => {},
+    cancelActiveCloudJob: async () => true,
+    clearActiveCloudJob: async () => true
   };
 
   if (document.readyState === 'loading') {

@@ -567,6 +567,10 @@ async function clearSavedSession() {
     if (!db) return;
     const tx = db.transaction(STORE_NAME, 'readwrite');
     tx.objectStore(STORE_NAME).delete('active_session');
+    await new Promise((resolve) => {
+      tx.oncomplete = resolve;
+      tx.onerror = resolve;
+    });
   } catch (err) {
     console.warn('Could not clear session from IndexedDB:', err);
   }
