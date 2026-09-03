@@ -7079,7 +7079,7 @@ function buildCustomSelect(selectEl) {
         ${flagSvg ? `<span class="custom-select-flag-wrapper">${flagSvg}</span>` : ''}
         <div class="custom-select-option-text">
           <span class="option-main-title">${escapeHtml(mainTitle)}</span>
-          ${subDesc ? `<span class="option-sub-desc">${escapeHtml(subDesc)}</span>` : ''}
+          ${subDesc ? `<span class="option-sub-desc" dir="ltr"><bdi>${escapeHtml(subDesc)}</bdi></span>` : ''}
         </div>
         <svg class="option-check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <polyline points="20 6 9 17 4 12"></polyline>
