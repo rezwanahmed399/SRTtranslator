@@ -53,7 +53,39 @@
     const emailKey = getEmailDocKey(user);
     if (emailKey) keys.push(emailKey);
     if (user.uid && !keys.includes(user.uid)) keys.push(user.uid);
+
+    // Retrieve any linked UIDs across devices (e.g. Web Firebase Auth UID & Android Native Auth UID)
+    if (emailKey) {
+      try {
+        const stored = localStorage.getItem('srt_linked_uids_' + emailKey);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed)) {
+            parsed.forEach(k => {
+              if (k && typeof k === 'string' && !keys.includes(k)) keys.push(k);
+            });
+          }
+        }
+      } catch (e) {}
+    }
     return keys;
+  }
+
+  function registerLinkedUid(user, uid) {
+    if (!user || !uid || typeof uid !== 'string') return;
+    const emailKey = getEmailDocKey(user);
+    if (!emailKey) return;
+    try {
+      let linked = [];
+      const stored = localStorage.getItem('srt_linked_uids_' + emailKey);
+      if (stored) linked = JSON.parse(stored) || [];
+      if (!Array.isArray(linked)) linked = [];
+      if (!linked.includes(uid)) {
+        linked.push(uid);
+        localStorage.setItem('srt_linked_uids_' + emailKey, JSON.stringify(linked));
+        console.log('[Firebase Sync] Registered cross-platform linked UID:', uid, 'for', emailKey);
+      }
+    } catch (e) {}
   }
 
   function parseFirestoreFields(fields) {
@@ -673,6 +705,73 @@
             }
           });
         } catch (e) {}
+      }
+
+      // 3. Universal Cross-Platform Discovery (Seamlessly bridges Web Firebase Auth UIDs and Android Native Auth)
+      try {
+        const runQueryUrl = `${FIRESTORE_REST_BASE}:runQuery?key=${FIREBASE_API_KEY}`;
+        const queryBody = {
+          structuredQuery: {
+            from: [{ collectionId: 'translations', allDescendants: true }]
+          }
+        };
+        const queryRes = await fetch(runQueryUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(queryBody)
+        });
+        if (queryRes.ok) {
+          const queryJson = await queryRes.json();
+          if (Array.isArray(queryJson)) {
+            const targetEmail = (currentUser.email || '').toLowerCase().trim();
+            const targetEmailKey = getEmailDocKey(currentUser);
+            const targetUid = currentUser.uid;
+
+            queryJson.forEach(entry => {
+              if (!entry.document || !entry.document.fields) return;
+              const fields = parseFirestoreFields(entry.document.fields);
+              const docPath = entry.document.name || '';
+              const docId = fields.id || docPath.split('/').pop();
+              if (!docId) return;
+
+              const docEmail = (fields.userEmail || '').toLowerCase().trim();
+              const docEmailKey = fields.emailKey || '';
+              const docUid = fields.uid || '';
+
+              const isMatch = (targetEmail && docEmail === targetEmail) ||
+                              (targetEmailKey && (docEmailKey === targetEmailKey || docPath.includes(targetEmailKey))) ||
+                              (targetUid && (docUid === targetUid || docPath.includes(targetUid))) ||
+                              (docKeys.some(k => k && (docUid === k || docPath.includes(k))));
+
+              if (isMatch) {
+                // If this document belonged to another UID (e.g. web UID vs mobile UID), link it!
+                const pathParts = docPath.split('/');
+                const usersIdx = pathParts.indexOf('users');
+                if (usersIdx !== -1 && pathParts[usersIdx + 1]) {
+                  const discoveredUid = pathParts[usersIdx + 1];
+                  registerLinkedUid(currentUser, discoveredUid);
+                }
+
+                const lifespan = resolveStrict3DayLifespan(fields, docId, now);
+                if (lifespan.isExpired || (fields.blockCount === 0 && (!fields.srtContent || !fields.srtContent.trim()))) {
+                  return;
+                }
+
+                if (!activeMap.has(docId)) {
+                  activeMap.set(docId, {
+                    ...fields,
+                    docId: docId,
+                    createdAtMs: lifespan.createdAtMs,
+                    expiresAtMs: lifespan.expiresAtMs,
+                    daysLeft: lifespan.daysLeft
+                  });
+                }
+              }
+            });
+          }
+        }
+      } catch (discErr) {
+        console.warn('[Firebase Sync] Cross-platform history discovery note:', discErr);
       }
 
       const activeList = Array.from(activeMap.values());
