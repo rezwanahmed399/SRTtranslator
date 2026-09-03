@@ -19,3 +19,4 @@ yarn-error.log*
 
 .vercel
 .env*
+r2-config.json

@@ -720,9 +720,10 @@ function initNativeAppIntegrations() {
       if (headerApkBtn) {
         headerApkBtn.style.display = 'inline-flex';
         fetch('/version.json?t=' + Date.now()).then(r => r.json()).then(v => {
-          if (v && v.apkFileName) {
-            headerApkBtn.href = `${v.apkFileName}?t=${Date.now()}`;
-            headerApkBtn.setAttribute('download', v.apkFileName);
+          if (v) {
+            const dlUrl = v.latestApkUrl || v.apkUrl || `${v.apkFileName}?t=${Date.now()}`;
+            headerApkBtn.href = dlUrl;
+            headerApkBtn.setAttribute('download', v.apkFileName || 'SubMorph-latest.apk');
           }
         }).catch(() => {});
       }
@@ -8639,11 +8640,28 @@ function wireHistoryActions(container, items, onListMutated, onCondenseChosen) {
 
   // Wire Download click handlers
   container.querySelectorAll('.btn-cloud-download').forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', async () => {
       const docId = btn.getAttribute('data-docid');
       const item = items.find(h => (h.docId || h.id) === docId);
-      if (item && item.srtContent) {
+      if (!item) return;
+      if (item.srtContent) {
         triggerDirectSrtDownload(item.fileName || 'translated_subtitle.srt', item.srtContent);
+      } else if (item.r2Url) {
+        try {
+          showToast('Downloading subtitle from Cloudflare R2...');
+          const res = await fetch(item.r2Url);
+          if (res.ok) {
+            const content = await res.text();
+            triggerDirectSrtDownload(item.fileName || 'translated_subtitle.srt', content);
+            return;
+          }
+        } catch (e) {}
+        const a = document.createElement('a');
+        a.href = item.r2Url;
+        a.download = item.fileName || 'translated_subtitle.srt';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
       }
     });
   });

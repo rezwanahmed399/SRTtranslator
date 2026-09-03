@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { uploadFile, getR2PublicUrl } = require('./lib/r2');
 
 const destDir = path.join(__dirname, 'www');
 
@@ -53,24 +54,29 @@ cleanOldApks(path.join(__dirname, 'android', 'app', 'src', 'main', 'assets', 'pu
 
 // Generate fresh build metadata in version.json
 const now = new Date();
+const r2ApkUrl = getR2PublicUrl(currentApkName);
+const r2LatestApkUrl = getR2PublicUrl('SubMorph-latest.apk');
+
 const buildVersion = {
   latestVersion: currentVersion,
   buildTime: now.toISOString(),
   buildTimestamp: now.getTime(),
   buildDateFormatted: now.toLocaleString('en-US', { timeZone: 'Asia/Dhaka' }),
   apkFileName: currentApkName,
-  apkUrl: `/${currentApkName}`,
+  apkUrl: r2ApkUrl,
+  latestApkUrl: r2LatestApkUrl,
+  localApkUrl: `/${currentApkName}`,
   forceUpdate: false
 };
 fs.writeFileSync(path.join(__dirname, 'version.json'), JSON.stringify(buildVersion, null, 2));
 
-// Update index.html header-apk-btn href to match current active APK
+// Update index.html header-apk-btn href to match R2 APK download URL
 try {
   const indexHtmlPath = path.join(__dirname, 'index.html');
   if (fs.existsSync(indexHtmlPath)) {
     let indexHtml = fs.readFileSync(indexHtmlPath, 'utf8');
-    indexHtml = indexHtml.replace(/href=["']SRTtranslator-[^"']+\.apk["']/g, `href="${currentApkName}"`);
-    indexHtml = indexHtml.replace(/download=["']SRTtranslator-[^"']+\.apk["']/g, `download="${currentApkName}"`);
+    indexHtml = indexHtml.replace(/href=["'](https:\/\/pub-[^"']+\.r2\.dev\/[^"']+|SubMorph-[^"']+\.apk)["']/g, `href="${r2LatestApkUrl}"`);
+    indexHtml = indexHtml.replace(/download=["'][^"']+\.apk["']/g, `download="SubMorph-latest.apk"`);
     fs.writeFileSync(indexHtmlPath, indexHtml);
   }
 } catch (e) {
@@ -111,13 +117,12 @@ if (fs.existsSync(currentApkSrc)) {
   console.log(`✓ Created www/SubMorph-latest.apk (alias for ${currentApkName})`);
 }
 
-// Dedicated Clean Output Folder: D:\SRTtranslator APK
+// Dedicated Clean Output Folder: D:\SubMorph APK
 const dedicatedApkDir = 'D:\\SubMorph APK';
 try {
   if (!fs.existsSync(dedicatedApkDir)) {
     fs.mkdirSync(dedicatedApkDir, { recursive: true });
   }
-  // Automatically clean up older versions in D:\SRTtranslator APK
   cleanOldApks(dedicatedApkDir);
 
   const activeApkSrc = path.join(__dirname, currentApkName);
@@ -141,7 +146,31 @@ try {
   console.warn(`Could not sync to dedicated APK folder (${dedicatedApkDir}):`, e.message);
 }
 
-console.log(`[Build Complete] Active APK: ${currentApkName}. All previous APK versions cleared.`);
+// Automatically sync latest APK and version.json to Cloudflare R2
+async function syncR2() {
+  try {
+    const activeApkSrc = path.join(__dirname, currentApkName);
+    if (fs.existsSync(activeApkSrc)) {
+      const apkBuffer = fs.readFileSync(activeApkSrc);
+      console.log(`🚀 Uploading ${currentApkName} to Cloudflare R2...`);
+      await uploadFile(currentApkName, apkBuffer, 'application/vnd.android.package-archive', `attachment; filename=${currentApkName}`);
+      console.log(`✓ Cloudflare R2: ${currentApkName} uploaded (${r2ApkUrl})`);
 
+      await uploadFile('SubMorph-latest.apk', apkBuffer, 'application/vnd.android.package-archive', 'attachment; filename=SubMorph-latest.apk');
+      console.log(`✓ Cloudflare R2: SubMorph-latest.apk uploaded (${r2LatestApkUrl})`);
+    }
 
+    const versionJsonPath = path.join(__dirname, 'version.json');
+    if (fs.existsSync(versionJsonPath)) {
+      const verBuf = fs.readFileSync(versionJsonPath);
+      await uploadFile('version.json', verBuf, 'application/json; charset=utf-8');
+      console.log(`✓ Cloudflare R2: version.json uploaded`);
+    }
+  } catch (err) {
+    console.warn('⚠️ Cloudflare R2 sync warning (will retry on next build):', err.message);
+  }
+}
 
+syncR2().then(() => {
+  console.log(`[Build Complete] Active APK: ${currentApkName}. Cloudflare R2 & local files synced.`);
+});

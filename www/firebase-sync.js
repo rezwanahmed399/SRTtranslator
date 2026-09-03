@@ -588,6 +588,31 @@
       const docId = 'trans_' + now + '_' + Math.random().toString(36).substr(2, 6);
       const emailKey = getEmailDocKey(currentUser) || currentUser.uid;
 
+      // ── Cloudflare R2: Upload .srt File to Free 10GB Object Storage ──
+      let r2Url = '';
+      try {
+        const r2Res = await fetch('/api/subtitle-storage', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'upload',
+            docId: docId,
+            userEmail: currentUser.email || currentUser.uid,
+            fileName: translationData.fileName || 'translated_subtitle.srt',
+            srtContent: translationData.srtContent
+          })
+        });
+        if (r2Res.ok) {
+          const r2Data = await r2Res.json();
+          if (r2Data && r2Data.url) {
+            r2Url = r2Data.url;
+            console.log('[R2 Cloud Storage] Subtitle uploaded to Cloudflare R2:', r2Url);
+          }
+        }
+      } catch (r2Err) {
+        console.warn('[R2 Cloud Storage] Background R2 upload warning:', r2Err);
+      }
+
       const payload = {
         id: docId,
         uid: currentUser.uid,
@@ -598,6 +623,7 @@
         targetLang: translationData.targetLang || 'Bengali',
         modelUsed: translationData.modelUsed || 'AI Model',
         blockCount: translationData.blockCount || 0,
+        r2Url: r2Url || '',
         srtContent: translationData.srtContent || '',
         fileSizeFormatted: translationData.fileSizeFormatted || '',
         createdAtMs: now,
@@ -624,7 +650,7 @@
         dbInstance.collection('translations').doc(docId).set(sdkPayload).catch(() => {});
       }
 
-      console.log('[Firebase Sync] Translation archive saved (Strict 3-day lifespan):', docId);
+      console.log('[Firebase Sync] Translation archive saved with R2 URL (Strict 3-day lifespan):', docId);
       return docId;
     } catch (err) {
       console.error('[Firebase Sync] Error saving translation to cloud:', err);
@@ -794,6 +820,19 @@
       const docKeys = getUserDocKeys(currentUser);
       const deletePromises = [];
 
+      // 0. Trigger file deletion in Cloudflare R2
+      try {
+        fetch('/api/subtitle-storage', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'delete',
+            docId: docId,
+            userEmail: currentUser.email || currentUser.uid
+          })
+        }).catch(() => {});
+      } catch (e) {}
+
       // 1. Delete via REST API across all user keys and global collection
       for (const k of docKeys) {
         deletePromises.push(restDeleteDoc(`users/${k}/translations/${docId}`).catch(() => false));
@@ -864,6 +903,18 @@
     if (!currentUser) return false;
 
     try {
+      // 0. Trigger bulk file deletion in Cloudflare R2 for this user
+      try {
+        fetch('/api/subtitle-storage', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'clearAll',
+            userEmail: currentUser.email || currentUser.uid
+          })
+        }).catch(() => {});
+      } catch (e) {}
+
       const items = await getCloudTranslationHistory();
       const docKeys = getUserDocKeys(currentUser);
       const deletePromises = [];
