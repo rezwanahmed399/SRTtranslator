@@ -565,6 +565,7 @@ async function restoreSessionIfAvailable() {
   if (session.targetLang && targetLang) {
     targetLang.value = session.targetLang;
     refreshCustomSelect('targetLang');
+    if (typeof checkReadyToTranslate === 'function') checkReadyToTranslate();
   }
 
   // Display restored file info bar
@@ -758,10 +759,16 @@ function stopBackgroundKeepAlive() {
   } catch (e) {}
 }
 
-// Re-acquire WakeLock on app resume if active
+// Re-acquire WakeLock on app resume if active & auto-sync downloads
 document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible' && (state.isTranslating || state.isCondensing)) {
-    acquireWakeLock();
+  if (document.visibilityState === 'visible') {
+    if (state.isTranslating || state.isCondensing) {
+      acquireWakeLock();
+    }
+    // Proactively purge deleted files from cache when returning from File Manager
+    if (typeof syncDownloadsWithDeviceStorage === 'function') {
+      syncDownloadsWithDeviceStorage();
+    }
   }
 });
 
@@ -4118,8 +4125,9 @@ function checkReadyToTranslate() {
       }
     } else {
       // API Keys Connected -> Normal Hero Button
+      const selectedLanguage = (targetLang && targetLang.value) ? targetLang.value : 'Bengali';
       translateBtn.classList.remove('btn-missing-keys');
-      if (btnLabel) btnLabel.textContent = 'Translate Subtitles Now';
+      if (btnLabel) btnLabel.textContent = `Translate Subtitles into ${selectedLanguage}`;
       if (heroIcon) {
         heroIcon.innerHTML = `
           <path d="M5 8l6 6M4 14l6-6 2-3M2 5h12M7 2h1M22 22l-5-10-5 10M14 18h6"/>
@@ -7353,6 +7361,7 @@ function initFirebaseAuthAndCloudSync() {
             targetLang.value = cloudPrefs.targetLang;
             localStorage.setItem('preferred_target_lang', cloudPrefs.targetLang);
             refreshCustomSelect('targetLang');
+            if (typeof checkReadyToTranslate === 'function') checkReadyToTranslate();
           }
           if (cloudPrefs.pacingPreset && styleMode) {
             styleMode.value = cloudPrefs.pacingPreset;
@@ -8385,8 +8394,38 @@ async function syncDownloadsWithDeviceStorage(backdrop, closeFn) {
       if (validFiles.length !== currentList.length) {
         localStorage.setItem(DOWNLOADS_STORAGE_KEY, JSON.stringify(validFiles.slice(0, 10)));
         updateHeaderDownloadsBadge();
-        if (backdrop) {
-          renderDownloadsModalContent(backdrop, closeFn);
+        const activeModal = backdrop || document.querySelector('.downloads-drawer-backdrop');
+        if (activeModal) {
+          const container = activeModal.querySelector('#downloadsModalContent');
+          const deletedNames = currentList.filter(item => existingMap[item.fileName] === false).map(i => i.fileName);
+          if (container && deletedNames.length > 0) {
+            const cards = container.querySelectorAll('.download-card-item');
+            let hasAnimated = false;
+            cards.forEach(card => {
+              const titleEl = card.querySelector('.download-card-title');
+              const cardTitle = titleEl ? (titleEl.getAttribute('title') || titleEl.textContent) : '';
+              if (deletedNames.includes(cardTitle)) {
+                hasAnimated = true;
+                card.style.transition = 'all 0.24s cubic-bezier(0.16, 1, 0.3, 1)';
+                card.style.opacity = '0';
+                card.style.transform = 'scale(0.92) translateY(-6px)';
+                card.style.maxHeight = '0px';
+                card.style.margin = '0px';
+                card.style.paddingTop = '0px';
+                card.style.paddingBottom = '0px';
+                card.style.borderWidth = '0px';
+                card.style.overflow = 'hidden';
+              }
+            });
+
+            if (hasAnimated) {
+              setTimeout(() => {
+                renderDownloadsModalContent(activeModal, closeFn);
+              }, 250);
+              return;
+            }
+          }
+          renderDownloadsModalContent(activeModal, closeFn);
         }
       }
     }
@@ -8445,7 +8484,19 @@ function trackActiveDownloadProgress(fileName, onComplete) {
   }, 200);
 }
 
-function showDownloadsManagerModal() {
+async function showDownloadsManagerModal() {
+  // 1. Proactively verify storage with device BEFORE rendering so deleted files are cleanly removed without layout flicker
+  if (window.Capacitor?.Plugins?.NativeStorage?.verifyFilesExist) {
+    try {
+      await Promise.race([
+        syncDownloadsWithDeviceStorage(),
+        new Promise(r => setTimeout(r, 120))
+      ]);
+    } catch (e) {
+      console.warn('Pre-sync failed:', e);
+    }
+  }
+
   const existing = document.querySelector('.downloads-drawer-backdrop');
   if (existing) existing.remove();
 
@@ -8505,9 +8556,6 @@ function showDownloadsManagerModal() {
 
   renderDownloadsModalContent(backdrop, close);
   document.body.appendChild(backdrop);
-
-  // Asynchronously verify files against physical device storage (auto-pruning if deleted in File Manager)
-  syncDownloadsWithDeviceStorage(backdrop, close);
 }
 
 function renderDownloadsModalContent(backdrop, closeFn) {
@@ -8726,6 +8774,15 @@ function initDownloadsManager() {
     updateHeaderDownloadsBadge();
     // Auto-sync existing list with device storage in background
     syncDownloadsWithDeviceStorage();
+    if (window.Capacitor?.Plugins?.App?.addListener) {
+      try {
+        window.Capacitor.Plugins.App.addListener('appStateChange', ({ isActive }) => {
+          if (isActive) {
+            syncDownloadsWithDeviceStorage();
+          }
+        });
+      } catch (e) {}
+    }
   }
 }
 
