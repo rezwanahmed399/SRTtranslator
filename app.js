@@ -1300,96 +1300,255 @@ function switchProviderTab(providerId) {
 
 // ── IP Geolocation & Locale-Based Intelligent Target Language Detection ──
 const GEO_COUNTRY_TO_LANG = {
-  // South Asia
-  'BD': 'Bengali',
-  'PK': 'Urdu',
-  'NP': 'Nepali',
-  'LK': 'Sinhala',
-  'AF': 'Pashto',
-  'MM': 'Burmese',
+  // ── Middle East & North Africa (Arabic) ──
+  'EG': 'Arabic', // Egypt
+  'SA': 'Arabic', // Saudi Arabia
+  'AE': 'Arabic', // United Arab Emirates
+  'QA': 'Arabic', // Qatar
+  'KW': 'Arabic', // Kuwait
+  'OM': 'Arabic', // Oman
+  'BH': 'Arabic', // Bahrain
+  'JO': 'Arabic', // Jordan
+  'IQ': 'Arabic', // Iraq
+  'LB': 'Arabic', // Lebanon
+  'SY': 'Arabic', // Syria
+  'YE': 'Arabic', // Yemen
+  'DZ': 'Arabic', // Algeria
+  'MA': 'Arabic', // Morocco
+  'TN': 'Arabic', // Tunisia
+  'LY': 'Arabic', // Libya
+  'SD': 'Arabic', // Sudan
+  'PS': 'Arabic', // Palestine
+  'MR': 'Arabic', // Mauritania
+  'DJ': 'Arabic', // Djibouti
+  'SO': 'Arabic', // Somalia
+  'KM': 'Arabic', // Comoros
+  'TD': 'Arabic', // Chad
+  'SS': 'Arabic', // South Sudan
 
-  // Middle East & North Africa (Arabic)
-  'SA': 'Arabic', 'AE': 'Arabic', 'EG': 'Arabic', 'QA': 'Arabic', 'KW': 'Arabic',
-  'OM': 'Arabic', 'BH': 'Arabic', 'JO': 'Arabic', 'IQ': 'Arabic', 'LB': 'Arabic',
-  'SY': 'Arabic', 'YE': 'Arabic', 'DZ': 'Arabic', 'MA': 'Arabic', 'TN': 'Arabic',
-  'LY': 'Arabic', 'SD': 'Arabic', 'PS': 'Arabic', 'MR': 'Arabic', 'DJ': 'Arabic',
+  // ── South Asia ──
+  'BD': 'Bengali', // Bangladesh
+  'PK': 'Urdu',    // Pakistan
+  'NP': 'Nepali',  // Nepal
+  'BT': 'Nepali',  // Bhutan
+  'LK': 'Sinhala', // Sri Lanka
+  'AF': 'Pashto',  // Afghanistan
+  'MV': 'Arabic',  // Maldives
 
-  // East & Southeast Asia
-  'JP': 'Japanese',
-  'KR': 'Korean',
-  'CN': 'Chinese (Simplified)',
-  'SG': 'Chinese (Simplified)',
-  'TW': 'Chinese (Traditional)',
-  'HK': 'Chinese (Traditional)',
-  'MO': 'Chinese (Traditional)',
-  'ID': 'Indonesian',
-  'MY': 'Malay',
-  'BN': 'Malay',
-  'TH': 'Thai',
-  'VN': 'Vietnamese',
-  'PH': 'Filipino / Tagalog',
-  'KH': 'Khmer',
+  // ── East & Southeast Asia ──
+  'JP': 'Japanese',               // Japan
+  'KR': 'Korean',                 // South Korea
+  'KP': 'Korean',                 // North Korea
+  'CN': 'Chinese (Simplified)',   // China
+  'SG': 'Chinese (Simplified)',   // Singapore
+  'TW': 'Chinese (Traditional)',  // Taiwan
+  'HK': 'Chinese (Traditional)',  // Hong Kong
+  'MO': 'Chinese (Traditional)',  // Macau
+  'ID': 'Indonesian',             // Indonesia
+  'MY': 'Malay',                  // Malaysia
+  'BN': 'Malay',                  // Brunei
+  'TH': 'Thai',                   // Thailand
+  'LA': 'Thai',                   // Laos
+  'VN': 'Vietnamese',             // Vietnam
+  'PH': 'Filipino / Tagalog',     // Philippines
+  'MM': 'Burmese',                // Myanmar (Burma)
+  'KH': 'Khmer',                  // Cambodia
+  'MN': 'Russian',                // Mongolia
+  'TL': 'Portuguese',             // Timor-Leste
 
-  // Central Asia & Middle East Other
-  'IR': 'Persian',
-  'TJ': 'Persian',
-  'TR': 'Turkish',
-  'AZ': 'Azerbaijani',
-  'KZ': 'Kazakh',
-  'UZ': 'Uzbek',
-  'IL': 'Hebrew',
+  // ── Central Asia & Non-Arabic Middle East ──
+  'IR': 'Persian',     // Iran
+  'TJ': 'Persian',     // Tajikistan
+  'TR': 'Turkish',     // Turkey
+  'AZ': 'Azerbaijani', // Azerbaijan
+  'KZ': 'Kazakh',      // Kazakhstan
+  'UZ': 'Uzbek',       // Uzbekistan
+  'TM': 'Turkish',     // Turkmenistan
+  'KG': 'Russian',     // Kyrgyzstan
+  'IL': 'Hebrew',      // Israel
 
-  // Latin America & Iberia (Spanish & Portuguese)
-  'ES': 'Spanish', 'MX': 'Spanish', 'AR': 'Spanish', 'CO': 'Spanish', 'PE': 'Spanish',
-  'CL': 'Spanish', 'EC': 'Spanish', 'GT': 'Spanish', 'CU': 'Spanish', 'BO': 'Spanish',
-  'DO': 'Spanish', 'HN': 'Spanish', 'PY': 'Spanish', 'SV': 'Spanish', 'NI': 'Spanish',
-  'CR': 'Spanish', 'PA': 'Spanish', 'UY': 'Spanish', 'PR': 'Spanish', 'VE': 'Spanish',
-  'BR': 'Portuguese', 'PT': 'Portuguese', 'AO': 'Portuguese', 'MZ': 'Portuguese',
+  // ── Europe ──
+  'FR': 'French',     // France
+  'MC': 'French',     // Monaco
+  'DE': 'German',     // Germany
+  'AT': 'German',     // Austria
+  'LI': 'German',     // Liechtenstein
+  'CH': 'German',     // Switzerland
+  'LU': 'German',     // Luxembourg
+  'IT': 'Italian',    // Italy
+  'SM': 'Italian',    // San Marino
+  'VA': 'Italian',    // Vatican City
+  'ES': 'Spanish',    // Spain
+  'AD': 'Spanish',    // Andorra
+  'PT': 'Portuguese', // Portugal
+  'RU': 'Russian',    // Russia
+  'BY': 'Russian',    // Belarus
+  'UA': 'Ukrainian',  // Ukraine
+  'PL': 'Polish',     // Poland
+  'NL': 'Dutch',      // Netherlands
+  'BE': 'French',     // Belgium
+  'SE': 'Swedish',    // Sweden
+  'NO': 'Norwegian',  // Norway
+  'SJ': 'Norwegian',  // Svalbard & Jan Mayen
+  'DK': 'Danish',     // Denmark
+  'GL': 'Danish',     // Greenland
+  'FO': 'Danish',     // Faroe Islands
+  'FI': 'Finnish',    // Finland
+  'AX': 'Finnish',    // Åland Islands
+  'GR': 'Greek',      // Greece
+  'CY': 'Greek',      // Cyprus
+  'CZ': 'Czech',      // Czech Republic
+  'SK': 'Slovak',     // Slovakia
+  'RO': 'Romanian',   // Romania
+  'MD': 'Romanian',   // Moldova
+  'HU': 'Hungarian',  // Hungary
+  'HR': 'Croatian',   // Croatia
+  'BA': 'Croatian',   // Bosnia and Herzegovina
+  'RS': 'Serbian',    // Serbia
+  'ME': 'Serbian',    // Montenegro
+  'MK': 'Serbian',    // North Macedonia
+  'BG': 'Bulgarian',  // Bulgaria
+  'AL': 'Turkish',    // Albania
+  'XK': 'Turkish',    // Kosovo
+  'GB': 'English',    // United Kingdom
+  'UK': 'English',    // United Kingdom (alt)
+  'IE': 'English',    // Ireland
+  'MT': 'English',    // Malta
+  'GI': 'English',    // Gibraltar
+  'IM': 'English',    // Isle of Man
+  'JE': 'English',    // Jersey
+  'GG': 'English',    // Guernsey
 
-  // Europe
-  'FR': 'French',
-  'DE': 'German', 'AT': 'German', 'LI': 'German',
-  'IT': 'Italian', 'SM': 'Italian', 'VA': 'Italian',
-  'RU': 'Russian', 'BY': 'Russian',
-  'UA': 'Ukrainian',
-  'PL': 'Polish',
-  'NL': 'Dutch',
-  'SE': 'Swedish',
-  'NO': 'Norwegian',
-  'DK': 'Danish',
-  'FI': 'Finnish',
-  'GR': 'Greek', 'CY': 'Greek',
-  'CZ': 'Czech',
-  'RO': 'Romanian', 'MD': 'Romanian',
-  'HU': 'Hungarian',
-  'HR': 'Croatian', 'BA': 'Croatian',
-  'RS': 'Serbian', 'ME': 'Serbian',
-  'SK': 'Slovak',
-  'BG': 'Bulgarian',
+  // ── Latin America & The Caribbean ──
+  'BR': 'Portuguese', // Brazil
+  'MX': 'Spanish',    // Mexico
+  'CO': 'Spanish',    // Colombia
+  'AR': 'Spanish',    // Argentina
+  'PE': 'Spanish',    // Peru
+  'VE': 'Spanish',    // Venezuela
+  'CL': 'Spanish',    // Chile
+  'EC': 'Spanish',    // Ecuador
+  'GT': 'Spanish',    // Guatemala
+  'CU': 'Spanish',    // Cuba
+  'BO': 'Spanish',    // Bolivia
+  'DO': 'Spanish',    // Dominican Republic
+  'HN': 'Spanish',    // Honduras
+  'PY': 'Spanish',    // Paraguay
+  'SV': 'Spanish',    // El Salvador
+  'NI': 'Spanish',    // Nicaragua
+  'CR': 'Spanish',    // Costa Rica
+  'PA': 'Spanish',    // Panama
+  'UY': 'Spanish',    // Uruguay
+  'PR': 'Spanish',    // Puerto Rico
+  'HT': 'French',     // Haiti
+  'GP': 'French',     // Guadeloupe
+  'MQ': 'French',     // Martinique
+  'GF': 'French',     // French Guiana
 
-  // Africa
-  'ET': 'Amharic',
-  'NG': 'Hausa', 'NE': 'Hausa',
-  'KE': 'Swahili', 'TZ': 'Swahili', 'UG': 'Swahili', 'RW': 'Swahili',
+  // ── Sub-Saharan Africa ──
+  'ET': 'Amharic',    // Ethiopia
+  'NG': 'Hausa',      // Nigeria
+  'NE': 'Hausa',      // Niger
+  'KE': 'Swahili',    // Kenya
+  'TZ': 'Swahili',    // Tanzania
+  'UG': 'Swahili',    // Uganda
+  'RW': 'Swahili',    // Rwanda
+  'BI': 'Swahili',    // Burundi
+  'AO': 'Portuguese', // Angola
+  'MZ': 'Portuguese', // Mozambique
+  'CV': 'Portuguese', // Cape Verde
+  'GW': 'Portuguese', // Guinea-Bissau
+  'ST': 'Portuguese', // São Tomé and Príncipe
+  'SN': 'French',     // Senegal
+  'CI': 'French',     // Côte d'Ivoire
+  'CM': 'French',     // Cameroon
+  'ML': 'French',     // Mali
+  'GN': 'French',     // Guinea
+  'BJ': 'French',     // Benin
+  'TG': 'French',     // Togo
+  'BF': 'French',     // Burkina Faso
+  'CG': 'French',     // Republic of the Congo
+  'CD': 'French',     // DR Congo
+  'GA': 'French',     // Gabon
+  'MG': 'French',     // Madagascar
+  'CF': 'French',     // Central African Republic
+  'GQ': 'Spanish',    // Equatorial Guinea
+  'ZA': 'English',    // South Africa
+  'GH': 'English',    // Ghana
+  'NA': 'English',    // Namibia
+  'BW': 'English',    // Botswana
+  'ZW': 'English',    // Zimbabwe
+  'ZM': 'English',    // Zambia
+  'SL': 'English',    // Sierra Leone
+  'LR': 'English',    // Liberia
+  'MW': 'English',    // Malawi
+  'GM': 'English',    // Gambia
 
-  // English-speaking
-  'US': 'English', 'GB': 'English', 'AU': 'English', 'CA': 'English',
-  'NZ': 'English', 'IE': 'English', 'ZA': 'English'
+  // ── North America & Oceania ──
+  'US': 'English',    // United States
+  'CA': 'English',    // Canada
+  'AU': 'English',    // Australia
+  'NZ': 'English',    // New Zealand
+  'PG': 'English',    // Papua New Guinea
+  'FJ': 'English',    // Fiji
+  'SB': 'English',    // Solomon Islands
+  'VU': 'French',     // Vanuatu
+  'WS': 'English',    // Samoa
+  'TO': 'English'     // Tonga
 };
 
 // India Region / State Sub-Mapping
 const INDIA_REGION_TO_LANG = {
-  'WB': 'Bengali', 'WEST BENGAL': 'Bengali',
-  'TR': 'Bengali', 'TRIPURA': 'Bengali',
-  'MH': 'Marathi', 'MAHARASHTRA': 'Marathi',
-  'GJ': 'Gujarati', 'GUJARAT': 'Gujarati',
-  'TN': 'Tamil', 'TAMIL NADU': 'Tamil',
-  'KA': 'Kannada', 'KARNATAKA': 'Kannada',
-  'KL': 'Malayalam', 'KERALA': 'Malayalam',
-  'AP': 'Telugu', 'ANDHRA PRADESH': 'Telugu',
-  'TG': 'Telugu', 'TS': 'Telugu', 'TELANGANA': 'Telugu',
-  'PB': 'Punjabi', 'PUNJAB': 'Punjabi',
-  'OD': 'Odia', 'OR': 'Odia', 'ODISHA': 'Odia', 'ORISSA': 'Odia'
+  // West Bengal & Tripura -> Bengali
+  'WB': 'Bengali', 'WEST BENGAL': 'Bengali', 'IN-WB': 'Bengali',
+  'TR': 'Bengali', 'TRIPURA': 'Bengali', 'IN-TR': 'Bengali',
+
+  // Maharashtra & Goa -> Marathi
+  'MH': 'Marathi', 'MAHARASHTRA': 'Marathi', 'IN-MH': 'Marathi',
+  'GA': 'Marathi', 'GOA': 'Marathi', 'IN-GA': 'Marathi',
+
+  // Gujarat & Union Territories -> Gujarati
+  'GJ': 'Gujarati', 'GUJARAT': 'Gujarati', 'IN-GJ': 'Gujarati',
+  'DD': 'Gujarati', 'DAMAN AND DIU': 'Gujarati', 'IN-DD': 'Gujarati',
+  'DN': 'Gujarati', 'DADRA AND NAGAR HAVELI': 'Gujarati', 'IN-DN': 'Gujarati',
+  'DNH': 'Gujarati', 'DH': 'Gujarati',
+
+  // Tamil Nadu & Puducherry -> Tamil
+  'TN': 'Tamil', 'TAMIL NADU': 'Tamil', 'IN-TN': 'Tamil',
+  'PY': 'Tamil', 'PUDUCHERRY': 'Tamil', 'PONDICHERRY': 'Tamil', 'IN-PY': 'Tamil',
+
+  // Karnataka -> Kannada
+  'KA': 'Kannada', 'KARNATAKA': 'Kannada', 'IN-KA': 'Kannada',
+
+  // Kerala & Lakshadweep -> Malayalam
+  'KL': 'Malayalam', 'KERALA': 'Malayalam', 'IN-KL': 'Malayalam',
+  'LD': 'Malayalam', 'LAKSHADWEEP': 'Malayalam', 'IN-LD': 'Malayalam',
+
+  // Andhra Pradesh & Telangana -> Telugu
+  'AP': 'Telugu', 'ANDHRA PRADESH': 'Telugu', 'IN-AP': 'Telugu',
+  'TG': 'Telugu', 'TS': 'Telugu', 'TELANGANA': 'Telugu', 'IN-TG': 'Telugu', 'IN-TS': 'Telugu',
+
+  // Punjab & Chandigarh -> Punjabi
+  'PB': 'Punjabi', 'PUNJAB': 'Punjabi', 'IN-PB': 'Punjabi',
+  'CH': 'Punjabi', 'CHANDIGARH': 'Punjabi', 'IN-CH': 'Punjabi',
+
+  // Odisha -> Odia
+  'OD': 'Odia', 'OR': 'Odia', 'ODISHA': 'Odia', 'ORISSA': 'Odia', 'IN-OD': 'Odia', 'IN-OR': 'Odia',
+
+  // Hindi Belt & Central/Northern States
+  'UP': 'Hindi', 'UTTAR PRADESH': 'Hindi', 'IN-UP': 'Hindi',
+  'BR': 'Hindi', 'BIHAR': 'Hindi', 'IN-BR': 'Hindi',
+  'MP': 'Hindi', 'MADHYA PRADESH': 'Hindi', 'IN-MP': 'Hindi',
+  'RJ': 'Hindi', 'RAJASTHAN': 'Hindi', 'IN-RJ': 'Hindi',
+  'HR': 'Hindi', 'HARYANA': 'Hindi', 'IN-HR': 'Hindi',
+  'DL': 'Hindi', 'DELHI': 'Hindi', 'NATIONAL CAPITAL TERRITORY OF DELHI': 'Hindi', 'IN-DL': 'Hindi',
+  'HP': 'Hindi', 'HIMACHAL PRADESH': 'Hindi', 'IN-HP': 'Hindi',
+  'UK': 'Hindi', 'UT': 'Hindi', 'UTTARAKHAND': 'Hindi', 'IN-UT': 'Hindi',
+  'JH': 'Hindi', 'JHARKHAND': 'Hindi', 'IN-JH': 'Hindi',
+  'CG': 'Hindi', 'CT': 'Hindi', 'CHHATTISGARH': 'Hindi', 'IN-CT': 'Hindi',
+  'JK': 'Urdu',  'JAMMU AND KASHMIR': 'Urdu', 'IN-JK': 'Urdu',
+  'LA': 'Hindi', 'LADAKH': 'Hindi', 'IN-LA': 'Hindi',
+  'AS': 'Bengali', 'ASSAM': 'Bengali', 'IN-AS': 'Bengali'
 };
 
 // Device / Browser Locale Prefix Mapping
@@ -1482,6 +1641,7 @@ async function detectAndApplyGeoLanguage() {
   if (cachedGeo && targetLang) {
     targetLang.value = cachedGeo;
     refreshCustomSelect('targetLang');
+    if (typeof checkReadyToTranslate === 'function') checkReadyToTranslate();
     return;
   }
 
@@ -1490,46 +1650,75 @@ async function detectAndApplyGeoLanguage() {
   if (deviceLang && targetLang) {
     targetLang.value = deviceLang;
     refreshCustomSelect('targetLang');
+    if (typeof checkReadyToTranslate === 'function') checkReadyToTranslate();
   }
 
-  // 3. Query IP Geolocation API in background to refine with exact Country / State location
+  // 3. Query IP Geolocation API with resilient multi-tier fallback to refine with exact Country / State location
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 2800);
+    const timeoutId = setTimeout(() => controller.abort(), 3500);
 
     let countryCode = '';
     let regionCode = '';
     let regionName = '';
 
-    // Primary: ipapi.co
+    // Tier 1: Cloudflare Edge CDN trace (Ultra-fast, unblockable global edge nodes, e.g. Cairo Egypt)
     try {
-      const res = await fetch('https://ipapi.co/json/', { signal: controller.signal });
-      if (res.ok) {
-        const data = await res.json();
-        countryCode = (data.country_code || '').toUpperCase();
-        regionCode = (data.region_code || '').toUpperCase();
-        regionName = (data.region || '').toUpperCase();
-      }
-    } catch (e1) {
-      // Fallback 1: api.country.is
-      try {
-        const res2 = await fetch('https://api.country.is', { signal: controller.signal });
-        if (res2.ok) {
-          const data2 = await res2.json();
-          countryCode = (data2.country || '').toUpperCase();
+      const cfRes = await fetch('https://cloudflare.com/cdn-cgi/trace', { signal: controller.signal, cache: 'no-store' });
+      if (cfRes.ok) {
+        const cfText = await cfRes.text();
+        const m = cfText.match(/^loc=([A-Za-z]{2})/m);
+        if (m && m[1]) {
+          countryCode = m[1].toUpperCase();
         }
-      } catch (e2) {
-        // Fallback 2: ipwho.is
-        try {
-          const res3 = await fetch('https://ipwho.is/', { signal: controller.signal });
-          if (res3.ok) {
-            const data3 = await res3.json();
-            countryCode = (data3.country_code || '').toUpperCase();
+      }
+    } catch (e0) {}
+
+    // Tier 2: FreeIPAPI (high reliability, CORS-enabled, provides region/state for India/US/CA)
+    if (!countryCode || countryCode === 'IN' || countryCode === 'CA') {
+      try {
+        const resFree = await fetch('https://freeipapi.com/api/json', { signal: controller.signal });
+        if (resFree.ok) {
+          const dataFree = await resFree.json();
+          if (dataFree && dataFree.countryCode) {
+            countryCode = (dataFree.countryCode || countryCode).toUpperCase();
+            regionCode = (dataFree.regionCode || '').toUpperCase();
+            regionName = (dataFree.regionName || '').toUpperCase();
+          }
+        }
+      } catch (e1) {}
+    }
+
+    // Tier 3: ipwho.is fallback
+    if (!countryCode || (countryCode === 'IN' && !regionCode && !regionName)) {
+      try {
+        const res3 = await fetch('https://ipwho.is/', { signal: controller.signal });
+        if (res3.ok) {
+          const data3 = await res3.json();
+          if (data3 && data3.success !== false) {
+            countryCode = (data3.country_code || countryCode).toUpperCase();
+            regionCode = (data3.region_code || '').toUpperCase();
             regionName = (data3.region || '').toUpperCase();
           }
-        } catch (e3) {}
-      }
+        }
+      } catch (e2) {}
     }
+
+    // Tier 4: ipapi.co fallback
+    if (!countryCode) {
+      try {
+        const res4 = await fetch('https://ipapi.co/json/', { signal: controller.signal });
+        if (res4.ok) {
+          const data4 = await res4.json();
+          if (data4 && !data4.error && data4.country_code) {
+            countryCode = (data4.country_code || '').toUpperCase();
+            regionCode = (data4.region_code || '').toUpperCase();
+            regionName = (data4.region || '').toUpperCase();
+          }
+        }
+      } catch (e3) {}
+    }
+
     clearTimeout(timeoutId);
 
     // If user selected something in the meantime, don't overwrite
@@ -1544,8 +1733,10 @@ async function detectAndApplyGeoLanguage() {
       } else if (regionName && INDIA_REGION_TO_LANG[regionName]) {
         resolvedLang = INDIA_REGION_TO_LANG[regionName];
       } else {
-        resolvedLang = deviceLang || 'Hindi';
+        resolvedLang = 'Hindi';
       }
+    } else if (countryCode === 'CA' && (regionCode === 'QC' || regionName.includes('QUEBEC'))) {
+      resolvedLang = 'French';
     } else if (countryCode && GEO_COUNTRY_TO_LANG[countryCode]) {
       resolvedLang = GEO_COUNTRY_TO_LANG[countryCode];
     } else if (deviceLang) {
