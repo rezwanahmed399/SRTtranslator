@@ -9064,8 +9064,11 @@ button:active:not(:disabled),
     will-change: auto !important;
   }
 
-  /* Only hide when a text input is actively being typed into */
-  body.keyboard-open .native-bottom-nav {
+  /* Instant 0ms hide when any text input or search box has focus on mobile, preventing bottom nav riding up on keyboard */
+  body.keyboard-open .native-bottom-nav,
+  body:has(input:focus:not([type="checkbox"]):not([type="radio"]):not([type="button"]):not([type="submit"]):not([type="range"]):not([type="file"])) .native-bottom-nav,
+  body:has(textarea:focus) .native-bottom-nav,
+  body:has(.custom-select-search-input:focus) .native-bottom-nav {
     display: none !important;
   }
 

@@ -7350,7 +7350,7 @@ function buildCustomSelect(selectEl) {
         <circle cx="11" cy="11" r="8"></circle>
         <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
       </svg>
-      <input type="text" class="custom-select-search-input" placeholder="Search language..." autocomplete="off" inputmode="search" tabindex="-1" readonly />
+      <input type="text" class="custom-select-search-input" placeholder="Search language..." autocomplete="off" inputmode="search" tabindex="-1" />
     `;
     menu.appendChild(searchWrap);
     searchInput = searchWrap.querySelector('input');
@@ -7453,11 +7453,6 @@ function buildCustomSelect(selectEl) {
     });
     searchInput.addEventListener('click', e => {
       e.stopPropagation();
-      searchInput.removeAttribute('readonly');
-      searchInput.focus();
-    });
-    searchInput.addEventListener('focus', () => {
-      searchInput.removeAttribute('readonly');
     });
   }
 
@@ -7499,7 +7494,6 @@ function buildCustomSelect(selectEl) {
 
       if (searchInput) {
         searchInput.value = '';
-        searchInput.setAttribute('readonly', 'readonly');
         renderOptions('');
       } else {
         // Smoothly scroll selected option into view
@@ -7549,7 +7543,6 @@ function closeAllCustomSelects() {
     if (tr) tr.setAttribute('aria-expanded', 'false');
     const sinp = c.querySelector('.custom-select-search-input');
     if (sinp) {
-      sinp.setAttribute('readonly', 'readonly');
       sinp.blur();
     }
   });
@@ -9626,7 +9619,8 @@ function initKeyboardVisibilityHandler() {
     if (!el) return false;
     const tag = el.tagName;
     if (tag !== 'INPUT' && tag !== 'TEXTAREA') return false;
-    if (el.readOnly || el.disabled) return false;
+    if (el.disabled) return false;
+    if (el.readOnly && !el.classList.contains('custom-select-search-input')) return false;
     const type = (el.type || '').toLowerCase();
     if (['checkbox', 'radio', 'button', 'submit', 'reset', 'range', 'file', 'image'].includes(type)) {
       return false;
@@ -9650,7 +9644,23 @@ function initKeyboardVisibilityHandler() {
     }
   };
 
-  // 1. Visual Viewport API (High accuracy on Chromium Android WebView & Mobile Browsers)
+  // 1. Pre-emptive touch handler: instantly hide bottom bar at 0ms touch contact BEFORE keyboard begins sliding up
+  document.addEventListener('pointerdown', (e) => {
+    const el = e.target;
+    if (!el) return;
+    if (el.classList?.contains('custom-select-search-input') || el.closest?.('.custom-select-search-wrap')) {
+      document.body.classList.add('keyboard-open');
+      isKeyboardVisible = true;
+    } else if ((el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') && !el.disabled && !el.readOnly) {
+      const type = (el.type || '').toLowerCase();
+      if (!['checkbox', 'radio', 'button', 'submit', 'reset', 'range', 'file', 'image'].includes(type)) {
+        document.body.classList.add('keyboard-open');
+        isKeyboardVisible = true;
+      }
+    }
+  }, { passive: true });
+
+  // 2. Visual Viewport API (High accuracy on Chromium Android WebView & Mobile Browsers)
   if (window.visualViewport) {
     window.visualViewport.addEventListener('resize', () => {
       // If user is just scrolling or touching and no input is focused, IGNORE ALL RESIZES!
@@ -9669,22 +9679,22 @@ function initKeyboardVisibilityHandler() {
     });
   }
 
-  // 2. Focusin immediate tracking when an input is tapped
+  // 3. Focusin immediate tracking when an input is tapped (0ms instant hide!)
   document.addEventListener('focusin', (e) => {
     const el = e.target;
     if (isTextInputFocused()) {
+      setKeyboardState(true);
       setTimeout(() => {
         if (isTextInputFocused()) {
-          setKeyboardState(true);
           try {
             el.scrollIntoView({ behavior: 'smooth', block: 'center' });
           } catch (err) {}
         }
-      }, 200);
+      }, 150);
     }
   });
 
-  // 3. Focusout immediate tracking when input loses focus
+  // 4. Focusout immediate tracking when input loses focus
   document.addEventListener('focusout', () => {
     setTimeout(() => {
       if (!isTextInputFocused()) {
@@ -9693,7 +9703,7 @@ function initKeyboardVisibilityHandler() {
     }, 100);
   });
 
-  // 4. Capacitor native keyboard events (if running inside APK)
+  // 5. Capacitor native keyboard events (if running inside APK)
   if (window.Capacitor?.Plugins?.Keyboard) {
     try {
       window.Capacitor.Plugins.Keyboard.addListener('keyboardWillShow', () => {
@@ -9707,7 +9717,7 @@ function initKeyboardVisibilityHandler() {
     } catch (e) {}
   }
 
-  // 5. Tap outside active input automatically dismisses virtual keyboard & restores bottom nav
+  // 6. Tap outside active input automatically dismisses virtual keyboard & restores bottom nav
   document.addEventListener('touchstart', (e) => {
     if (isTextInputFocused()) {
       const active = document.activeElement;
