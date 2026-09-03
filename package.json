@@ -1,6 +1,6 @@
 {
   "name": "submorph",
-  "version": "1.8.47",
+  "version": "1.8.48",
   "description": "SubMorph — AI Subtitle Translator with 100% Timing Preservation and Zero Overlaps",
   "main": "index.html",
   "scripts": {

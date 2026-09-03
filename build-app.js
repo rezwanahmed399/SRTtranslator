@@ -126,11 +126,16 @@ try {
     fs.copyFileSync(activeApkSrc, destDedicatedApk);
     console.log(`📁 Synced active APK to clean folder -> ${destDedicatedApk}`);
 
-    // Also copy to D:\ root
-    const dRootApk = path.join('D:\\', currentApkName);
-    fs.copyFileSync(activeApkSrc, dRootApk);
-    console.log(`📁 Synced active APK to D:\\ root -> ${dRootApk}`);
-    cleanOldApks('D:\\');
+    // Strictly DO NOT save to D:\ root per user rule! Clean any accidental files from D:\ root
+    try {
+      const dFiles = fs.readdirSync('D:\\');
+      dFiles.forEach(f => {
+        if (f.startsWith('SubMorph') && f.endsWith('.apk')) {
+          fs.unlinkSync(path.join('D:\\', f));
+          console.log(`🗑️ Removed ${f} from D:\\ root (per strict user rule)`);
+        }
+      });
+    } catch (err) {}
   }
 } catch (e) {
   console.warn(`Could not sync to dedicated APK folder (${dedicatedApkDir}):`, e.message);

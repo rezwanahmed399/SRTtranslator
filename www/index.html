@@ -1581,6 +1581,21 @@
           <span>Waiting for internet connection...</span>
         </div>
 
+        <div class="offline-sync-indicator hidden" id="offlineSyncIndicator">
+          <div class="offline-sync-spinner-wrap">
+            <div class="offline-spinner offline-spinner-sync"></div>
+            <svg class="offline-sync-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="23 4 23 10 17 10"></polyline>
+              <polyline points="1 20 1 14 7 14"></polyline>
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+            </svg>
+          </div>
+          <div class="offline-sync-text-wrap">
+            <span class="offline-sync-status" id="offlineSyncStatus">Reconnecting to network...</span>
+            <span class="offline-sync-sub" id="offlineSyncSub">Reloading AI models &amp; syncing cloud services...</span>
+          </div>
+        </div>
+
         <button class="btn btn-offline-resume hidden" id="offlineResumeBtn" type="button">
           <svg viewBox="0 0 24 24" fill="currentColor">
             <polygon points="5 3 19 12 5 21 5 3"/>

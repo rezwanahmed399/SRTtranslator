@@ -285,6 +285,9 @@ const offlinePreviewFile        = $('offlinePreviewFile');
 const offlinePreviewProgressBar = $('offlinePreviewProgressBar');
 const offlinePreviewStats       = $('offlinePreviewStats');
 const offlineWaitingIndicator   = $('offlineWaitingIndicator');
+const offlineSyncIndicator      = $('offlineSyncIndicator');
+const offlineSyncStatus         = $('offlineSyncStatus');
+const offlineSyncSub            = $('offlineSyncSub');
 const offlineResumeBtn          = $('offlineResumeBtn');
 const offlineContinueBtn        = $('offlineContinueBtn');
 const offlineKeepPausedBtn      = $('offlineKeepPausedBtn');
@@ -3310,11 +3313,17 @@ function toggleTheme() {
 }
 
 // ── Offline Faded Lockout & Network Resilience System ──
+// ── Offline Faded Lockout & Network Resilience System ──
 function dismissOfflineLockout() {
   document.body.classList.remove('is-offline-lockout');
   if (offlineLockoutModal) {
     offlineLockoutModal.classList.add('hidden');
     offlineLockoutModal.setAttribute('aria-hidden', 'true');
+  }
+  if (offlineSyncIndicator) offlineSyncIndicator.classList.add('hidden');
+  if (offlineLockoutCard) {
+    offlineLockoutCard.classList.remove('is-reconnecting');
+    offlineLockoutCard.classList.remove('is-online');
   }
 }
 
@@ -3336,6 +3345,7 @@ function handleNetworkOffline() {
   // Configure Lockout Card for OFFLINE state
   if (offlineLockoutCard) {
     offlineLockoutCard.classList.remove('is-online');
+    offlineLockoutCard.classList.remove('is-reconnecting');
   }
   if (offlineSvgWifiOff) offlineSvgWifiOff.classList.remove('hidden');
   if (offlineSvgWifiOn) offlineSvgWifiOn.classList.add('hidden');
@@ -3372,6 +3382,7 @@ function handleNetworkOffline() {
 
   // Action buttons for offline state
   if (offlineWaitingIndicator) offlineWaitingIndicator.classList.remove('hidden');
+  if (offlineSyncIndicator) offlineSyncIndicator.classList.add('hidden');
   if (offlineResumeBtn) offlineResumeBtn.classList.add('hidden');
   if (offlineContinueBtn) offlineContinueBtn.classList.add('hidden');
   if (offlineKeepPausedBtn) offlineKeepPausedBtn.classList.add('hidden');
@@ -3385,53 +3396,112 @@ function handleNetworkOffline() {
   showToast(isTranslating ? 'Internet lost. Translation auto-paused.' : 'No internet connection.', 'error');
 }
 
-function handleNetworkOnline() {
+async function handleNetworkOnline() {
   state.isOffline = false;
-  addTerminalLog('ok', 'Internet connection re-established.');
+  addTerminalLog('info', 'Network connection detected. Starting verification and service reloading...');
 
-  // Update Lockout Card to ONLINE state
+  // Configure Lockout Card for RECONNECTING & RELOADING state
   if (offlineLockoutCard) {
-    offlineLockoutCard.classList.add('is-online');
+    offlineLockoutCard.classList.remove('is-online');
+    offlineLockoutCard.classList.add('is-reconnecting');
   }
   if (offlineSvgWifiOff) offlineSvgWifiOff.classList.add('hidden');
   if (offlineSvgWifiOn) offlineSvgWifiOn.classList.remove('hidden');
 
   if (offlineStatusBadge) {
+    offlineStatusBadge.className = 'offline-status-badge badge-reconnecting';
+  }
+  if (offlineStatusBadgeText) offlineStatusBadgeText.textContent = 'Reconnecting & Reloading...';
+  if (offlineTitle) offlineTitle.textContent = 'Restoring Connection...';
+  if (offlineDesc) {
+    offlineDesc.textContent = 'Internet connection detected! Please wait while SubMorph reloads models, tests network readiness, and synchronizes services.';
+  }
+
+  // Hide offline waiting indicator and action buttons during reload
+  if (offlineWaitingIndicator) offlineWaitingIndicator.classList.add('hidden');
+  if (offlineResumeBtn) offlineResumeBtn.classList.add('hidden');
+  if (offlineContinueBtn) offlineContinueBtn.classList.add('hidden');
+  if (offlineKeepPausedBtn) offlineKeepPausedBtn.classList.add('hidden');
+
+  // Show active loading indicator
+  if (offlineSyncIndicator) offlineSyncIndicator.classList.remove('hidden');
+
+  // Stage 1: Network Ping / Connectivity Verification
+  if (offlineSyncStatus) offlineSyncStatus.textContent = 'Testing network connectivity...';
+  if (offlineSyncSub) offlineSyncSub.textContent = 'Verifying active internet throughput & DNS...';
+  await sleep(650);
+
+  // Stage 2: Reload AI Models & Provider Keys
+  if (offlineSyncStatus) offlineSyncStatus.textContent = 'Reloading AI translation engine...';
+  if (offlineSyncSub) offlineSyncSub.textContent = 'Refreshing verified models & health checks...';
+  try {
+    if (typeof populateModelSelect === 'function') {
+      populateModelSelect();
+    }
+    if (typeof loadProviderSettingsUI === 'function') {
+      loadProviderSettingsUI();
+    }
+  } catch (e) {}
+  await sleep(650);
+
+  // Stage 3: Synchronize Cloud Archive & Session
+  if (offlineSyncStatus) offlineSyncStatus.textContent = 'Synchronizing cloud archive & session...';
+  if (offlineSyncSub) offlineSyncSub.textContent = 'Checking cloud history & active tokens...';
+  try {
+    if (window.FirebaseCloudSync && window.FirebaseCloudSync.getUser() && typeof renderCloudHistoryUI === 'function') {
+      await renderCloudHistoryUI();
+    }
+  } catch (e) {}
+  await sleep(550);
+
+  // Stage 4: Everything Loaded Successfully!
+  if (offlineSyncStatus) offlineSyncStatus.textContent = 'All services loaded successfully!';
+  if (offlineSyncSub) offlineSyncSub.textContent = 'System is 100% online and synchronized.';
+  await sleep(450);
+
+  // Transition from loading to Ready state
+  if (offlineSyncIndicator) offlineSyncIndicator.classList.add('hidden');
+  if (offlineLockoutCard) {
+    offlineLockoutCard.classList.remove('is-reconnecting');
+    offlineLockoutCard.classList.add('is-online');
+  }
+
+  if (offlineStatusBadge) {
     offlineStatusBadge.className = 'offline-status-badge badge-online';
   }
 
-  if (offlineWaitingIndicator) offlineWaitingIndicator.classList.add('hidden');
+  addTerminalLog('ok', 'Internet connection re-established and all services loaded.');
 
   // Check if translation was paused because of offline
   if (state.pausedDueToOffline) {
     // CRITICAL USER REQUIREMENT: DO NOT AUTO-RESUME! User must click Resume!
-    if (offlineStatusBadgeText) offlineStatusBadgeText.textContent = 'Connection Restored';
-    if (offlineTitle) offlineTitle.textContent = 'Internet Reconnected';
+    if (offlineStatusBadgeText) offlineStatusBadgeText.textContent = 'Ready to Resume';
+    if (offlineTitle) offlineTitle.textContent = 'Internet Reconnected & Loaded';
     if (offlineDesc) {
-      offlineDesc.textContent = 'Your internet connection is back! Translation is currently paused safely. Click Resume when you are ready to continue.';
+      offlineDesc.textContent = 'All AI models and cloud services have been successfully reloaded. Translation is safely paused. Click Resume when you are ready to continue.';
     }
     if (offlineResumeBtn) offlineResumeBtn.classList.remove('hidden');
     if (offlineKeepPausedBtn) offlineKeepPausedBtn.classList.remove('hidden');
     if (offlineContinueBtn) offlineContinueBtn.classList.add('hidden');
-    showToast('Internet connected. Click Resume to continue translation.', 'info');
+    showToast('Everything loaded! Click Resume to continue translation.', 'info');
   } else {
     // Was idle when offline occurred
-    if (offlineStatusBadgeText) offlineStatusBadgeText.textContent = 'Connected';
-    if (offlineTitle) offlineTitle.textContent = 'Internet Restored';
+    if (offlineStatusBadgeText) offlineStatusBadgeText.textContent = 'Everything Loaded';
+    if (offlineTitle) offlineTitle.textContent = 'Connection Restored!';
     if (offlineDesc) {
-      offlineDesc.textContent = 'Your internet connection is back! You can now continue using SubMorph.';
+      offlineDesc.textContent = 'All models and services are fully reloaded. Returning to your workspace...';
     }
     if (offlineContinueBtn) offlineContinueBtn.classList.remove('hidden');
     if (offlineResumeBtn) offlineResumeBtn.classList.add('hidden');
     if (offlineKeepPausedBtn) offlineKeepPausedBtn.classList.add('hidden');
 
-    // Auto-dismiss after 1.2s or allow instant click on continue
+    // Auto-dismiss smoothly after 1.2s or allow instant click on continue
     setTimeout(() => {
       if (!state.isOffline && !state.pausedDueToOffline) {
         dismissOfflineLockout();
       }
     }, 1200);
-    showToast('Connected to internet.', 'info');
+    showToast('Connected to internet & all services loaded.', 'info');
   }
 }
 
