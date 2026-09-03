@@ -1447,14 +1447,10 @@ body {
   height: 18px;
 }
 
-/* App Info Section in Settings - Only visible inside native Android app */
-.app-info-section {
-  display: none;
-  margin-top: 24px;
-}
-
+/* App Info Section in Settings - Hidden */
+.app-info-section,
 body.is-native-app .app-info-section {
-  display: block;
+  display: none !important;
 }
 
 .app-info-grid {
