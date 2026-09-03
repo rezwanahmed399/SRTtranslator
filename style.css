@@ -7619,22 +7619,22 @@ body.is-native-platform .history-modal-content-list {
 
 .history-modal-header {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 20px 22px 14px 22px;
+  flex-direction: column;
+  gap: 8px;
+  padding: 18px 22px 14px 22px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  gap: 14px;
 }
 
 [data-theme="light"] .history-modal-header {
   border-bottom-color: rgba(0, 0, 0, 0.08);
 }
 
-.history-modal-title-group {
+.history-modal-header-top {
   display: flex;
-  flex-direction: column;
-  gap: 3px;
-  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
 }
 
 .history-modal-heading {
@@ -7646,6 +7646,7 @@ body.is-native-platform .history-modal-content-list {
   color: #f8fafc;
   letter-spacing: -0.01em;
   margin: 0;
+  min-width: 0;
 }
 
 [data-theme="light"] .history-modal-heading {
@@ -7660,40 +7661,54 @@ body.is-native-platform .history-modal-content-list {
   color: #818cf8;
   padding: 2px 8px;
   border-radius: 9999px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+[data-theme="light"] .history-count-badge {
+  background: #ede9fe;
+  border-color: #c4b5fd;
+  color: #6366f1;
+}
+
+.history-modal-header-sub {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
 }
 
 .history-modal-subline {
   font-size: 0.8rem;
   color: #94a3b8;
   margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
 }
 
 [data-theme="light"] .history-modal-subline {
   color: #64748b;
 }
 
-.history-modal-header-actions {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  flex-shrink: 0;
-}
-
 .btn-history-clear-all {
   display: inline-flex;
   align-items: center;
-  gap: 3.5px;
+  gap: 4px;
   background: rgba(239, 68, 68, 0.12);
-  border: 1px solid rgba(239, 68, 68, 0.25);
+  border: 1px solid rgba(239, 68, 68, 0.28);
   color: #f87171;
-  padding: 2px 7px;
-  border-radius: 5px;
-  font-size: 0.67rem;
+  padding: 2.5px 8px;
+  border-radius: 6px;
+  font-size: 0.72rem;
   font-weight: 600;
   cursor: pointer;
   height: 24px;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .btn-history-clear-all:hover {
@@ -7704,8 +7719,8 @@ body.is-native-platform .history-modal-content-list {
 }
 
 .btn-history-clear-all svg {
-  width: 10px;
-  height: 10px;
+  width: 11px;
+  height: 11px;
   flex-shrink: 0;
 }
 
@@ -9897,30 +9912,28 @@ button:active:not(:disabled),
   }
 
   .history-modal-header {
-    padding: 10px 12px 6px 12px;
+    padding: 12px 14px 10px 14px;
     gap: 6px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .history-modal-header-top {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    flex-wrap: nowrap;
-  }
-
-  .history-modal-title-group {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    min-width: 0;
-    flex: 1;
+    gap: 8px;
+    width: 100%;
   }
 
   .history-modal-heading {
-    font-size: 0.84rem;
+    font-size: 0.96rem;
     font-weight: 800;
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 7px;
     white-space: nowrap;
-    flex-wrap: nowrap;
+    min-width: 0;
   }
 
   .history-modal-heading span:first-child {
@@ -9928,41 +9941,44 @@ button:active:not(:disabled),
   }
 
   .history-count-badge {
-    font-size: 0.62rem;
-    padding: 1.5px 6px;
+    font-size: 0.68rem;
+    padding: 1.5px 7px;
     white-space: nowrap;
     border-radius: 999px;
     flex-shrink: 0;
   }
 
+  .history-modal-header-sub {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+  }
+
   .history-modal-subline {
-    font-size: 0.62rem;
-    line-height: 1.15;
+    font-size: 0.70rem;
+    line-height: 1.2;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     margin: 0;
-  }
-
-  .history-modal-header-actions {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    flex-shrink: 0;
+    flex: 1;
   }
 
   .btn-history-clear-all {
-    height: 21px;
-    padding: 1.5px 5.5px;
-    border-radius: 4px;
-    font-size: 0.60rem;
+    height: 22px;
+    padding: 2px 7px;
+    border-radius: 5px;
+    font-size: 0.66rem;
     font-weight: 600;
-    gap: 2.5px;
+    gap: 3px;
+    flex-shrink: 0;
   }
 
   .btn-history-clear-all svg {
-    width: 9px;
-    height: 9px;
+    width: 10px;
+    height: 10px;
   }
 
   .btn-clear-all-history {

@@ -8638,26 +8638,26 @@ function showAllCloudHistoryModal(initialItems) {
     <div class="history-modal-box" role="dialog" aria-modal="true">
       <div class="modal-top-accent" style="background:linear-gradient(90deg, #6366f1, #38bdf8, #10b981);"></div>
       <div class="history-modal-header">
-        <div class="history-modal-title-group">
+        <div class="history-modal-header-top">
           <div class="history-modal-heading">
             <span>All Translation History</span>
             <span class="history-count-badge" id="historyModalCountBadge">${currentItems.length} Subtitles</span>
           </div>
-          <p class="history-modal-subline">3-Day Cloud Archive • Auto-removes after 3 days</p>
+          <button class="btn-history-modal-close" type="button" id="historyModalCloseBtn" title="Close">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
         </div>
-        <div class="history-modal-header-actions">
+        <div class="history-modal-header-sub">
+          <p class="history-modal-subline">3-Day Cloud Archive • Auto-removes after 3 days</p>
           <button class="btn-history-clear-all ${currentItems.length === 0 ? 'hidden' : ''}" type="button" id="historyModalClearAllBtn" title="Clear all translation history">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="3 6 5 6 21 6"/>
               <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
             </svg>
             <span>Clear All</span>
-          </button>
-          <button class="btn-history-modal-close" type="button" id="historyModalCloseBtn" title="Close">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;">
-              <line x1="18" y1="6" x2="6" y2="18"/>
-              <line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>
           </button>
         </div>
       </div>
