@@ -3034,7 +3034,20 @@ input[type="text"]:hover {
 input[type="text"]:focus {
   border-color: var(--brand-primary-light);
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
-  background-color: #0b0f19;
+  background-color: var(--surface-inner);
+}
+
+[data-theme="light"] input[type="text"] {
+  background-color: #ffffff;
+  border-color: rgba(0, 0, 0, 0.12);
+  color: #0f172a;
+}
+
+[data-theme="light"] input[type="text"]:focus {
+  background-color: #ffffff;
+  border-color: var(--brand-primary);
+  color: #0f172a;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
 }
 
 /* Upload Zone */
@@ -7755,44 +7768,83 @@ body.is-native-platform .history-modal-content-list {
   position: relative;
   display: flex;
   align-items: center;
+  width: 100%;
 }
 
 .history-search-icon {
   position: absolute;
-  left: 12px;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
   width: 16px;
   height: 16px;
   color: #94a3b8;
   pointer-events: none;
+  z-index: 2;
+  transition: color 0.2s ease;
 }
 
+[data-theme="light"] .history-search-icon {
+  color: #64748b;
+}
+
+.history-search-input-wrap:focus-within .history-search-icon {
+  color: #6366f1;
+}
+
+input[type="text"].history-search-input,
 .history-search-input {
-  width: 100%;
-  padding: 10px 38px 10px 36px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 12px;
-  color: #ffffff;
-  font-size: 0.88rem;
-  outline: none;
-  transition: all 0.2s ease;
+  width: 100% !important;
+  height: 40px !important;
+  padding: 9px 38px 9px 42px !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 10px !important;
+  color: #ffffff !important;
+  font-size: 0.88rem !important;
+  outline: none !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
+input[type="text"].history-search-input::placeholder,
+.history-search-input::placeholder {
+  color: #64748b !important;
+  opacity: 1 !important;
+}
+
+input[type="text"].history-search-input:focus,
 .history-search-input:focus {
-  border-color: #6366f1;
-  background: rgba(255, 255, 255, 0.09);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+  border-color: #6366f1 !important;
+  background: rgba(15, 23, 42, 0.85) !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.22) !important;
 }
 
+[data-theme="light"] input[type="text"].history-search-input,
 [data-theme="light"] .history-search-input {
-  background: #ffffff;
-  border-color: rgba(0, 0, 0, 0.12);
-  color: #0f172a;
+  background: #ffffff !important;
+  border-color: rgba(0, 0, 0, 0.14) !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] input[type="text"].history-search-input::placeholder,
+[data-theme="light"] .history-search-input::placeholder {
+  color: #94a3b8 !important;
+}
+
+[data-theme="light"] input[type="text"].history-search-input:focus,
+[data-theme="light"] .history-search-input:focus {
+  background: #ffffff !important;
+  border-color: #6366f1 !important;
+  color: #0f172a !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.18) !important;
 }
 
 .btn-history-clear-search {
   position: absolute;
   right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
   background: none;
   border: none;
   color: #94a3b8;
@@ -7801,6 +7853,23 @@ body.is-native-platform .history-modal-content-list {
   align-items: center;
   justify-content: center;
   padding: 4px;
+  border-radius: 50%;
+  transition: all 0.15s ease;
+  z-index: 2;
+}
+
+.btn-history-clear-search:hover {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+[data-theme="light"] .btn-history-clear-search {
+  color: #64748b;
+}
+
+[data-theme="light"] .btn-history-clear-search:hover {
+  background: #fee2e2;
+  color: #dc2626;
 }
 
 .history-modal-content-list {
@@ -9545,20 +9614,25 @@ button:active:not(:disabled),
   }
 
   .history-search-icon {
-    left: 9px;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
     width: 13px;
     height: 13px;
   }
 
+  input[type="text"].history-search-input,
   .history-search-input {
-    height: 30px;
-    font-size: 0.74rem;
-    padding: 4px 26px 4px 28px !important;
-    border-radius: 8px;
+    height: 32px !important;
+    font-size: 0.76rem !important;
+    padding: 4px 28px 4px 34px !important;
+    border-radius: 8px !important;
   }
 
   .btn-history-clear-search {
-    right: 6px;
+    right: 7px;
+    top: 50%;
+    transform: translateY(-50%);
     width: 18px;
     height: 18px;
   }
