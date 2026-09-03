@@ -6469,16 +6469,16 @@ body.is-native-platform .history-modal-content-list {
 .btn-clear-all-history {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   background: rgba(239, 68, 68, 0.12);
   border: 1px solid rgba(239, 68, 68, 0.25);
   color: #f87171;
-  padding: 5px 12px;
-  border-radius: 8px;
-  font-size: 0.74rem;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 0.69rem;
   font-weight: 600;
   cursor: pointer;
-  height: 28px;
+  height: 25px;
   transition: all 0.2s ease;
   white-space: nowrap;
 }
@@ -6490,8 +6490,8 @@ body.is-native-platform .history-modal-content-list {
 }
 
 .btn-clear-all-history svg {
-  width: 12px;
-  height: 12px;
+  width: 11px;
+  height: 11px;
 }
 
 [data-theme="light"] .btn-clear-all-history {
@@ -7662,23 +7662,23 @@ body.is-native-platform .history-modal-content-list {
 .history-modal-header-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 5px;
   flex-shrink: 0;
 }
 
 .btn-history-clear-all {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 3.5px;
   background: rgba(239, 68, 68, 0.12);
   border: 1px solid rgba(239, 68, 68, 0.25);
   color: #f87171;
-  padding: 6px 12px;
-  border-radius: 9px;
-  font-size: 0.74rem;
+  padding: 2px 7px;
+  border-radius: 5px;
+  font-size: 0.67rem;
   font-weight: 600;
   cursor: pointer;
-  height: 34px;
+  height: 24px;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   white-space: nowrap;
 }
@@ -7691,8 +7691,8 @@ body.is-native-platform .history-modal-content-list {
 }
 
 .btn-history-clear-all svg {
-  width: 13px;
-  height: 13px;
+  width: 10px;
+  height: 10px;
   flex-shrink: 0;
 }
 
@@ -7709,9 +7709,9 @@ body.is-native-platform .history-modal-content-list {
 }
 
 .btn-history-modal-close {
-  width: 34px;
-  height: 34px;
-  border-radius: 10px;
+  width: 24px;
+  height: 24px;
+  border-radius: 5px;
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: #94a3b8;
@@ -7721,6 +7721,11 @@ body.is-native-platform .history-modal-content-list {
   justify-content: center;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   flex-shrink: 0;
+}
+
+.btn-history-modal-close svg {
+  width: 12px;
+  height: 12px;
 }
 
 .btn-history-modal-close:hover {
@@ -9489,16 +9494,50 @@ button:active:not(:disabled),
     margin: 0;
   }
 
+  .history-modal-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  .btn-history-clear-all {
+    height: 21px;
+    padding: 1.5px 5.5px;
+    border-radius: 4px;
+    font-size: 0.60rem;
+    font-weight: 600;
+    gap: 2.5px;
+  }
+
+  .btn-history-clear-all svg {
+    width: 9px;
+    height: 9px;
+  }
+
+  .btn-clear-all-history {
+    height: 21px;
+    padding: 1.5px 5.5px;
+    border-radius: 4px;
+    font-size: 0.60rem;
+    gap: 2.5px;
+  }
+
+  .btn-clear-all-history svg {
+    width: 9px;
+    height: 9px;
+  }
+
   .btn-history-modal-close {
-    width: 26px;
-    height: 26px;
-    border-radius: 6px;
+    width: 21px;
+    height: 21px;
+    border-radius: 4px;
     flex-shrink: 0;
   }
 
   .btn-history-modal-close svg {
-    width: 14px;
-    height: 14px;
+    width: 11px;
+    height: 11px;
   }
 
   .history-modal-search-bar {
