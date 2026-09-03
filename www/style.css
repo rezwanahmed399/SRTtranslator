@@ -2933,6 +2933,8 @@ body.is-native-app .app-info-section {
   line-height: 1.25;
   white-space: normal;
   word-break: break-word;
+  unicode-bidi: plaintext;
+  text-align: start;
 }
 
 [data-theme="light"] .option-sub-desc {
@@ -4333,6 +4335,8 @@ input[type="text"]:focus {
   color: #cbd5e1;
   white-space: pre-wrap;
   word-break: break-word;
+  unicode-bidi: plaintext;
+  text-align: start;
 }
 
 /* Formatted Card View */
@@ -4380,6 +4384,8 @@ input[type="text"]:focus {
   font-family: var(--font-bn);
   color: var(--text-main);
   line-height: 1.5;
+  unicode-bidi: plaintext;
+  text-align: start;
 }
 
 /* Side-by-Side View */

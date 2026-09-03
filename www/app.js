@@ -5298,12 +5298,18 @@ DIALOGUE & REGIONAL VOCABULARY RULES (Bengali / বাংলা):
   * NEVER use disrespectful pronouns like "তুই", "তোর", "তোকে" unless explicitly required by intense hostility/abuse.
   * ALWAYS use polite, friendly, and natural conversational pronouns like "তুমি", "তোমার", "তোমাকে", "তোমরা" (or "আপনি/আপনার" for elders/formal roles).
 - Translate in lively, natural everyday spoken Bangladeshi Bengali (চলতি কথ্য ভাষা) so it feels like a top-tier cinematic dub.`;
-  } else if (langLower.includes('hindi') || langLower.includes('urdu')) {
+  } else if (langLower.includes('hindi')) {
     languageRules = `
-DIALOGUE & PRONOUN RULES (${lang}):
+DIALOGUE & PRONOUN RULES (Hindi / हिन्दी):
 - AVOID disrespectful or rude pronouns like "तू" / "तेरा" / "तुझे".
 - Use friendly, polite, and natural conversational pronouns like "तुम", "तुम्हारा", "तुम्हें" (or "आप", "आपका" for respect/elders).
 - Translate in natural, modern conversational cinema/drama dialogue.`;
+  } else if (langLower.includes('urdu')) {
+    languageRules = `
+DIALOGUE & PRONOUN RULES (Urdu / اردو):
+- AVOID disrespectful or rude pronouns like "تو" / "تیرا" / "تجھے".
+- Use friendly, polite, and natural conversational pronouns like "تم", "تمہارا", "تمہیں" (or "آپ", "آپ کا" for respect/elders).
+- Translate in natural, modern conversational cinema/drama dialogue in fluent Urdu Nastaliq script.`;
   } else {
     languageRules = `
 DIALOGUE RULES (${lang}):
@@ -5458,12 +5464,18 @@ DIALOGUE & REGIONAL VOCABULARY RULES (Bengali / বাংলা):
   * NEVER use disrespectful pronouns like "তুই", "তোর", "তোকে" unless explicitly required by intense hostility/abuse.
   * ALWAYS use polite, friendly, and natural conversational pronouns like "তুমি", "তোমার", "তোমাকে", "তোমরা" (or "আপনি/আপনার" for elders/formal roles).
 - Translate in lively, natural everyday spoken Bangladeshi Bengali (চলতি কথ্য ভাষা) so it feels like a top-tier cinematic dub.`;
-  } else if (langLower.includes('hindi') || langLower.includes('urdu')) {
+  } else if (langLower.includes('hindi')) {
     languageRules = `
-DIALOGUE & PRONOUN RULES (${lang}):
+DIALOGUE & PRONOUN RULES (Hindi / हिन्दी):
 - AVOID disrespectful or rude pronouns like "तू" / "तेरा" / "तुझे".
 - Use friendly, polite, and natural conversational pronouns like "तुम", "तुम्हारा", "तुम्हें" (or "आप", "आपका" for respect/elders).
 - Translate in natural, modern conversational cinema/drama dialogue.`;
+  } else if (langLower.includes('urdu')) {
+    languageRules = `
+DIALOGUE & PRONOUN RULES (Urdu / اردو):
+- AVOID disrespectful or rude pronouns like "تو" / "تیرا" / "تجھے".
+- Use friendly, polite, and natural conversational pronouns like "تم", "تمہارا", "تمہیں" (or "آپ", "آپ کا" for respect/elders).
+- Translate in natural, modern conversational cinema/drama dialogue in fluent Urdu Nastaliq script.`;
   } else {
     languageRules = `
 DIALOGUE RULES (${lang}):
@@ -5885,19 +5897,25 @@ function countTotalWords(blocks) {
 
 function getReadingSpeedPill(lines) {
   const text = (Array.isArray(lines) ? lines.join(' ') : String(lines || '')).trim();
-  const words = text.split(/\s+/).filter(Boolean).length;
-  const sec = (words * 0.22).toFixed(1);
+  const isCjk = /[\u4e00-\u9fa5\u3040-\u30ff\uac00-\ud7af]/.test(text);
+  const count = isCjk ? text.replace(/\s+/g, '').length : text.split(/\s+/).filter(Boolean).length;
+  const unit = isCjk ? 'c' : 'w';
+  const sec = isCjk ? (count * 0.25).toFixed(1) : (count * 0.22).toFixed(1);
   const flashIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;display:inline-block;vertical-align:-1px;"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>`;
   const clockIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;display:inline-block;vertical-align:-1px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`;
 
-  if (words <= 3) {
-    return `<span class="speed-pill speed-micro" title="${words} words: Read in a blink">${flashIcon} ${sec}s (${words}w)</span>`;
-  } else if (words <= 7) {
-    return `<span class="speed-pill speed-fast" title="${words} words: Fast glance reading">${flashIcon} ${sec}s (${words}w)</span>`;
-  } else if (words <= 12) {
-    return `<span class="speed-pill speed-normal" title="${words} words: Standard comfort speed">${clockIcon} ${sec}s (${words}w)</span>`;
+  const isMicro = isCjk ? count <= 6 : count <= 3;
+  const isFast = isCjk ? count <= 14 : count <= 7;
+  const isNormal = isCjk ? count <= 24 : count <= 12;
+
+  if (isMicro) {
+    return `<span class="speed-pill speed-micro" title="${count} ${isCjk ? 'chars' : 'words'}: Read in a blink">${flashIcon} ${sec}s (${count}${unit})</span>`;
+  } else if (isFast) {
+    return `<span class="speed-pill speed-fast" title="${count} ${isCjk ? 'chars' : 'words'}: Fast glance reading">${flashIcon} ${sec}s (${count}${unit})</span>`;
+  } else if (isNormal) {
+    return `<span class="speed-pill speed-normal" title="${count} ${isCjk ? 'chars' : 'words'}: Standard comfort speed">${clockIcon} ${sec}s (${count}${unit})</span>`;
   } else {
-    return `<span class="speed-pill speed-dense" title="${words} words: Dense line - click Shorten to condense">${clockIcon} ${sec}s (${words}w)</span>`;
+    return `<span class="speed-pill speed-dense" title="${count} ${isCjk ? 'chars' : 'words'}: Dense line - click Shorten to condense">${clockIcon} ${sec}s (${count}${unit})</span>`;
   }
 }
 
@@ -6264,7 +6282,7 @@ Task: Condense and shorten the given ${lang} subtitle translations so they are r
 
 MANDATORY RULES:
 1. Make every subtitle line ULTRA-SHORT, punchy, and concise (ideal 1-4 words for short lines; max 5 words only if absolutely essential to preserve meaning).
-2. PRESERVE SHORT LINES & SOUND EFFECTS: If an input subtitle is already very short (1-3 words, e.g. "হ্যাঁ", "না", "ধন্যবাদ") or a bracketed sound effect (e.g. "[গান বাজছে]"), return it unchanged.
+2. PRESERVE SHORT LINES & SOUND EFFECTS: If an input subtitle is already very short (1-3 words${(lang.toLowerCase().includes('bengali') || lang === 'Bengali') ? ', e.g. "হ্যাঁ", "না", "ধন্যবাদ"' : ''}) or a bracketed sound effect${(lang.toLowerCase().includes('bengali') || lang === 'Bengali') ? ' (e.g. "[গান বাজছে]")' : ' (e.g. "[Music]")'}, return it unchanged.
 3. Cut away conversational padding, redundant particles, extra formal suffixes, and repetitive words so viewers can read instantaneously.
 4. Strictly preserve 100% of the core emotion, punchline, dialogue intent, and context.
 5. Output strictly in natural everyday spoken ${lang} dialogue/script.
