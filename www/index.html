@@ -105,7 +105,7 @@
   </script>
 </head>
 <body>
-  <!-- Initial Minimalistic Fast App Loader (Prevents Layout Shifts & Flashing) -->
+  <!-- Initial Real-Time Synchronized App Loader -->
   <div id="appInitialLoader" class="app-initial-loader" aria-hidden="true">
     <div class="loader-inner">
       <div class="loader-logo-wrap">
@@ -121,8 +121,9 @@
       </div>
       <div class="loader-brand-title">SubMorph</div>
       <div class="loader-progress-bar">
-        <div class="loader-progress-fill"></div>
+        <div id="appLoaderProgressFill" class="loader-progress-fill"></div>
       </div>
+      <div id="appLoaderStatus" class="loader-status-text">Initializing workspace...</div>
     </div>
   </div>
 

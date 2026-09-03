@@ -10666,16 +10666,17 @@ button:active:not(:disabled),
 }
 
 .loader-progress-bar {
-  width: 100px;
-  height: 3px;
+  width: 150px;
+  height: 4px;
   border-radius: 9999px;
   background: rgba(15, 23, 42, 0.08);
   overflow: hidden;
   position: relative;
+  margin-top: 2px;
 }
 
 [data-theme="dark"] .loader-progress-bar {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.12);
 }
 
 .loader-progress-fill {
@@ -10683,15 +10684,26 @@ button:active:not(:disabled),
   top: 0;
   left: 0;
   height: 100%;
-  width: 40%;
+  width: 0%;
   border-radius: 9999px;
-  background: linear-gradient(90deg, #4f46e5, #06b6d4);
-  animation: loaderProgressAnim 0.8s ease-in-out infinite alternate;
+  background: linear-gradient(90deg, #4f46e5 0%, #06b6d4 50%, #10b981 100%);
+  transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 10px rgba(6, 182, 212, 0.45);
 }
 
-@keyframes loaderProgressAnim {
-  0% { left: 0%; width: 30%; }
-  100% { left: 70%; width: 30%; }
+.loader-status-text {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: #64748b;
+  letter-spacing: 0.2px;
+  text-align: center;
+  min-height: 1.1rem;
+  transition: opacity 0.2s ease;
+  white-space: nowrap;
+}
+
+[data-theme="dark"] .loader-status-text {
+  color: #94a3b8;
 }
 
 /* ══════════════════════════════════════════════════════════════════════════

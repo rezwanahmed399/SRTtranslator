@@ -845,84 +845,124 @@ document.addEventListener('visibilitychange', () => {
 let isAppFullyLoaded = false;
 window._pendingProviderVerifications = [];
 window._geoLanguageDetectionPromise = null;
+window._sessionRestorePromise = null;
+window._earlyCloudPreferencesPromise = null;
+
+function setAppLoaderProgress(pct, statusText) {
+  const fill = $('appLoaderProgressFill');
+  const status = $('appLoaderStatus');
+  if (fill) {
+    fill.style.width = `${Math.min(100, Math.max(0, pct))}%`;
+  }
+  if (status && statusText) {
+    status.textContent = statusText;
+  }
+}
 
 function dismissInitialLoader() {
   const loader = $('appInitialLoader');
   if (!loader || isAppFullyLoaded) return;
   isAppFullyLoaded = true;
+  setAppLoaderProgress(100, 'Ready!');
   loader.classList.add('loader-hidden');
   setTimeout(() => {
     if (loader.parentNode) loader.remove();
   }, 480);
 }
 
-// Reveal app only when true application loading is 100% complete (IP language check, fonts, providers, layout)
+// Reveal app only when true application loading is 100% complete (Cloud preferences, active session, IP language check, fonts, providers, layout)
 async function waitForWebsiteFullLoad() {
-  const tasks = [];
-
-  // 1. Web fonts layout & rendering
-  if (document.fonts && document.fonts.ready) {
-    tasks.push(
-      Promise.race([
-        document.fonts.ready,
-        new Promise(resolve => setTimeout(resolve, 1500))
-      ])
-    );
-  }
-
-  // 2. Full Window and asset readiness
-  if (document.readyState !== 'complete') {
-    tasks.push(
-      new Promise(resolve => {
-        window.addEventListener('load', resolve, { once: true });
-        setTimeout(resolve, 2000);
-      })
-    );
-  }
-
-  // 3. IP Geolocation check and automatic language selection (must finish before dismissing loader)
-  if (window._geoLanguageDetectionPromise) {
-    tasks.push(
-      Promise.race([
-        window._geoLanguageDetectionPromise,
-        new Promise(resolve => setTimeout(resolve, 3200))
-      ])
-    );
-  }
-
-  // 4. Stored Provider API key connection & model discovery verifications
-  if (Array.isArray(window._pendingProviderVerifications) && window._pendingProviderVerifications.length > 0) {
-    tasks.push(
-      Promise.race([
-        Promise.allSettled(window._pendingProviderVerifications),
-        new Promise(resolve => setTimeout(resolve, 2500))
-      ])
-    );
-  }
-
-  // Await completion of ALL true background initialization tasks
   try {
-    await Promise.allSettled(tasks);
-  } catch (e) {}
+    // ── Milestone 1 (25%): DOM & Workspace Components Initialized ──
+    setAppLoaderProgress(25, 'Configuring workspace...');
 
-  // Finalize UI sync: API guard, CTA hints, custom selects (language, models, styles)
-  updateApiGuardAndHeaderStatus();
-  checkReadyToTranslate();
-  if (typeof refreshCustomSelect === 'function') {
-    refreshCustomSelect('targetLang');
-    refreshCustomSelect('modelSelect');
-    refreshCustomSelect('styleMode');
-    refreshCustomSelect('providerSelect');
+    // ── Milestone 2 (50%): Local Session Data & Web Fonts ──
+    const fontPromise = (document.fonts && document.fonts.ready)
+      ? Promise.race([document.fonts.ready, new Promise(r => setTimeout(r, 1500))])
+      : Promise.resolve();
+
+    const sessionPromise = window._sessionRestorePromise
+      ? Promise.race([window._sessionRestorePromise, new Promise(r => setTimeout(r, 2000))])
+      : Promise.resolve();
+
+    await Promise.allSettled([fontPromise, sessionPromise]);
+    setAppLoaderProgress(50, 'Restoring session & fonts...');
+
+    // ── Milestone 3 (75%): Cloud Authentication, Preferences & Account Synchronization ──
+    setAppLoaderProgress(65, 'Synchronizing cloud preferences & account...');
+
+    const hasCachedUser = !!(localStorage.getItem('srt_cached_user') || localStorage.getItem('srt_native_user'));
+    
+    if (window.FirebaseCloudSync && (hasCachedUser || window.FirebaseCloudSync.getUser())) {
+      // Must wait for cloud sync to complete, including user preferences (e.g. language/pacing chosen from phone)
+      try {
+        const cloudSyncWaiters = [];
+        if (window._earlyCloudPreferencesPromise) {
+          cloudSyncWaiters.push(window._earlyCloudPreferencesPromise);
+        }
+        if (typeof window.FirebaseCloudSync.waitForInitialSync === 'function') {
+          cloudSyncWaiters.push(window.FirebaseCloudSync.waitForInitialSync());
+        }
+
+        await Promise.race([
+          Promise.allSettled(cloudSyncWaiters),
+          new Promise(r => setTimeout(r, 3500)) // 3.5s max network ceiling
+        ]);
+      } catch (e) {
+        console.warn('[Loader] Cloud sync wait note:', e);
+      }
+    } else if (window._geoLanguageDetectionPromise) {
+      // Unauthenticated guest: wait for IP geolocation language detection
+      try {
+        await Promise.race([
+          window._geoLanguageDetectionPromise,
+          new Promise(r => setTimeout(r, 2500))
+        ]);
+      } catch (e) {}
+    }
+
+    setAppLoaderProgress(80, 'Synchronizing cloud preferences & account...');
+
+    // ── Milestone 4 (90%): Stored AI Provider Verifications & Model Discovery ──
+    setAppLoaderProgress(85, 'Connecting AI providers & models...');
+    if (Array.isArray(window._pendingProviderVerifications) && window._pendingProviderVerifications.length > 0) {
+      try {
+        await Promise.race([
+          Promise.allSettled(window._pendingProviderVerifications),
+          new Promise(r => setTimeout(r, 2500))
+        ]);
+      } catch (e) {}
+    }
+
+    // ── Milestone 5 (100%): Final UI Alignment, Dropdowns & Full Layout Paint ──
+    setAppLoaderProgress(95, 'Finalizing interface...');
+    updateApiGuardAndHeaderStatus();
+    checkReadyToTranslate();
+    if (typeof refreshCustomSelect === 'function') {
+      refreshCustomSelect('targetLang');
+      refreshCustomSelect('modelSelect');
+      refreshCustomSelect('styleMode');
+      refreshCustomSelect('providerSelect');
+    }
+
+    // Allow browser to execute full layout & paint cycles before unmasking
+    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+
+    setAppLoaderProgress(100, 'Ready!');
+
+    // Smooth delay so the user perceives the finished progress bar before dissolving
+    await new Promise(r => setTimeout(r, 220));
+
+    // Smoothly dissolve the loader into the app
+    dismissInitialLoader();
+  } catch (err) {
+    console.warn('[Loader] Error during full app load:', err);
+    dismissInitialLoader();
   }
-
-  // Allow browser to execute full layout & paint cycles before unmasking
-  await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-
-  // Smoothly dissolve the loader into the app
-  dismissInitialLoader();
 }
 
 window.addEventListener('DOMContentLoaded', () => {
+  setAppLoaderProgress(15, 'Initializing workspace...');
   window._pendingProviderVerifications = [];
   initTheme();
   initCustomSelects();
@@ -932,7 +972,7 @@ window.addEventListener('DOMContentLoaded', () => {
   setupEventListeners();
   updateApiGuardAndHeaderStatus();
   checkReadyToTranslate();
-  restoreSessionIfAvailable();
+  window._sessionRestorePromise = restoreSessionIfAvailable();
   initNativeAppIntegrations();
   initFirebaseAuthAndCloudSync();
   initDownloadsManager();
@@ -7743,6 +7783,27 @@ function initFirebaseAuthAndCloudSync() {
   const initialUser = window.FirebaseCloudSync.getUser();
   if (initialUser) {
     updateAuthUI(initialUser);
+    window._earlyCloudPreferencesPromise = window.FirebaseCloudSync.loadPreferencesFromCloud().then(cloudPrefs => {
+      if (cloudPrefs) {
+        if (cloudPrefs.targetLang && targetLang) {
+          targetLang.value = cloudPrefs.targetLang;
+          localStorage.setItem('preferred_target_lang', cloudPrefs.targetLang);
+          if (typeof refreshCustomSelect === 'function') refreshCustomSelect('targetLang');
+          if (typeof checkReadyToTranslate === 'function') checkReadyToTranslate();
+        }
+        if (cloudPrefs.pacingPreset && styleMode) {
+          styleMode.value = cloudPrefs.pacingPreset;
+          localStorage.setItem('preferred_pacing_preset', cloudPrefs.pacingPreset);
+          if (typeof refreshCustomSelect === 'function') refreshCustomSelect('styleMode');
+          if (typeof updatePacingUI === 'function') updatePacingUI();
+        }
+        console.log('[Early Prefs] Applied cloud preferences before loader dismissal:', cloudPrefs);
+      }
+      return cloudPrefs;
+    }).catch(e => {
+      console.warn('[Early Prefs] Error:', e);
+      return null;
+    });
   }
   renderCloudHistoryUI();
 

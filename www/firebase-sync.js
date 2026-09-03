@@ -214,6 +214,7 @@
           authListeners.forEach(cb => { try { cb(currentUser); } catch (e) {} });
         }, 50);
       }
+      markInitialSyncComplete();
       return false;
     }
 
@@ -224,6 +225,7 @@
           authListeners.forEach(cb => { try { cb(currentUser); } catch (e) {} });
         }, 50);
       }
+      markInitialSyncComplete();
       return false;
     }
 
@@ -282,6 +284,7 @@
       return true;
     } catch (err) {
       console.error('[Firebase Sync] Initialization error:', err);
+      markInitialSyncComplete();
       return false;
     }
   }
