@@ -9672,8 +9672,16 @@ window.addEventListener('beforeunload', (e) => {
 });
 
 // ── Virtual Keyboard Stabilization (Bottom Navigation Stays 100% Anchored & Never Flickers on Scroll) ──
+// ── Virtual Keyboard Stabilization (Bottom Navigation Hides ONLY When Keyboard Is Actually Open) ──
 function initKeyboardVisibilityHandler() {
   let isKeyboardVisible = false;
+
+  // Track the unconstrained window height when no keyboard is open
+  let baselineHeight = Math.max(
+    window.visualViewport ? window.visualViewport.height : 0,
+    window.innerHeight || 0,
+    window.screen?.availHeight || 0
+  );
 
   function isTextInputFocused() {
     const el = document.activeElement;
@@ -9690,12 +9698,6 @@ function initKeyboardVisibilityHandler() {
   }
 
   const setKeyboardState = (visible) => {
-    // CRITICAL: If no editable text input is focused, keyboard CANNOT be open!
-    // Never allow UC Browser, Chrome, or Safari URL bar collapses / scroll events to hide the bottom menubar!
-    if (visible && !isTextInputFocused()) {
-      visible = false;
-    }
-
     if (isKeyboardVisible === visible) return;
     isKeyboardVisible = visible;
     if (visible) {
@@ -9705,80 +9707,82 @@ function initKeyboardVisibilityHandler() {
     }
   };
 
-  // 1. Pre-emptive touch handler: instantly hide bottom bar at 0ms touch contact BEFORE keyboard begins sliding up
-  document.addEventListener('pointerdown', (e) => {
-    const el = e.target;
-    if (!el) return;
-    if (el.classList?.contains('custom-select-search-input') || el.closest?.('.custom-select-search-wrap')) {
-      document.body.classList.add('keyboard-open');
-      isKeyboardVisible = true;
-    } else if ((el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') && !el.disabled && !el.readOnly) {
-      const type = (el.type || '').toLowerCase();
-      if (!['checkbox', 'radio', 'button', 'submit', 'reset', 'range', 'file', 'image'].includes(type)) {
-        document.body.classList.add('keyboard-open');
-        isKeyboardVisible = true;
-      }
-    }
-  }, { passive: true });
+  function evaluateKeyboardVisibility() {
+    const isFocused = isTextInputFocused();
+    const currentH = window.visualViewport ? window.visualViewport.height : window.innerHeight;
 
-  // 2. Visual Viewport API (High accuracy on Chromium Android WebView & Mobile Browsers)
-  if (window.visualViewport) {
-    window.visualViewport.addEventListener('resize', () => {
-      // If user is just scrolling or touching and no input is focused, IGNORE ALL RESIZES!
-      if (!isTextInputFocused()) {
-        setKeyboardState(false);
-        return;
+    if (!isFocused) {
+      // If no input is focused, keyboard is 100% closed. Update baseline height.
+      if (currentH > baselineHeight) {
+        baselineHeight = currentH;
       }
-      // When text input IS focused, verify if viewport shrank significantly due to keyboard
-      const currentHeight = window.visualViewport.height;
-      const winH = window.innerHeight;
-      if (currentHeight < winH * 0.75) {
-        setKeyboardState(true);
-      } else {
-        setKeyboardState(false);
-      }
-    });
+      setKeyboardState(false);
+      return;
+    }
+
+    // An input IS focused. Calculate height difference between baseline and current viewport.
+    // On mobile devices, a virtual software keyboard occupies at least 140px.
+    const heightDiff = baselineHeight - currentH;
+    if (heightDiff > 140) {
+      // Virtual keyboard is physically expanded on screen
+      setKeyboardState(true);
+    } else {
+      // Virtual keyboard was dismissed (e.g. via Android Back button), even though input is still focused!
+      setKeyboardState(false);
+    }
   }
 
-  // 3. Focusin immediate tracking when an input is tapped (0ms instant hide!)
+  // 1. Visual Viewport API (Fires reliably when soft keyboard slides in or out on Chromium/Android/iOS)
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', evaluateKeyboardVisibility, { passive: true });
+    window.visualViewport.addEventListener('scroll', () => {
+      if (!isTextInputFocused()) setKeyboardState(false);
+    }, { passive: true });
+  }
+
+  // 2. Window resize event fallback
+  window.addEventListener('resize', evaluateKeyboardVisibility, { passive: true });
+
+  // 3. Focusin: Pre-emptively prepare for keyboard slide-up, then verify with actual height
   document.addEventListener('focusin', (e) => {
-    const el = e.target;
     if (isTextInputFocused()) {
+      // Pre-emptively hide bottom bar so it doesn't hitch during keyboard slide-up
       setKeyboardState(true);
+
+      // Verify after keyboard animation (350ms): if viewport did not shrink, restore bottom bar!
+      setTimeout(evaluateKeyboardVisibility, 350);
+
+      // Keep focused input comfortably in view
       setTimeout(() => {
         if (isTextInputFocused()) {
           try {
-            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            e.target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
           } catch (err) {}
         }
-      }, 150);
+      }, 160);
     }
-  });
+  }, { passive: true });
 
-  // 4. Focusout immediate tracking when input loses focus
+  // 4. Focusout: When input blurs, immediately restore bottom bar
   document.addEventListener('focusout', () => {
     setTimeout(() => {
       if (!isTextInputFocused()) {
         setKeyboardState(false);
       }
-    }, 100);
-  });
+    }, 60);
+  }, { passive: true });
 
-  // 5. Capacitor native keyboard events (if running inside APK)
+  // 5. Capacitor Native Keyboard Plugin Events (for Android APK)
   if (window.Capacitor?.Plugins?.Keyboard) {
     try {
-      window.Capacitor.Plugins.Keyboard.addListener('keyboardWillShow', () => {
-        if (isTextInputFocused()) setKeyboardState(true);
-      });
-      window.Capacitor.Plugins.Keyboard.addListener('keyboardDidShow', () => {
-        if (isTextInputFocused()) setKeyboardState(true);
-      });
+      window.Capacitor.Plugins.Keyboard.addListener('keyboardWillShow', () => setKeyboardState(true));
+      window.Capacitor.Plugins.Keyboard.addListener('keyboardDidShow', () => setKeyboardState(true));
       window.Capacitor.Plugins.Keyboard.addListener('keyboardWillHide', () => setKeyboardState(false));
       window.Capacitor.Plugins.Keyboard.addListener('keyboardDidHide', () => setKeyboardState(false));
     } catch (e) {}
   }
 
-  // 6. Tap outside active input automatically dismisses virtual keyboard & restores bottom nav
+  // 6. Tap outside active input dismisses virtual keyboard & restores bottom bar
   document.addEventListener('touchstart', (e) => {
     if (isTextInputFocused()) {
       const active = document.activeElement;
@@ -9788,6 +9792,14 @@ function initKeyboardVisibilityHandler() {
       }
     }
   }, { passive: true });
+
+  // 7. Orientation change handling
+  window.addEventListener('orientationchange', () => {
+    setTimeout(() => {
+      baselineHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+      evaluateKeyboardVisibility();
+    }, 300);
+  });
 }
 
 // Automatically start keyboard visibility monitoring
