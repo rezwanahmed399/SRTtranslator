@@ -1321,7 +1321,7 @@ const GEO_COUNTRY_TO_LANG = {
   'PS': 'Arabic', // Palestine
   'MR': 'Arabic', // Mauritania
   'DJ': 'Arabic', // Djibouti
-  'SO': 'Arabic', // Somalia
+  'SO': 'Somali', // Somalia
   'KM': 'Arabic', // Comoros
   'TD': 'Arabic', // Chad
   'SS': 'Arabic', // South Sudan
@@ -1351,25 +1351,25 @@ const GEO_COUNTRY_TO_LANG = {
   'MY': 'Malay',                  // Malaysia
   'BN': 'Malay',                  // Brunei
   'TH': 'Thai',                   // Thailand
-  'LA': 'English',                // Laos (Lao not in list -> English)
+  'LA': 'Lao',                    // Laos
   'VN': 'Vietnamese',             // Vietnam
   'PH': 'Filipino / Tagalog',     // Philippines
   'MM': 'Burmese',                // Myanmar (Burma)
   'KH': 'Khmer',                  // Cambodia
-  'MN': 'English',                // Mongolia (Mongolian not in list -> English)
+  'MN': 'Mongolian',              // Mongolia
   'TL': 'Portuguese',             // Timor-Leste
 
   // ── Central Asia & Non-Arabic Middle East ──
   'IR': 'Persian',     // Iran
-  'TJ': 'Persian',     // Tajikistan
+  'TJ': 'Tajik',       // Tajikistan
   'TR': 'Turkish',     // Turkey
   'AZ': 'Azerbaijani', // Azerbaijan
   'KZ': 'Kazakh',      // Kazakhstan
   'UZ': 'Uzbek',       // Uzbekistan
-  'TM': 'English',     // Turkmenistan (Turkmen not in list -> English)
-  'KG': 'Russian',     // Kyrgyzstan (Russian is official)
-  'AM': 'English',     // Armenia (Armenian not in list -> English)
-  'GE': 'English',     // Georgia (Georgian not in list -> English)
+  'TM': 'Turkmen',     // Turkmenistan
+  'KG': 'Kyrgyz',      // Kyrgyzstan
+  'AM': 'Armenian',    // Armenia
+  'GE': 'Georgian',    // Georgia
   'IL': 'Hebrew',      // Israel
 
   // ── Europe ──
@@ -1384,7 +1384,7 @@ const GEO_COUNTRY_TO_LANG = {
   'SM': 'Italian',    // San Marino
   'VA': 'Italian',    // Vatican City
   'ES': 'Spanish',    // Spain
-  'AD': 'Spanish',    // Andorra
+  'AD': 'Catalan',    // Andorra
   'PT': 'Portuguese', // Portugal
   'RU': 'Russian',    // Russia
   'BY': 'Russian',    // Belarus
@@ -1409,26 +1409,26 @@ const GEO_COUNTRY_TO_LANG = {
   'MD': 'Romanian',   // Moldova
   'HU': 'Hungarian',  // Hungary
   'HR': 'Croatian',   // Croatia
-  'BA': 'Croatian',   // Bosnia and Herzegovina
-  'SI': 'English',    // Slovenia (Slovenian not in list -> English)
+  'BA': 'Bosnian',    // Bosnia and Herzegovina
+  'SI': 'Slovenian',  // Slovenia
   'RS': 'Serbian',    // Serbia
   'ME': 'Serbian',    // Montenegro
-  'MK': 'Serbian',    // North Macedonia
+  'MK': 'Macedonian', // North Macedonia
   'BG': 'Bulgarian',  // Bulgaria
-  'AL': 'English',    // Albania (Albanian not in list -> English)
-  'XK': 'English',    // Kosovo (Albanian not in list -> English)
-  'EE': 'English',    // Estonia (Estonian not in list -> English)
-  'LV': 'English',    // Latvia (Latvian not in list -> English)
-  'LT': 'English',    // Lithuania (Lithuanian not in list -> English)
+  'AL': 'Albanian',   // Albania
+  'XK': 'Albanian',   // Kosovo
+  'EE': 'Estonian',   // Estonia
+  'LV': 'Latvian',    // Latvia
+  'LT': 'Lithuanian', // Lithuania
   'GB': 'English',    // United Kingdom
   'UK': 'English',    // United Kingdom (alt)
   'IE': 'English',    // Ireland
-  'MT': 'English',    // Malta
+  'MT': 'Maltese',    // Malta
   'GI': 'English',    // Gibraltar
   'IM': 'English',    // Isle of Man
   'JE': 'English',    // Jersey
   'GG': 'English',    // Guernsey
-  'IS': 'English',    // Iceland
+  'IS': 'Icelandic',  // Iceland
 
   // ── Latin America & The Caribbean ──
   'BR': 'Portuguese', // Brazil
@@ -1508,7 +1508,7 @@ const GEO_COUNTRY_TO_LANG = {
   'CG': 'French',     // Republic of the Congo
   'CD': 'French',     // DR Congo
   'GA': 'French',     // Gabon
-  'MG': 'French',     // Madagascar
+  'MG': 'Malagasy',   // Madagascar
   'CF': 'French',     // Central African Republic
   'GQ': 'Spanish',    // Equatorial Guinea
   'MU': 'French',     // Mauritius
@@ -1516,9 +1516,9 @@ const GEO_COUNTRY_TO_LANG = {
   'YT': 'French',     // Mayotte
   'SC': 'French',     // Seychelles
   'TF': 'French',     // French Southern Territories
-  'ZA': 'English',    // South Africa
+  'ZA': 'Afrikaans',  // South Africa
   'GH': 'English',    // Ghana
-  'NA': 'English',    // Namibia
+  'NA': 'Afrikaans',  // Namibia
   'BW': 'English',    // Botswana
   'ZW': 'English',    // Zimbabwe
   'ZM': 'English',    // Zambia
@@ -1619,7 +1619,7 @@ const INDIA_REGION_TO_LANG = {
   'CG': 'Hindi', 'CT': 'Hindi', 'CHHATTISGARH': 'Hindi', 'IN-CT': 'Hindi',
   'JK': 'Urdu',  'JAMMU AND KASHMIR': 'Urdu', 'IN-JK': 'Urdu',
   'LA': 'Hindi', 'LADAKH': 'Hindi', 'IN-LA': 'Hindi',
-  'AS': 'Bengali', 'ASSAM': 'Bengali', 'IN-AS': 'Bengali'
+  'AS': 'Assamese', 'ASSAM': 'Assamese', 'IN-AS': 'Assamese'
 };
 
 // Device / Browser Locale Prefix Mapping
@@ -1686,6 +1686,37 @@ const LOCALE_PREFIX_TO_LANG = {
   'ml': 'Malayalam',
   'pa': 'Punjabi',
   'or': 'Odia',
+  'af': 'Afrikaans',
+  'sq': 'Albanian',
+  'hy': 'Armenian',
+  'as': 'Assamese',
+  'eu': 'Basque',
+  'bs': 'Bosnian',
+  'ca': 'Catalan',
+  'et': 'Estonian',
+  'gl': 'Galician',
+  'ka': 'Georgian',
+  'is': 'Icelandic',
+  'ig': 'Igbo',
+  'ga': 'Irish',
+  'ku': 'Kurdish',
+  'ky': 'Kyrgyz',
+  'lo': 'Lao',
+  'lv': 'Latvian',
+  'lt': 'Lithuanian',
+  'mk': 'Macedonian',
+  'mg': 'Malagasy',
+  'mt': 'Maltese',
+  'mn': 'Mongolian',
+  'sd': 'Sindhi',
+  'sl': 'Slovenian',
+  'so': 'Somali',
+  'tg': 'Tajik',
+  'tk': 'Turkmen',
+  'cy': 'Welsh',
+  'xh': 'Xhosa',
+  'yo': 'Yoruba',
+  'zu': 'Zulu',
   'en': 'English'
 };
 
