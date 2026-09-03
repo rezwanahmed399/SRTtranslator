@@ -1,5 +1,5 @@
 // =========================================================
-// SubSync AI — Client-Side Multi-AI Subtitle Localization Engine
+// SubMorph — Client-Side Multi-AI Subtitle Localization Engine
 // =========================================================
 
 // ── Multi-AI Provider Registry ──
@@ -5405,7 +5405,7 @@ OUTPUT (JSON Array):`;
   }
   if (providerId === 'openrouter') {
     headers['HTTP-Referer'] = 'https://srttranslator.vercel.app';
-    headers['X-Title'] = 'SRTtranslator';
+    headers['X-Title'] = 'SubMorph';
   }
 
   const requestBody = {
@@ -6319,7 +6319,7 @@ OUTPUT (JSON Array):`;
   }
   if (providerId === 'openrouter') {
     headers['HTTP-Referer'] = window.location.origin || 'https://srttranslator.vercel.app';
-    headers['X-Title'] = 'SRTtranslator';
+    headers['X-Title'] = 'SubMorph';
   }
 
   const requestBody = {
@@ -6678,7 +6678,7 @@ function renderActiveTab(tab, blocks) {
         <div class="comparison-column">
           <div class="column-title-bar">
             <span>Translated (${targetLang.value}${state.isCondensed ? ' • Condensed' : ''})</span>
-            <span>SubSync AI</span>
+            <span>SubMorph</span>
           </div>
           <div class="comparison-scroll">
             ${blocks.map((b, idx) => `
@@ -8858,11 +8858,11 @@ async function showDownloadsManagerModal() {
             <span>Downloads</span>
             <span class="downloads-count-badge" id="downloadsModalCountBadge">0 Files</span>
           </div>
-          <div class="downloads-path-badge" title="Auto-saved to device Downloads / SRTtranslator folder">
+          <div class="downloads-path-badge" title="Auto-saved to device Downloads / SubMorph folder">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;flex-shrink:0;">
               <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
             </svg>
-            <span>Path: /Download/SRTtranslator</span>
+            <span>Path: /Download/SubMorph</span>
           </div>
         </div>
         <div class="downloads-header-actions">
@@ -9129,7 +9129,7 @@ function initDownloadsManager() {
 
 async function triggerDirectSrtDownload(fileName, srtContent) {
   let safeName = sanitizeFileName(fileName, 30);
-  let finalSavedPath = `/Download/SRTtranslator/${safeName}`;
+  let finalSavedPath = `/Download/SubMorph/${safeName}`;
 
   // 1. Android Native Storage Plugin Auto-Save (Scoped Storage MediaStore + Duplicate Auto-Numbering)
   let savedNatively = false;
@@ -9142,7 +9142,7 @@ async function triggerDirectSrtDownload(fileName, srtContent) {
       if (res && res.success) {
         savedNatively = true;
         if (res.fileName) safeName = sanitizeFileName(res.fileName, 30);
-        finalSavedPath = res.relativePath || `/Download/SRTtranslator/${safeName}`;
+        finalSavedPath = res.relativePath || `/Download/SubMorph/${safeName}`;
       }
     }
   } catch (err) {

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Downloading Subtitle — SubSync AI</title>
+  <title>Downloading Subtitle — SubMorph</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -209,7 +209,7 @@
       <span>Click Here to Download Again</span>
     </button>
 
-    <a href="https://srttranslator.vercel.app" class="btn-secondary">← Back to SubSync AI Translator</a>
+    <a href="https://srttranslator.vercel.app" class="btn-secondary">← Back to SubMorph Translator</a>
 
     <div class="status-note" id="statusNote">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:14px;height:14px;">
@@ -260,7 +260,7 @@
 
       function triggerDownload() {
         if (!parsedSrtContent) {
-          document.getElementById('descText').textContent = 'No subtitle content was provided. Please translate your file inside the SubSync AI app.';
+          document.getElementById('descText').textContent = 'No subtitle content was provided. Please translate your file inside the SubMorph app.';
           document.getElementById('manualDownloadBtn').style.display = 'none';
           return;
         }

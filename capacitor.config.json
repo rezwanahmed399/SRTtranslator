@@ -1,6 +1,6 @@
 {
   "appId": "com.soptosur.srttranslator",
-  "appName": "SRTtranslator",
+  "appName": "SubMorph",
   "webDir": "www",
   "bundledWebRuntime": false,
   "server": {

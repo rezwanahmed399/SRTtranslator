@@ -21,7 +21,7 @@ try {
   }
 } catch (e) {}
 
-const currentApkName = `SRTtranslator-v${currentVersion.replace(/^v/, '')}.apk`;
+const currentApkName = `SubMorph-v${currentVersion.replace(/^v/, "")}.apk`;
 
 // If a new gradle build output exists, copy it to the versioned APK file
 const gradleApk = path.join(__dirname, 'android', 'app', 'build', 'outputs', 'apk', 'debug', 'app-debug.apk');
@@ -103,16 +103,16 @@ filesToCopy.forEach(file => {
   }
 });
 
-// Also create SRTtranslator-latest.apk in www for generic download links
-const latestApkDest = path.join(destDir, 'SRTtranslator-latest.apk');
+// Also create SubMorph-latest.apk in www for generic download links
+const latestApkDest = path.join(destDir, 'SubMorph-latest.apk');
 const currentApkSrc = path.join(__dirname, currentApkName);
 if (fs.existsSync(currentApkSrc)) {
   fs.copyFileSync(currentApkSrc, latestApkDest);
-  console.log(`✓ Created www/SRTtranslator-latest.apk (alias for ${currentApkName})`);
+  console.log(`✓ Created www/SubMorph-latest.apk (alias for ${currentApkName})`);
 }
 
 // Dedicated Clean Output Folder: D:\SRTtranslator APK
-const dedicatedApkDir = 'D:\\SRTtranslator APK';
+const dedicatedApkDir = 'D:\\SubMorph APK';
 try {
   if (!fs.existsSync(dedicatedApkDir)) {
     fs.mkdirSync(dedicatedApkDir, { recursive: true });
