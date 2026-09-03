@@ -1391,7 +1391,7 @@ const GEO_COUNTRY_TO_LANG = {
   'UA': 'Ukrainian',  // Ukraine
   'PL': 'Polish',     // Poland
   'NL': 'Dutch',      // Netherlands
-  'BE': 'French',     // Belgium
+  'BE': 'Dutch',      // Belgium (Flemish 60% majority)
   'SE': 'Swedish',    // Sweden
   'NO': 'Norwegian',  // Norway
   'SJ': 'Norwegian',  // Svalbard & Jan Mayen
@@ -1422,7 +1422,7 @@ const GEO_COUNTRY_TO_LANG = {
   'LT': 'Lithuanian', // Lithuania
   'GB': 'English',    // United Kingdom
   'UK': 'English',    // United Kingdom (alt)
-  'IE': 'English',    // Ireland
+  'IE': 'Irish',      // Ireland
   'MT': 'Maltese',    // Malta
   'GI': 'English',    // Gibraltar
   'IM': 'English',    // Isle of Man
@@ -1829,8 +1829,9 @@ async function detectAndApplyGeoLanguage() {
 
     let resolvedLang = null;
 
-    // Special India state-level routing
+    // ── Intelligent Multi-Tier Regional & State Geolocation Routing ──
     if (countryCode === 'IN') {
+      // India State & Union Territory routing (Bengali, Hindi, Tamil, Telugu, Marathi, Gujarati, etc.)
       if (regionCode && INDIA_REGION_TO_LANG[regionCode]) {
         resolvedLang = INDIA_REGION_TO_LANG[regionCode];
       } else if (regionName && INDIA_REGION_TO_LANG[regionName]) {
@@ -1839,7 +1840,71 @@ async function detectAndApplyGeoLanguage() {
         resolvedLang = 'Hindi';
       }
     } else if (countryCode === 'CA' && (regionCode === 'QC' || regionName.includes('QUEBEC'))) {
+      // Canada (Quebec -> French, rest -> English)
       resolvedLang = 'French';
+    } else if (countryCode === 'GB' && (regionCode === 'WLS' || regionCode === 'WA' || regionName.includes('WALES'))) {
+      // United Kingdom (Wales -> Welsh, rest -> English)
+      resolvedLang = 'Welsh';
+    } else if (countryCode === 'ES') {
+      // Spain Autonomous Communities (Catalonia -> Catalan, Basque -> Basque, Galicia -> Galician)
+      if (regionCode === 'CT' || regionName.includes('CATALON') || regionName.includes('CATALUN') || regionName.includes('BARCELONA')) {
+        resolvedLang = 'Catalan';
+      } else if (regionCode === 'PV' || regionName.includes('BASQUE') || regionName.includes('PAIS VASCO') || regionName.includes('EUSKADI')) {
+        resolvedLang = 'Basque';
+      } else if (regionCode === 'GA' || regionName.includes('GALICIA')) {
+        resolvedLang = 'Galician';
+      } else {
+        resolvedLang = 'Spanish';
+      }
+    } else if (countryCode === 'PK') {
+      // Pakistan Provinces (Sindh -> Sindhi, Punjab -> Punjabi, rest -> Urdu)
+      if (regionCode === 'SD' || regionName.includes('SINDH')) {
+        resolvedLang = 'Sindhi';
+      } else if (regionCode === 'PB' || regionName.includes('PUNJAB')) {
+        resolvedLang = 'Punjabi';
+      } else {
+        resolvedLang = 'Urdu';
+      }
+    } else if (countryCode === 'NG') {
+      // Nigeria Geopolitical Zones (Yoruba, Igbo, Hausa)
+      if (regionName.includes('LAGOS') || regionName.includes('OYO') || regionName.includes('OGUN') || regionName.includes('OSUN') || regionName.includes('ONDO') || regionName.includes('EKITI')) {
+        resolvedLang = 'Yoruba';
+      } else if (regionName.includes('ENUGU') || regionName.includes('IMO') || regionName.includes('ANAMBRA') || regionName.includes('ABIA') || regionName.includes('EBONYI')) {
+        resolvedLang = 'Igbo';
+      } else {
+        resolvedLang = 'Hausa';
+      }
+    } else if (countryCode === 'ZA') {
+      // South Africa Provinces (KwaZulu-Natal -> Zulu, Eastern Cape -> Xhosa, rest -> Afrikaans)
+      if (regionCode === 'NL' || regionCode === 'KZN' || regionName.includes('KWAZULU') || regionName.includes('NATAL')) {
+        resolvedLang = 'Zulu';
+      } else if (regionCode === 'EC' || regionName.includes('EASTERN CAPE')) {
+        resolvedLang = 'Xhosa';
+      } else {
+        resolvedLang = 'Afrikaans';
+      }
+    } else if ((countryCode === 'IQ' || countryCode === 'TR') && (regionName.includes('KURDISTAN') || regionName.includes('ERBIL') || regionName.includes('SULAYMANIYAH') || regionName.includes('DUHOK'))) {
+      // Kurdistan Regional Government / Kurdish regions -> Kurdish
+      resolvedLang = 'Kurdish';
+    } else if (countryCode === 'LK' && (regionName.includes('NORTHERN') || regionName.includes('EASTERN') || regionName.includes('JAFFNA'))) {
+      // Sri Lanka (Northern/Eastern -> Tamil, rest -> Sinhala)
+      resolvedLang = 'Tamil';
+    } else if (countryCode === 'CH') {
+      // Switzerland Cantons (Romandy -> French, Ticino -> Italian, rest -> German)
+      if (regionName.includes('GENEV') || regionName.includes('VAUD') || regionName.includes('NEUCHATEL') || regionName.includes('JURA') || regionName.includes('VALAIS') || regionName.includes('FRIBOURG')) {
+        resolvedLang = 'French';
+      } else if (regionCode === 'TI' || regionName.includes('TICINO')) {
+        resolvedLang = 'Italian';
+      } else {
+        resolvedLang = 'German';
+      }
+    } else if (countryCode === 'BE') {
+      // Belgium Regions (Wallonia -> French, Flanders/Flemish -> Dutch)
+      if (regionName.includes('WALLON') || regionName.includes('LIEGE') || regionName.includes('NAMUR') || regionName.includes('HAINAUT')) {
+        resolvedLang = 'French';
+      } else {
+        resolvedLang = 'Dutch';
+      }
     } else if (countryCode && GEO_COUNTRY_TO_LANG[countryCode]) {
       resolvedLang = GEO_COUNTRY_TO_LANG[countryCode];
     } else if (deviceLang) {
