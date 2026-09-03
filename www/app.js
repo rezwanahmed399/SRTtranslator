@@ -690,11 +690,14 @@ function initNativeAppIntegrations() {
           return;
         }
 
-        // If translation is currently running, ask before exiting
+        // If translation or condensation is currently running, ask before exiting
         if ((state.isTranslating || state.isCondensing) && !state.isCancelled) {
+          const isCondense = !!state.isCondensing;
           const confirmed = await showCustomConfirm({
             title: 'Exit App?',
-            message: 'Translation is currently in progress. Exiting the app will stop translation. Are you sure you want to exit?',
+            message: isCondense
+              ? 'Condensation is currently in progress. Exiting the app will stop the process. Are you sure you want to exit?'
+              : 'Translation is currently in progress. Exiting the app will stop translation. Are you sure you want to exit?',
             confirmText: 'Exit App',
             cancelText: 'Keep Running',
             type: 'warning'
@@ -3411,10 +3414,13 @@ function handleNetworkOffline() {
   }
 
   if (isTranslating) {
-    if (offlineStatusBadgeText) offlineStatusBadgeText.textContent = 'Translation Paused';
-    if (offlineTitle) offlineTitle.textContent = 'Translation Auto-Paused';
+    const isCondense = !!state.isCondensing;
+    if (offlineStatusBadgeText) offlineStatusBadgeText.textContent = isCondense ? 'Condensation Paused' : 'Translation Paused';
+    if (offlineTitle) offlineTitle.textContent = isCondense ? 'Condensation Auto-Paused' : 'Translation Auto-Paused';
     if (offlineDesc) {
-      offlineDesc.textContent = 'Your internet connection was disconnected while translating. SubMorph has automatically paused your translation to preserve all progress. None of your translated lines were lost. Reconnect to the internet to resume.';
+      offlineDesc.textContent = isCondense
+        ? 'Your internet connection was disconnected while condensing. SubMorph has automatically paused the process to preserve all progress. Reconnect to the internet to resume.'
+        : 'Your internet connection was disconnected while translating. SubMorph has automatically paused your translation to preserve all progress. None of your translated lines were lost. Reconnect to the internet to resume.';
     }
 
     // Show active progress preview
@@ -3706,6 +3712,25 @@ async function cancelTranslationProcess() {
 
   const cloudJobBadge = $('cloudJobBadge');
   if (cloudJobBadge) cloudJobBadge.classList.add('hidden');
+
+  if (isCondense) {
+    if (progressCard) progressCard.classList.add('hidden');
+    restoreOriginalTranslation();
+    const actionCtaWrap = document.querySelector('.action-cta-wrap');
+    if (actionCtaWrap) actionCtaWrap.classList.remove('hidden');
+    const uploadCard = $('uploadCard');
+    if (uploadCard) {
+      uploadCard.style.pointerEvents = 'auto';
+      uploadCard.style.opacity = '1';
+    }
+    resetTranslateButton();
+    checkReadyToTranslate();
+    updateControlsLockState();
+    if (typeof renderCloudHistoryUI === 'function') renderCloudHistoryUI();
+    addTerminalLog('warn', 'AI condensation stopped. Previous translation restored.');
+    showToast('Condensation cancelled. Restored previous translation.');
+    return;
+  }
 
   // Reset ongoing translated results, but PRESERVE selected file & parsed blocks!
   state.translatedBlocks = [];
@@ -4423,6 +4448,7 @@ function handleFileSelection(file) {
     displayLoadedFileInfo(file, blocks);
     switchTranslatorSubTab('workspace');
     checkReadyToTranslate();
+    saveCurrentSession();
   };
   reader.readAsText(file, 'UTF-8');
 }
@@ -6186,6 +6212,9 @@ async function runAiCondensePipeline() {
   state.isPaused = false;
   state.isCancelled = false;
   updateControlsLockState();
+
+  // Activate high-performance keep-awake engine
+  startBackgroundKeepAlive();
 
   // 1. Disable & Lock 'Translate Subtitles Now' action button while Condensing
   if (translateBtn) {
@@ -8671,7 +8700,22 @@ function wireHistoryActions(container, items, onListMutated, onCondenseChosen) {
     btn.addEventListener('click', async () => {
       const docId = btn.getAttribute('data-docid');
       const item = items.find(h => (h.docId || h.id) === docId);
-      if (item && item.srtContent) {
+      if (!item) return;
+
+      let srtContent = item.srtContent;
+      if (!srtContent && item.r2Url) {
+        showToast('Loading subtitle from Cloudflare R2...');
+        try {
+          const res = await fetch(item.r2Url);
+          if (res.ok) {
+            srtContent = await res.text();
+          }
+        } catch (e) {
+          console.warn('Failed to fetch from R2:', e);
+        }
+      }
+
+      if (srtContent && srtContent.trim()) {
         // Confirmation dialog to prevent accidental clicks
         const confirmed = await showCustomConfirm({
           title: 'Start AI Subtitle Condensation?',
@@ -8686,7 +8730,7 @@ function wireHistoryActions(container, items, onListMutated, onCondenseChosen) {
           onCondenseChosen();
         }
 
-        const parsed = parseSRT(item.srtContent);
+        const parsed = parseSRT(srtContent);
         if (!parsed || parsed.length === 0) {
           showToast('Could not parse subtitle file.', true);
           return;

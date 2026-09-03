@@ -623,6 +623,7 @@
         targetLang: translationData.targetLang || 'Bengali',
         modelUsed: translationData.modelUsed || 'AI Model',
         blockCount: translationData.blockCount || 0,
+        isCondensed: !!translationData.isCondensed,
         r2Url: r2Url || '',
         srtContent: translationData.srtContent || '',
         fileSizeFormatted: translationData.fileSizeFormatted || '',
