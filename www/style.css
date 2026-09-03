@@ -6460,6 +6460,52 @@ body.is-native-platform .history-modal-content-list {
   height: 12px;
 }
 
+.cloud-history-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-clear-all-history {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  color: #f87171;
+  padding: 5px 12px;
+  border-radius: 8px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  cursor: pointer;
+  height: 28px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn-clear-all-history:hover {
+  background: rgba(239, 68, 68, 0.22);
+  border-color: rgba(239, 68, 68, 0.45);
+  color: #ef4444;
+}
+
+.btn-clear-all-history svg {
+  width: 12px;
+  height: 12px;
+}
+
+[data-theme="light"] .btn-clear-all-history {
+  background: #fee2e2;
+  border-color: #fca5a5;
+  color: #dc2626;
+}
+
+[data-theme="light"] .btn-clear-all-history:hover {
+  background: #fecaca;
+  border-color: #f87171;
+  color: #b91c1c;
+}
+
 .cloud-history-empty {
   display: flex;
   flex-direction: column;
@@ -7609,8 +7655,53 @@ body.is-native-platform .history-modal-content-list {
   margin: 0;
 }
 
-[data-theme="light"] .history-modal-subline {
-  color: #64748b;
+.history-modal-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.btn-history-clear-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  color: #f87171;
+  padding: 6px 12px;
+  border-radius: 9px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  cursor: pointer;
+  height: 34px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+}
+
+.btn-history-clear-all:hover {
+  background: rgba(239, 68, 68, 0.22);
+  border-color: rgba(239, 68, 68, 0.45);
+  color: #ef4444;
+  transform: translateY(-1px);
+}
+
+.btn-history-clear-all svg {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+}
+
+[data-theme="light"] .btn-history-clear-all {
+  background: #fee2e2;
+  border-color: #fca5a5;
+  color: #dc2626;
+}
+
+[data-theme="light"] .btn-history-clear-all:hover {
+  background: #fecaca;
+  border-color: #f87171;
+  color: #b91c1c;
 }
 
 .btn-history-modal-close {

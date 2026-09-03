@@ -3362,11 +3362,11 @@ async function cancelTranslationProcess() {
   const confirmed = await showCustomConfirm({
     title: isCondense ? 'Cancel Condensation?' : 'Cancel Translation?',
     message: isCondense
-      ? 'Are you sure you want to cancel the AI condensation? Ongoing progress will be stopped and the session will be reset.'
-      : 'Are you sure you want to cancel the ongoing translation? All translated data will be discarded and the session will be reset.',
-    confirmText: 'Discard & Reset',
+      ? 'Are you sure you want to stop the AI condensation? The selected file will remain loaded so you can try again.'
+      : 'Are you sure you want to cancel the ongoing translation? The process will be stopped and your selected file will remain loaded.',
+    confirmText: 'Yes, Stop Process',
     cancelText: isCondense ? 'Keep Condensing' : 'Keep Translating',
-    type: 'danger'
+    type: 'warning'
   });
   if (!confirmed) return;
 
@@ -3391,23 +3391,22 @@ async function cancelTranslationProcess() {
   const cloudJobBadge = $('cloudJobBadge');
   if (cloudJobBadge) cloudJobBadge.classList.add('hidden');
 
-  state.parsedBlocks = [];
+  // Reset ongoing translated results, but PRESERVE selected file & parsed blocks!
   state.translatedBlocks = [];
   state.uncompressedBlocks = [];
   state.isCondensed = false;
-  state.fileName = '';
-  state.fileSize = 0;
 
-  // Crucial: Wipe saved session from storage so it never resurfaces on refresh
-  await clearSavedSession();
+  // Save session with loaded file intact
+  await saveCurrentSession();
 
-  if (fileInput) fileInput.value = '';
-  if (fileInfo) fileInfo.classList.add('hidden');
-  if (dropZone) dropZone.classList.remove('hidden');
+  // Hide progress card and result card, keep file card loaded!
   if (progressCard) progressCard.classList.add('hidden');
   if (resultCard) resultCard.classList.add('hidden');
   if (incompleteWarningBanner) incompleteWarningBanner.classList.add('hidden');
-  if (fileRestoredBadge) fileRestoredBadge.classList.add('hidden');
+
+  // Ensure fileInfo is visible and dropZone is hidden
+  if (fileInfo) fileInfo.classList.remove('hidden');
+  if (dropZone) dropZone.classList.add('hidden');
 
   const actionCtaWrap = document.querySelector('.action-cta-wrap');
   if (actionCtaWrap) actionCtaWrap.classList.remove('hidden');
@@ -3419,8 +3418,11 @@ async function cancelTranslationProcess() {
 
   resetTranslateButton();
   checkReadyToTranslate();
+  updateControlsLockState();
+
   if (typeof renderCloudHistoryUI === 'function') renderCloudHistoryUI();
-  addTerminalLog('warn', isCondense ? 'AI condensation cancelled and session reset.' : 'Translation cancelled and session reset.');
+  addTerminalLog('warn', isCondense ? 'AI condensation stopped. File remains loaded.' : 'Translation process stopped. Selected file remains loaded.');
+  showToast('Translation cancelled. File remains selected.');
 }
 
 // ── App Tab & Sub-Tab Navigation Systems ──
@@ -4802,7 +4804,7 @@ async function runTranslationPipeline() {
     if (state.isCancelled) {
       state.translatedBlocks = [];
       state.uncompressedBlocks = [];
-      clearSavedSession();
+      saveCurrentSession();
       if (progressCard) progressCard.classList.add('hidden');
       if (resultCard) resultCard.classList.add('hidden');
       return;
@@ -5591,7 +5593,7 @@ async function retryIncompleteBatchesPipeline() {
     if (state.isCancelled) {
       state.translatedBlocks = [];
       state.uncompressedBlocks = [];
-      clearSavedSession();
+      saveCurrentSession();
       if (progressCard) progressCard.classList.add('hidden');
       if (resultCard) resultCard.classList.add('hidden');
       return;
@@ -8430,12 +8432,21 @@ function showAllCloudHistoryModal(initialItems) {
           </div>
           <p class="history-modal-subline">3-Day Cloud Archive • Auto-removes after 3 days</p>
         </div>
-        <button class="btn-history-modal-close" type="button" id="historyModalCloseBtn" title="Close">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;">
-            <line x1="18" y1="6" x2="6" y2="18"/>
-            <line x1="6" y1="6" x2="18" y2="18"/>
-          </svg>
-        </button>
+        <div class="history-modal-header-actions">
+          <button class="btn-history-clear-all ${currentItems.length === 0 ? 'hidden' : ''}" type="button" id="historyModalClearAllBtn" title="Clear all translation history">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6"/>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+            </svg>
+            <span>Clear All</span>
+          </button>
+          <button class="btn-history-modal-close" type="button" id="historyModalCloseBtn" title="Close">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
       </div>
       <div class="history-modal-search-bar">
         <div class="history-search-input-wrap">
@@ -8468,6 +8479,7 @@ function showAllCloudHistoryModal(initialItems) {
   const clearBtn = backdrop.querySelector('#historyModalClearBtn');
   const countBadge = backdrop.querySelector('#historyModalCountBadge');
   const closeBtn = backdrop.querySelector('#historyModalCloseBtn');
+  const clearAllModalBtn = backdrop.querySelector('#historyModalClearAllBtn');
 
   const close = () => {
     backdrop.style.animation = 'modalFadeOut 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards';
@@ -8486,6 +8498,14 @@ function showAllCloudHistoryModal(initialItems) {
         clearBtn.classList.remove('hidden');
       } else {
         clearBtn.classList.add('hidden');
+      }
+    }
+
+    if (clearAllModalBtn) {
+      if (currentItems.length > 0) {
+        clearAllModalBtn.classList.remove('hidden');
+      } else {
+        clearAllModalBtn.classList.add('hidden');
       }
     }
 
@@ -8550,6 +8570,52 @@ function showAllCloudHistoryModal(initialItems) {
     });
   }
 
+  if (clearAllModalBtn) {
+    clearAllModalBtn.addEventListener('click', async () => {
+      if (!currentItems || currentItems.length === 0) return;
+
+      const confirmed = await showCustomConfirm({
+        title: 'Clear All Translation History?',
+        message: 'Are you sure you want to permanently delete all translation history from your cloud archive? This action cannot be undone.',
+        confirmText: 'Yes, Clear All',
+        cancelText: 'Cancel',
+        type: 'danger'
+      });
+      if (!confirmed) return;
+
+      clearAllModalBtn.disabled = true;
+      listContainer.innerHTML = `
+        <div class="history-modal-loading">
+          <div class="history-spinner"></div>
+          <span>Clearing all history...</span>
+        </div>
+      `;
+      showToast('Clearing all translation history...');
+
+      let ok = false;
+      if (window.FirebaseCloudSync?.clearAllCloudTranslations) {
+        ok = await window.FirebaseCloudSync.clearAllCloudTranslations();
+      } else if (window.FirebaseCloudSync?.deleteCloudTranslation) {
+        for (const it of currentItems) {
+          const docId = it.docId || it.id;
+          if (docId) await window.FirebaseCloudSync.deleteCloudTranslation(docId);
+        }
+        ok = true;
+      }
+
+      if (ok) {
+        currentItems = [];
+        renderModalList();
+        renderCloudHistoryUI();
+        showToast('All translation history cleared.');
+      } else {
+        showToast('Failed to clear cloud history.', true);
+        clearAllModalBtn.disabled = false;
+        renderModalList();
+      }
+    });
+  }
+
   closeBtn.addEventListener('click', close);
   backdrop.addEventListener('click', (e) => {
     if (e.target === backdrop) close();
@@ -8568,6 +8634,7 @@ async function renderCloudHistoryUI() {
   const loadingEl = $('cloudHistoryLoading');
   const listContainer = $('cloudHistoryList');
   const refreshBtn = $('refreshCloudHistoryBtn');
+  const clearAllSectionBtn = $('clearAllCloudHistoryBtn');
 
   if (!loggedOutMsg || !emptyMsg || !listContainer) return;
 
@@ -8583,6 +8650,7 @@ async function renderCloudHistoryUI() {
       refreshBtn.classList.remove('is-refreshing');
       refreshBtn.classList.add('hidden');
     }
+    if (clearAllSectionBtn) clearAllSectionBtn.classList.add('hidden');
     return;
   }
 
@@ -8604,11 +8672,46 @@ async function renderCloudHistoryUI() {
     if (!historyItems || historyItems.length === 0) {
       emptyMsg.classList.remove('hidden');
       listContainer.classList.add('hidden');
+      if (clearAllSectionBtn) clearAllSectionBtn.classList.add('hidden');
       return;
     }
 
     emptyMsg.classList.add('hidden');
     listContainer.classList.remove('hidden');
+
+    if (clearAllSectionBtn) {
+      clearAllSectionBtn.classList.remove('hidden');
+      clearAllSectionBtn.onclick = async () => {
+        const confirmed = await showCustomConfirm({
+          title: 'Clear All Translation History?',
+          message: 'Are you sure you want to permanently delete all translation history from your cloud archive? This action cannot be undone.',
+          confirmText: 'Yes, Clear All',
+          cancelText: 'Cancel',
+          type: 'danger'
+        });
+        if (!confirmed) return;
+
+        clearAllSectionBtn.disabled = true;
+        showToast('Clearing all translation history...');
+        let ok = false;
+        if (window.FirebaseCloudSync?.clearAllCloudTranslations) {
+          ok = await window.FirebaseCloudSync.clearAllCloudTranslations();
+        } else if (window.FirebaseCloudSync?.deleteCloudTranslation) {
+          for (const it of historyItems) {
+            const docId = it.docId || it.id;
+            if (docId) await window.FirebaseCloudSync.deleteCloudTranslation(docId);
+          }
+          ok = true;
+        }
+        clearAllSectionBtn.disabled = false;
+        if (ok) {
+          showToast('All translation history cleared.');
+        } else {
+          showToast('Failed to clear cloud history.', true);
+        }
+        renderCloudHistoryUI();
+      };
+    }
 
     const itemsToRender = historyItems.slice(0, 3);
     let cardsHtml = generateHistoryCardsHtml(itemsToRender);

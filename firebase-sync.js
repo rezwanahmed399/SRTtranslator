@@ -742,6 +742,46 @@
     }
   }
 
+  async function clearAllCloudTranslations() {
+    if (!currentUser) return false;
+
+    try {
+      const items = await getCloudTranslationHistory();
+      if (!items || items.length === 0) return true;
+
+      const docKeys = getUserDocKeys(currentUser);
+      const deletePromises = [];
+
+      for (const item of items) {
+        const docId = item.docId || item.id;
+        if (!docId) continue;
+
+        // 1. Delete via REST
+        for (const k of docKeys) {
+          deletePromises.push(restDeleteDoc(`users/${k}/translations/${docId}`).catch(() => {}));
+        }
+        deletePromises.push(restDeleteDoc(`translations/${docId}`).catch(() => {}));
+
+        // 2. Delete via SDK
+        if (isFirebaseReady && dbInstance) {
+          docKeys.forEach(k => {
+            deletePromises.push(
+              dbInstance.collection('users').doc(k).collection('translations').doc(docId).delete().catch(() => {})
+            );
+          });
+          deletePromises.push(dbInstance.collection('translations').doc(docId).delete().catch(() => {}));
+        }
+      }
+
+      await Promise.all(deletePromises);
+      console.log('[Firebase Sync] All translation history cleared from cloud.');
+      return true;
+    } catch (err) {
+      console.error('[Firebase Sync] Error clearing translation history from cloud:', err);
+      return false;
+    }
+  }
+
   function onAuthStateChanged(callback) {
     if (typeof callback === 'function') {
       authListeners.push(callback);
@@ -765,6 +805,7 @@
     saveTranslationToCloud,
     getCloudTranslationHistory,
     deleteCloudTranslation,
+    clearAllCloudTranslations,
     renameCloudTranslation,
     onAuthStateChanged,
     waitForInitialSync,
