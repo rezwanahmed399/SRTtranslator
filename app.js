@@ -9613,12 +9613,30 @@ window.addEventListener('beforeunload', (e) => {
   }
 });
 
-// ── Virtual Keyboard Stabilization (Bottom Navigation Stays Anchored, Input Stays Visible) ──
+// ── Virtual Keyboard Stabilization (Bottom Navigation Stays 100% Anchored & Never Flickers on Scroll) ──
 function initKeyboardVisibilityHandler() {
   let isKeyboardVisible = false;
-  const initialViewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+
+  function isTextInputFocused() {
+    const el = document.activeElement;
+    if (!el) return false;
+    const tag = el.tagName;
+    if (tag !== 'INPUT' && tag !== 'TEXTAREA') return false;
+    if (el.readOnly || el.disabled) return false;
+    const type = (el.type || '').toLowerCase();
+    if (['checkbox', 'radio', 'button', 'submit', 'reset', 'range', 'file', 'image'].includes(type)) {
+      return false;
+    }
+    return true;
+  }
 
   const setKeyboardState = (visible) => {
+    // CRITICAL: If no editable text input is focused, keyboard CANNOT be open!
+    // Never allow UC Browser, Chrome, or Safari URL bar collapses / scroll events to hide the bottom menubar!
+    if (visible && !isTextInputFocused()) {
+      visible = false;
+    }
+
     if (isKeyboardVisible === visible) return;
     isKeyboardVisible = visible;
     if (visible) {
@@ -9628,14 +9646,18 @@ function initKeyboardVisibilityHandler() {
     }
   };
 
-  // 1. Visual Viewport API (High accuracy on Chromium Android WebView)
+  // 1. Visual Viewport API (High accuracy on Chromium Android WebView & Mobile Browsers)
   if (window.visualViewport) {
     window.visualViewport.addEventListener('resize', () => {
+      // If user is just scrolling or touching and no input is focused, IGNORE ALL RESIZES!
+      if (!isTextInputFocused()) {
+        setKeyboardState(false);
+        return;
+      }
+      // When text input IS focused, verify if viewport shrank significantly due to keyboard
       const currentHeight = window.visualViewport.height;
-      const screenH = window.screen.height || window.innerHeight;
-      const diff = screenH - currentHeight;
-      // If viewport shrinks by more than 120px, keyboard is open
-      if (diff > 120 || currentHeight < initialViewportHeight * 0.82) {
+      const winH = window.innerHeight;
+      if (currentHeight < winH * 0.75) {
         setKeyboardState(true);
       } else {
         setKeyboardState(false);
@@ -9643,55 +9665,51 @@ function initKeyboardVisibilityHandler() {
     });
   }
 
-  // 2. Window resize fallback
-  window.addEventListener('resize', () => {
-    const currentHeight = window.innerHeight;
-    if (currentHeight < initialViewportHeight * 0.82) {
-      setKeyboardState(true);
-    } else {
-      setKeyboardState(false);
-    }
-  });
-
-  // 3. Focusin / Focusout immediate tracking
+  // 2. Focusin immediate tracking when an input is tapped
   document.addEventListener('focusin', (e) => {
     const el = e.target;
-    if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') && !el.readOnly && !el.disabled) {
-      setKeyboardState(true);
+    if (isTextInputFocused()) {
       setTimeout(() => {
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }, 220);
+        if (isTextInputFocused()) {
+          setKeyboardState(true);
+          try {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          } catch (err) {}
+        }
+      }, 200);
     }
   });
 
+  // 3. Focusout immediate tracking when input loses focus
   document.addEventListener('focusout', () => {
     setTimeout(() => {
-      const active = document.activeElement;
-      const isInputActive = active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA') && !active.readOnly;
-      if (!isInputActive) {
-        if (!window.visualViewport || window.visualViewport.height >= initialViewportHeight * 0.85) {
-          setKeyboardState(false);
-        }
+      if (!isTextInputFocused()) {
+        setKeyboardState(false);
       }
-    }, 180);
+    }, 100);
   });
 
-  // 4. Capacitor Keyboard Plugin (if registered)
+  // 4. Capacitor native keyboard events (if running inside APK)
   if (window.Capacitor?.Plugins?.Keyboard) {
     try {
-      window.Capacitor.Plugins.Keyboard.addListener('keyboardWillShow', () => setKeyboardState(true));
-      window.Capacitor.Plugins.Keyboard.addListener('keyboardDidShow', () => setKeyboardState(true));
+      window.Capacitor.Plugins.Keyboard.addListener('keyboardWillShow', () => {
+        if (isTextInputFocused()) setKeyboardState(true);
+      });
+      window.Capacitor.Plugins.Keyboard.addListener('keyboardDidShow', () => {
+        if (isTextInputFocused()) setKeyboardState(true);
+      });
       window.Capacitor.Plugins.Keyboard.addListener('keyboardWillHide', () => setKeyboardState(false));
       window.Capacitor.Plugins.Keyboard.addListener('keyboardDidHide', () => setKeyboardState(false));
     } catch (e) {}
   }
 
-  // 5. Tap outside active input automatically dismisses virtual keyboard
+  // 5. Tap outside active input automatically dismisses virtual keyboard & restores bottom nav
   document.addEventListener('touchstart', (e) => {
-    const active = document.activeElement;
-    if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) {
-      if (!active.contains(e.target) && e.target !== active && !e.target.closest('.custom-select-search-wrap') && !e.target.closest('button') && !e.target.closest('.action-btn')) {
+    if (isTextInputFocused()) {
+      const active = document.activeElement;
+      if (active && !active.contains(e.target) && e.target !== active && !e.target.closest('.custom-select-search-wrap') && !e.target.closest('button') && !e.target.closest('.action-btn')) {
         active.blur();
+        setKeyboardState(false);
       }
     }
   }, { passive: true });

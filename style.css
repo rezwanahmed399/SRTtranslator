@@ -8923,7 +8923,8 @@ button:active:not(:disabled),
   position: fixed !important;
   bottom: 20px !important;
   left: 50% !important;
-  transform: translateX(-50%) !important;
+  transform: translateX(-50%) translateZ(0) !important;
+  -webkit-transform: translateX(-50%) translateZ(0) !important;
   z-index: 100000 !important;
   width: auto !important;
   min-width: 320px !important;
@@ -8935,7 +8936,11 @@ button:active:not(:disabled),
   border-radius: 28px !important;
   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
   padding: 6px 14px !important;
-  transition: transform 0.25s ease, opacity 0.25s ease !important;
+  /* Anti-Jitter & Hardware Anchoring: permanently stationary */
+  backface-visibility: hidden !important;
+  -webkit-backface-visibility: hidden !important;
+  contain: layout style !important;
+  transition: none !important; /* CRITICAL: Never animate on scroll/touch to prevent jitter */
 }
 
 [data-theme="light"] .native-bottom-nav {
@@ -9039,12 +9044,14 @@ button:active:not(:disabled),
 
 /* ── 3. Responsive App Layout Adjustments (Mobile Breakpoint <= 768px) ── */
 @media (max-width: 768px) {
-  /* Mobile docks to the very bottom */
+  /* Mobile docks to the very bottom - Rock Solid, Stationary & Fixed */
   .native-bottom-nav {
+    position: fixed !important;
     bottom: 0 !important;
     left: 0 !important;
     right: 0 !important;
-    transform: none !important;
+    transform: translate3d(0, 0, 0) !important;
+    -webkit-transform: translate3d(0, 0, 0) !important;
     width: 100% !important;
     max-width: 100% !important;
     min-width: 100% !important;
@@ -9052,16 +9059,14 @@ button:active:not(:disabled),
     border-left: none !important;
     border-right: none !important;
     border-bottom: none !important;
-    padding: 6px 16px max(8px, env(safe-area-inset-bottom)) !important;
+    padding: 6px 16px max(8px, env(safe-area-inset-bottom, 8px)) !important;
+    transition: none !important; /* Zero transition on scroll: 100% stationary without jitter */
+    will-change: auto !important;
   }
 
-  body.keyboard-open .native-bottom-nav,
-  .native-bottom-nav.keyboard-hidden {
+  /* Only hide when a text input is actively being typed into */
+  body.keyboard-open .native-bottom-nav {
     display: none !important;
-    opacity: 0 !important;
-    visibility: hidden !important;
-    pointer-events: none !important;
-    transform: translateY(150%) !important;
   }
 
   .desktop-tabs,
