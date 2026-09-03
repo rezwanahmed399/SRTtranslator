@@ -1333,10 +1333,10 @@ const GEO_COUNTRY_TO_LANG = {
   'IN': 'Hindi',   // India (national fallback)
   'PK': 'Urdu',    // Pakistan
   'NP': 'Nepali',  // Nepal
-  'BT': 'Nepali',  // Bhutan
+  'BT': 'English', // Bhutan (Dzongkha not in list -> English)
   'LK': 'Sinhala', // Sri Lanka
   'AF': 'Pashto',  // Afghanistan
-  'MV': 'Arabic',  // Maldives
+  'MV': 'English', // Maldives (Dhivehi not in list -> English)
 
   // ── East & Southeast Asia ──
   'JP': 'Japanese',               // Japan
@@ -1351,12 +1351,12 @@ const GEO_COUNTRY_TO_LANG = {
   'MY': 'Malay',                  // Malaysia
   'BN': 'Malay',                  // Brunei
   'TH': 'Thai',                   // Thailand
-  'LA': 'Thai',                   // Laos
+  'LA': 'English',                // Laos (Lao not in list -> English)
   'VN': 'Vietnamese',             // Vietnam
   'PH': 'Filipino / Tagalog',     // Philippines
   'MM': 'Burmese',                // Myanmar (Burma)
   'KH': 'Khmer',                  // Cambodia
-  'MN': 'Russian',                // Mongolia
+  'MN': 'English',                // Mongolia (Mongolian not in list -> English)
   'TL': 'Portuguese',             // Timor-Leste
 
   // ── Central Asia & Non-Arabic Middle East ──
@@ -1366,10 +1366,10 @@ const GEO_COUNTRY_TO_LANG = {
   'AZ': 'Azerbaijani', // Azerbaijan
   'KZ': 'Kazakh',      // Kazakhstan
   'UZ': 'Uzbek',       // Uzbekistan
-  'TM': 'Turkish',     // Turkmenistan
-  'KG': 'Russian',     // Kyrgyzstan
-  'AM': 'Russian',     // Armenia
-  'GE': 'Russian',     // Georgia
+  'TM': 'English',     // Turkmenistan (Turkmen not in list -> English)
+  'KG': 'Russian',     // Kyrgyzstan (Russian is official)
+  'AM': 'English',     // Armenia (Armenian not in list -> English)
+  'GE': 'English',     // Georgia (Georgian not in list -> English)
   'IL': 'Hebrew',      // Israel
 
   // ── Europe ──
@@ -1410,16 +1410,16 @@ const GEO_COUNTRY_TO_LANG = {
   'HU': 'Hungarian',  // Hungary
   'HR': 'Croatian',   // Croatia
   'BA': 'Croatian',   // Bosnia and Herzegovina
-  'SI': 'Croatian',   // Slovenia
+  'SI': 'English',    // Slovenia (Slovenian not in list -> English)
   'RS': 'Serbian',    // Serbia
   'ME': 'Serbian',    // Montenegro
   'MK': 'Serbian',    // North Macedonia
   'BG': 'Bulgarian',  // Bulgaria
-  'AL': 'Turkish',    // Albania
-  'XK': 'Turkish',    // Kosovo
-  'EE': 'Russian',    // Estonia
-  'LV': 'Russian',    // Latvia
-  'LT': 'Polish',     // Lithuania
+  'AL': 'English',    // Albania (Albanian not in list -> English)
+  'XK': 'English',    // Kosovo (Albanian not in list -> English)
+  'EE': 'English',    // Estonia (Estonian not in list -> English)
+  'LV': 'English',    // Latvia (Latvian not in list -> English)
+  'LT': 'English',    // Lithuania (Lithuanian not in list -> English)
   'GB': 'English',    // United Kingdom
   'UK': 'English',    // United Kingdom (alt)
   'IE': 'English',    // Ireland
@@ -1719,7 +1719,8 @@ async function detectAndApplyGeoLanguage() {
   // 2. Set instantaneous fast default from device/browser locale first (no latency)
   const deviceLang = getDeviceLocaleLanguage();
   if (deviceLang && targetLang) {
-    targetLang.value = deviceLang;
+    const hasDeviceOpt = Array.from(targetLang.options).some(opt => opt.value === deviceLang);
+    targetLang.value = hasDeviceOpt ? deviceLang : 'English';
     refreshCustomSelect('targetLang');
     if (typeof checkReadyToTranslate === 'function') checkReadyToTranslate();
   }
@@ -1814,16 +1815,21 @@ async function detectAndApplyGeoLanguage() {
       resolvedLang = deviceLang;
     }
 
+    // Check if resolved language is available in the dropdown options
+    const availableLangs = targetLang ? Array.from(targetLang.options).map(opt => opt.value) : [];
+    
+    // Per user rule: If a country's language is not in the list (or country is unknown), auto-select English!
+    if (!resolvedLang || !availableLangs.includes(resolvedLang)) {
+      resolvedLang = 'English';
+    }
+
     if (resolvedLang && targetLang) {
-      const hasOption = Array.from(targetLang.options).some(opt => opt.value === resolvedLang);
-      if (hasOption) {
-        targetLang.value = resolvedLang;
-        sessionStorage.setItem('subsync_auto_geo_lang', resolvedLang);
-        refreshCustomSelect('targetLang');
-        if (typeof checkReadyToTranslate === 'function') checkReadyToTranslate();
-        if (typeof addTerminalLog === 'function') {
-          addTerminalLog('info', `IP location detected (${countryCode}${regionCode ? '-' + regionCode : ''}), auto-set default language to ${resolvedLang}.`);
-        }
+      targetLang.value = resolvedLang;
+      sessionStorage.setItem('subsync_auto_geo_lang', resolvedLang);
+      refreshCustomSelect('targetLang');
+      if (typeof checkReadyToTranslate === 'function') checkReadyToTranslate();
+      if (typeof addTerminalLog === 'function') {
+        addTerminalLog('info', `IP location detected (${countryCode}${regionCode ? '-' + regionCode : ''}), auto-set default language to ${resolvedLang}.`);
       }
     }
   } catch (err) {
