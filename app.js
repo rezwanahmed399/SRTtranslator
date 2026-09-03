@@ -5080,9 +5080,9 @@ function getSubtitlePacingPrompt(pace, lang = 'Bengali') {
     return `SUBTITLE PACING PRESET: [ ULTRA-SHORT / GLANCE SPEED (NO WORD LIMIT) ] (MINIMALIST & PUNCHY PHRASING)
 - CORE GOAL: Ultra-compact, punchy lines that viewers can read in a split-second glance without looking away from the action.
 - HOW TO TRANSLATE IN THIS MODE:
-  * Cut all conversational filler words and padding (drop "আসলে", "সত্যি বলতে", "তোমাকে বলছি", "আমার মনে হয়", "এখন", "এখানে").
-  * Drop redundant pronouns & subjects when the spoken verb already implies the person (drop "আমি", "তুমি", "সে", "আমরা").
-  * Turn questions into direct, punchy inflection with "?" (avoid formal "তুমি কি", "নাকি", "কিনা").
+  * Cut all conversational filler words and padding${isBn ? ' (drop "আসলে", "সত্যি বলতে", "তোমাকে বলছি", "আমার মনে হয়", "এখন", "এখানে")' : ''}.
+  * Drop redundant pronouns & subjects when the spoken verb already implies the person${isBn ? ' (drop "আমি", "তুমি", "সে", "আমরা")' : ''}.
+  * Turn questions into direct, punchy inflection with "?"${isBn ? ' (avoid formal "তুমি কি", "নাকি", "কিনা")' : ''}.
   * Use punchy, active spoken verbs and core direct keywords.
 ${isBn ? `  * Side-by-Side Reference:
     - Input: "What are you doing over there right now?" -> Ultra-Short: "কী করছ ওখানে?"
@@ -5113,7 +5113,7 @@ ${isBn ? `  * Side-by-Side Reference:
     return `SUBTITLE PACING PRESET: [ BALANCED & NATURAL (NO WORD LIMIT) ] (CINEMATIC CADENCE)
 - CORE GOAL: Full cinematic dubbing flow matching the natural voiceover cadence, natural tone markers, and emotional warmth.
 - HOW TO TRANSLATE IN THIS MODE:
-  * Do NOT artificially compress dialogue. Translate with full natural spoken conversational flow (চলতি কথ্য ভাষা).
+  * Do NOT artificially compress dialogue. Translate with full natural spoken conversational flow${isBn ? ' (চলতি কথ্য ভাষা)' : ''}.
 ${isBn ? `  * Side-by-Side Reference:
     - Input: "What are you doing over there right now?" -> Balanced: "তুমি এখন ওই দিকটাতে গিয়ে কী করছ বলো তো?"
     - Input: "I really don't think we should be doing this at all." -> Balanced: "আমার মনে হয় না আমাদের এখন এই কাজটা করা কোনোভাবেই ঠিক হবে।"
@@ -5134,8 +5134,8 @@ ${isBn ? `  * Side-by-Side Reference:
   * 3-6 words source -> 2-4 words target
   * 7-12 words source -> 3-4 words target (distill to core punchline; maximum 5 words)
 - HOW TO TRANSLATE UNDER THIS WORD LIMIT:
-  * Drop all conversational filler words (drop "আসলে", "সত্যি বলতে", "তোমাকে বলছি", "আমার মনে হয়", "এখন").
-  * Drop redundant subject pronouns (drop "আমি", "তুমি", "সে") when verb indicates person.
+  * Drop all conversational filler words${isBn ? ' (drop "আসলে", "সত্যি বলতে", "তোমাকে বলছি", "আমার মনে হয়", "এখন")' : ''}.
+  * Drop redundant subject pronouns${isBn ? ' (drop "আমি", "তুমি", "সে")' : ''} when verb indicates person.
   * Turn questions into direct inflection with "?" without question words.
   * Keep strictly within 1-4 words (absolute maximum 5 words).
 ${isBn ? `  * Side-by-Side Reference with Word Counts:
@@ -5205,6 +5205,14 @@ async function callGeminiBatchTranslate(batch, key, attemptNumber, overrideModel
 
   let languageRules = '';
   const langLower = lang.toLowerCase();
+  const isBn = langLower.includes('bengali') || lang === 'Bengali';
+  const scriptPurityRule = isBn
+    ? `6. SCRIPT PURITY & NO MIXED CHARACTERS:
+   - Output 100% pure native script in Bengali. NEVER mix English Latin characters inside Bengali words (e.g. NEVER write "অনuবাদ", "আরo", "করe", "হবেn", "কi", "নa"; ALWAYS write "অনুবাদ", "আরো", "করে", "হবেন", "কি", "না").
+   - Write currency symbols as natural words in Bengali (e.g. write "$50" as "৫০ ডলার").`
+    : `6. SCRIPT PURITY & NO MIXED CHARACTERS:
+   - Output 100% pure native script and orthography in ${lang}. NEVER mix English Latin or foreign characters inside native ${lang} words.
+   - Write currency symbols as natural words in ${lang}.`;
 
   if (langLower.includes('bengali') || lang === 'Bengali') {
     languageRules = `
@@ -5251,9 +5259,7 @@ MANDATORY RULES:
    - Preserve HTML formatting tags (like <i>, </i>, <b>, </b>) if present in original text.
    - Preserve speaker tags or sound effects (e.g. [Music], (Laughter), [Door slams], JOHN:) appropriately without mangling brackets.
    - If original subtitle text has multiple dialogue lines (e.g. starting with "- "), keep clean line breaks in translated text.
-6. SCRIPT PURITY & NO MIXED CHARACTERS:
-   - Output 100% pure native script in ${lang}. NEVER mix English Latin characters inside ${lang} words (e.g. NEVER write "অনuবাদ", "আরo", "করe", "হবেn", "কi", "নa"; ALWAYS write "অনুবাদ", "আরো", "করে", "হবেন", "কি", "না").
-   - Write currency symbols as natural words in ${lang} (e.g. write "$50" as "৫০ ডলার").${languageRules}
+${scriptPurityRule}${languageRules}
 ${hint ? `7. Context/Genre: ${hint}` : ''}
 
 INPUT SUBTITLES TO TRANSLATE (${batch.length} items):
@@ -5359,6 +5365,14 @@ async function callOpenAiCompatibleBatchTranslate(batch, providerId, modelId, ke
 
   let languageRules = '';
   const langLower = lang.toLowerCase();
+  const isBn = langLower.includes('bengali') || lang === 'Bengali';
+  const scriptPurityRule = isBn
+    ? `6. SCRIPT PURITY & NO MIXED CHARACTERS:
+   - Output 100% pure native script in Bengali. NEVER mix English Latin characters inside Bengali words (e.g. NEVER write "অনuবাদ", "আরo", "করe", "হবেn", "কi", "নa"; ALWAYS write "অনুবাদ", "আরো", "করে", "হবেন", "কি", "না").
+   - Write currency symbols as natural words in Bengali (e.g. write "$50" as "৫০ ডলার").`
+    : `6. SCRIPT PURITY & NO MIXED CHARACTERS:
+   - Output 100% pure native script and orthography in ${lang}. NEVER mix English Latin or foreign characters inside native ${lang} words.
+   - Write currency symbols as natural words in ${lang}.`;
 
   if (langLower.includes('bengali') || lang === 'Bengali') {
     languageRules = `
@@ -5405,9 +5419,7 @@ MANDATORY RULES:
    - Preserve HTML formatting tags (like <i>, </i>, <b>, </b>) if present in original text.
    - Preserve speaker tags or sound effects (e.g. [Music], (Laughter), [Door slams], JOHN:) appropriately without mangling brackets.
    - If original subtitle text has multiple dialogue lines (e.g. starting with "- "), keep clean line breaks in translated text.
-6. SCRIPT PURITY & NO MIXED CHARACTERS:
-   - Output 100% pure native script in ${lang}. NEVER mix English Latin characters inside ${lang} words (e.g. NEVER write "অনuবাদ", "আরo", "করe", "হবেn", "কi", "নa"; ALWAYS write "অনুবাদ", "আরো", "করে", "হবেন", "কি", "না").
-   - Write currency symbols as natural words in ${lang} (e.g. write "$50" as "৫০ ডলার").${languageRules}
+${scriptPurityRule}${languageRules}
 ${hint ? `7. Context/Genre: ${hint}` : ''}`;
 
   const userPrompt = `INPUT SUBTITLES TO TRANSLATE (${batch.length} items):
