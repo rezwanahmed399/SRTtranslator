@@ -220,12 +220,25 @@
   color: #0f172a;
 }
 
-[data-theme="light"] .modal-dialog-title {
+[data-theme="light"] .modal-dialog-title,
+[data-theme="light"] .modal-title {
   color: #0f172a;
 }
 
-[data-theme="light"] .modal-dialog-message {
+[data-theme="light"] .modal-dialog-message,
+[data-theme="light"] .modal-message {
   color: #475569;
+}
+
+[data-theme="light"] .btn-modal-cancel {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #475569;
+}
+
+[data-theme="light"] .btn-modal-cancel:hover {
+  background: #e2e8f0;
+  color: #0f172a;
 }
 
 /* Screen Reader Only Utility for Semantic SEO */
@@ -9779,7 +9792,7 @@ button:active:not(:disabled),
   position: fixed;
   inset: 0;
   z-index: 999999;
-  background: #07090e;
+  background: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -9791,8 +9804,8 @@ button:active:not(:disabled),
   will-change: opacity, transform;
 }
 
-[data-theme="light"] .app-initial-loader {
-  background: #f8fafc;
+[data-theme="dark"] .app-initial-loader {
+  background: #07090e;
 }
 
 .app-initial-loader.loader-hidden {
@@ -9827,7 +9840,7 @@ button:active:not(:disabled),
   align-items: center;
   justify-content: center;
   color: #ffffff;
-  box-shadow: 0 0 24px rgba(99, 102, 241, 0.45);
+  box-shadow: 0 0 24px rgba(99, 102, 241, 0.35);
   z-index: 2;
 }
 
@@ -9856,13 +9869,13 @@ button:active:not(:disabled),
   font-size: 1.15rem;
   font-weight: 700;
   letter-spacing: -0.3px;
-  background: linear-gradient(135deg, #f8fafc 30%, #818cf8 100%);
+  background: linear-gradient(135deg, #0f172a 30%, #4f46e5 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-[data-theme="light"] .loader-brand-title {
-  background: linear-gradient(135deg, #0f172a 30%, #4f46e5 100%);
+[data-theme="dark"] .loader-brand-title {
+  background: linear-gradient(135deg, #f8fafc 30%, #818cf8 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -9871,13 +9884,13 @@ button:active:not(:disabled),
   width: 100px;
   height: 3px;
   border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(15, 23, 42, 0.08);
   overflow: hidden;
   position: relative;
 }
 
-[data-theme="light"] .loader-progress-bar {
-  background: rgba(15, 23, 42, 0.08);
+[data-theme="dark"] .loader-progress-bar {
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .loader-progress-fill {

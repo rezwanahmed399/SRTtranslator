@@ -5,7 +5,7 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
     
-    <!-- Subtitle Frame (Sub) with Radiant Gradient -->
+    <!-- Subtitle Frame (Sub) with Vibrant Gradient -->
     <path
         android:pathData="M 37,28 L 71,28 A 13,13 0 0 1 84,41 L 84,65 A 13,13 0 0 1 71,78 L 37,78 A 13,13 0 0 1 24,65 L 24,41 A 13,13 0 0 1 37,28 Z"
         android:strokeWidth="4.5"
@@ -18,9 +18,9 @@
                 android:endX="84"
                 android:endY="78"
                 android:type="linear">
-                <item android:offset="0.0" android:color="#818CF8" />
-                <item android:offset="0.5" android:color="#6366F1" />
-                <item android:offset="1.0" android:color="#06B6D4" />
+                <item android:offset="0.0" android:color="#4F46E5" />
+                <item android:offset="0.5" android:color="#2563EB" />
+                <item android:offset="1.0" android:color="#0284C7" />
             </gradient>
         </aapt:attr>
     </path>
@@ -38,9 +38,9 @@
                 android:endX="72"
                 android:endY="53"
                 android:type="linear">
-                <item android:offset="0.0" android:color="#38BDF8" />
-                <item android:offset="0.5" android:color="#818CF8" />
-                <item android:offset="1.0" android:color="#C084FC" />
+                <item android:offset="0.0" android:color="#2563EB" />
+                <item android:offset="0.5" android:color="#6366F1" />
+                <item android:offset="1.0" android:color="#9333EA" />
             </gradient>
         </aapt:attr>
     </path>
@@ -57,8 +57,8 @@
                 android:endX="66"
                 android:endY="67"
                 android:type="linear">
-                <item android:offset="0.0" android:color="#818CF8" />
-                <item android:offset="1.0" android:color="#06B6D4" />
+                <item android:offset="0.0" android:color="#4F46E5" />
+                <item android:offset="1.0" android:color="#0284C7" />
             </gradient>
         </aapt:attr>
     </path>
@@ -66,5 +66,5 @@
     <!-- Radiant AI Focus Beacon -->
     <path
         android:pathData="M 72,39 m -3.5,0 a 3.5,3.5 0 1,0 7,0 a 3.5,3.5 0 1,0 -7,0"
-        android:fillColor="#38BDF8" />
+        android:fillColor="#0284C7" />
 </vector>

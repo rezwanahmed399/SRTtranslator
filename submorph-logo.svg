@@ -1,29 +1,29 @@
 <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="smGradBg" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#0f172a"/>
-      <stop offset="100%" stop-color="#020617"/>
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#f8fafc"/>
     </linearGradient>
-    <linearGradient id="smGlow" x1="3" y1="3" x2="29" y2="29" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#818cf8"/>
+    <linearGradient id="smGlow" x1="4.5" y1="6.5" x2="27.5" y2="25.5" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#4f46e5"/>
+      <stop offset="50%" stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#0284c7"/>
+    </linearGradient>
+    <linearGradient id="smRibbon" x1="7.5" y1="16.5" x2="24.5" y2="16.5" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#2563eb"/>
       <stop offset="50%" stop-color="#6366f1"/>
-      <stop offset="100%" stop-color="#06b6d4"/>
-    </linearGradient>
-    <linearGradient id="smRibbon" x1="7" y1="16" x2="25" y2="16" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#38bdf8"/>
-      <stop offset="50%" stop-color="#818cf8"/>
-      <stop offset="100%" stop-color="#c084fc"/>
+      <stop offset="100%" stop-color="#9333ea"/>
     </linearGradient>
   </defs>
-  <!-- Background rounded squircle for standalone icon/favicon -->
+  <!-- Background rounded squircle for standalone icon/favicon (Clean White) -->
   <rect width="32" height="32" rx="8" fill="url(#smGradBg)"/>
-  <rect width="32" height="32" rx="8" stroke="url(#smGlow)" stroke-width="1.2" stroke-opacity="0.4"/>
+  <rect width="32" height="32" rx="8" stroke="rgba(0,0,0,0.08)" stroke-width="1"/>
   <!-- Subtitle frame (Sub) -->
   <rect x="4.5" y="6.5" width="23" height="19" rx="5.5" stroke="url(#smGlow)" stroke-width="1.8" stroke-linecap="round"/>
   <!-- Morphing audio/subtitle wave (Morph) -->
-  <path d="M8.5 16.5C10.5 12.5 12.5 12.5 14.5 16.5C16.5 20.5 18.5 20.5 20.5 16.5C21.5 14.5 22.5 14.5 23.5 15.5" stroke="url(#smRibbon)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M8.5 16.5C10.5 12.5 12.5 12.5 14.5 16.5C16.5 20.5 18.5 20.5 20.5 16.5C21.5 14.5 22.5 14.5 23.5 15.5" stroke="url(#smRibbon)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
   <!-- Subtitle text track line -->
-  <line x1="10" y1="21.5" x2="20" y2="21.5" stroke="url(#smGlow)" stroke-width="1.6" stroke-linecap="round" stroke-opacity="0.7"/>
+  <line x1="10" y1="21.5" x2="20" y2="21.5" stroke="url(#smGlow)" stroke-width="1.6" stroke-linecap="round" stroke-opacity="0.9"/>
   <!-- Glowing AI Beacon -->
-  <circle cx="22.5" cy="10.5" r="1.3" fill="#38bdf8"/>
+  <circle cx="22.5" cy="10.5" r="1.3" fill="#0284c7"/>
 </svg>
