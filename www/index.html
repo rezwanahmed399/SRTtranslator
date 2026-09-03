@@ -1527,6 +1527,78 @@
     </div>
   </div>
 
+  <!-- Offline Faded Lockout Modal (Auto-pauses translation on offline & requires manual resume) -->
+  <div class="offline-lockout-backdrop hidden" id="offlineLockoutModal" role="alertdialog" aria-modal="true" aria-hidden="true">
+    <div class="offline-lockout-card" id="offlineLockoutCard">
+      <div class="offline-top-accent"></div>
+      
+      <div class="offline-icon-container">
+        <div class="offline-icon-halo"></div>
+        <div class="offline-icon-bubble" id="offlineIconBubble">
+          <svg id="offlineSvgWifiOff" class="offline-status-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="1" y1="1" x2="23" y2="23"></line>
+            <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"></path>
+            <path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"></path>
+            <path d="M10.71 5.05A16 16 0 0 1 22.58 9"></path>
+            <path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"></path>
+            <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+            <line x1="12" y1="20" x2="12.01" y2="20"></line>
+          </svg>
+          <svg id="offlineSvgWifiOn" class="offline-status-svg hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M5 12.55a11 11 0 0 1 14.08 0"></path>
+            <path d="M1.42 9a16 16 0 0 1 21.16 0"></path>
+            <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+            <line x1="12" y1="20" x2="12.01" y2="20"></line>
+          </svg>
+        </div>
+      </div>
+
+      <div class="offline-badge-wrap">
+        <span class="offline-status-badge badge-offline" id="offlineStatusBadge">
+          <span class="offline-pulse-dot"></span>
+          <span id="offlineStatusBadgeText">No Internet Connection</span>
+        </span>
+      </div>
+
+      <h3 class="offline-title" id="offlineTitle">Connect to Internet</h3>
+      <p class="offline-desc" id="offlineDesc">SubMorph requires an active internet connection to communicate with AI translation engines and cloud services. Please check your network connection.</p>
+
+      <div class="offline-progress-preview hidden" id="offlineProgressPreview">
+        <div class="offline-preview-header">
+          <span class="offline-preview-label">Active Translation</span>
+          <span class="offline-preview-state" id="offlinePreviewState">Paused Safely</span>
+        </div>
+        <div class="offline-preview-file" id="offlinePreviewFile">subtitle.srt</div>
+        <div class="offline-preview-progress-track">
+          <div class="offline-preview-progress-bar" id="offlinePreviewProgressBar" style="width: 0%;"></div>
+        </div>
+        <div class="offline-preview-stats" id="offlinePreviewStats">0 / 0 blocks translated</div>
+      </div>
+
+      <div class="offline-actions-row" id="offlineActionsRow">
+        <div class="offline-waiting-indicator" id="offlineWaitingIndicator">
+          <div class="offline-spinner"></div>
+          <span>Waiting for internet connection...</span>
+        </div>
+
+        <button class="btn btn-offline-resume hidden" id="offlineResumeBtn" type="button">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <polygon points="5 3 19 12 5 21 5 3"/>
+          </svg>
+          <span>Resume Translation</span>
+        </button>
+
+        <button class="btn btn-offline-continue hidden" id="offlineContinueBtn" type="button">
+          <span>Continue to App</span>
+        </button>
+
+        <button class="btn btn-offline-keep-paused hidden" id="offlineKeepPausedBtn" type="button">
+          <span>Keep Paused</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Native Mobile Floating Bottom Navigation Bar (Mobile / App Viewports) -->
   <nav class="native-bottom-nav" id="nativeBottomNav" role="navigation" aria-label="Mobile Navigation">
     <div class="bottom-nav-container">

@@ -184,6 +184,8 @@ const state = {
   isCloudJob: false,
   isPaused: false,
   isCancelled: false,
+  pausedDueToOffline: false,
+  isOffline: typeof navigator !== 'undefined' ? !navigator.onLine : false,
   apiMetrics: {
     totalRequests: 0,
     successfulRequests: 0,
@@ -267,6 +269,25 @@ const incompleteWarningTitle  = $('incompleteWarningTitle');
 const incompleteWarningDesc   = $('incompleteWarningDesc');
 
 let activeCloudJobListenerUnsub = null;
+
+// Offline Lockout Elements
+const offlineLockoutModal       = $('offlineLockoutModal');
+const offlineLockoutCard        = $('offlineLockoutCard');
+const offlineSvgWifiOff         = $('offlineSvgWifiOff');
+const offlineSvgWifiOn          = $('offlineSvgWifiOn');
+const offlineStatusBadge        = $('offlineStatusBadge');
+const offlineStatusBadgeText    = $('offlineStatusBadgeText');
+const offlineTitle              = $('offlineTitle');
+const offlineDesc               = $('offlineDesc');
+const offlineProgressPreview    = $('offlineProgressPreview');
+const offlinePreviewState       = $('offlinePreviewState');
+const offlinePreviewFile        = $('offlinePreviewFile');
+const offlinePreviewProgressBar = $('offlinePreviewProgressBar');
+const offlinePreviewStats       = $('offlinePreviewStats');
+const offlineWaitingIndicator   = $('offlineWaitingIndicator');
+const offlineResumeBtn          = $('offlineResumeBtn');
+const offlineContinueBtn        = $('offlineContinueBtn');
+const offlineKeepPausedBtn      = $('offlineKeepPausedBtn');
 
 function escapeHtml(str) {
   if (str === null || str === undefined) return '';
@@ -3288,6 +3309,166 @@ function toggleTheme() {
   updateThemeButtonUI(next);
 }
 
+// ── Offline Faded Lockout & Network Resilience System ──
+function dismissOfflineLockout() {
+  document.body.classList.remove('is-offline-lockout');
+  if (offlineLockoutModal) {
+    offlineLockoutModal.classList.add('hidden');
+    offlineLockoutModal.setAttribute('aria-hidden', 'true');
+  }
+}
+
+function handleNetworkOffline() {
+  state.isOffline = true;
+  const isTranslating = !!(state.isTranslating || state.isCondensing);
+
+  // If translation/condensation was actively running, pause it automatically!
+  if (isTranslating) {
+    state.pausedDueToOffline = true;
+    if (!state.isPaused) {
+      togglePauseTranslation(); // switches state.isPaused to true, updates buttons & progress
+    }
+  }
+
+  // Apply faded lockout to the whole app
+  document.body.classList.add('is-offline-lockout');
+
+  // Configure Lockout Card for OFFLINE state
+  if (offlineLockoutCard) {
+    offlineLockoutCard.classList.remove('is-online');
+  }
+  if (offlineSvgWifiOff) offlineSvgWifiOff.classList.remove('hidden');
+  if (offlineSvgWifiOn) offlineSvgWifiOn.classList.add('hidden');
+
+  if (offlineStatusBadge) {
+    offlineStatusBadge.className = 'offline-status-badge badge-offline';
+  }
+
+  if (isTranslating) {
+    if (offlineStatusBadgeText) offlineStatusBadgeText.textContent = 'Translation Paused';
+    if (offlineTitle) offlineTitle.textContent = 'Translation Auto-Paused';
+    if (offlineDesc) {
+      offlineDesc.textContent = 'Your internet connection was disconnected while translating. SubMorph has automatically paused your translation to preserve all progress. None of your translated lines were lost. Reconnect to the internet to resume.';
+    }
+
+    // Show active progress preview
+    if (offlineProgressPreview) {
+      offlineProgressPreview.classList.remove('hidden');
+      if (offlinePreviewFile) offlinePreviewFile.textContent = state.fileName || 'Active Subtitle File';
+      const currentPct = parseInt(progressPct ? progressPct.textContent : '0', 10) || 0;
+      if (offlinePreviewProgressBar) offlinePreviewProgressBar.style.width = `${currentPct}%`;
+      const totalBlocks = state.parsedBlocks ? state.parsedBlocks.length : 0;
+      const translatedCount = state.translatedBlocks ? state.translatedBlocks.filter(b => b && b.isTranslated).length : 0;
+      if (offlinePreviewStats) offlinePreviewStats.textContent = `${translatedCount} / ${totalBlocks} blocks processed (${currentPct}%)`;
+    }
+  } else {
+    if (offlineStatusBadgeText) offlineStatusBadgeText.textContent = 'No Internet Connection';
+    if (offlineTitle) offlineTitle.textContent = 'Connect to Internet';
+    if (offlineDesc) {
+      offlineDesc.textContent = 'SubMorph requires an active internet connection to communicate with AI translation engines and cloud services. Please check your network connection.';
+    }
+    if (offlineProgressPreview) offlineProgressPreview.classList.add('hidden');
+  }
+
+  // Action buttons for offline state
+  if (offlineWaitingIndicator) offlineWaitingIndicator.classList.remove('hidden');
+  if (offlineResumeBtn) offlineResumeBtn.classList.add('hidden');
+  if (offlineContinueBtn) offlineContinueBtn.classList.add('hidden');
+  if (offlineKeepPausedBtn) offlineKeepPausedBtn.classList.add('hidden');
+
+  if (offlineLockoutModal) {
+    offlineLockoutModal.classList.remove('hidden');
+    offlineLockoutModal.setAttribute('aria-hidden', 'false');
+  }
+
+  addTerminalLog('warn', isTranslating ? 'Internet disconnected. Translation auto-paused.' : 'Internet connection lost.');
+  showToast(isTranslating ? 'Internet lost. Translation auto-paused.' : 'No internet connection.', 'error');
+}
+
+function handleNetworkOnline() {
+  state.isOffline = false;
+  addTerminalLog('ok', 'Internet connection re-established.');
+
+  // Update Lockout Card to ONLINE state
+  if (offlineLockoutCard) {
+    offlineLockoutCard.classList.add('is-online');
+  }
+  if (offlineSvgWifiOff) offlineSvgWifiOff.classList.add('hidden');
+  if (offlineSvgWifiOn) offlineSvgWifiOn.classList.remove('hidden');
+
+  if (offlineStatusBadge) {
+    offlineStatusBadge.className = 'offline-status-badge badge-online';
+  }
+
+  if (offlineWaitingIndicator) offlineWaitingIndicator.classList.add('hidden');
+
+  // Check if translation was paused because of offline
+  if (state.pausedDueToOffline) {
+    // CRITICAL USER REQUIREMENT: DO NOT AUTO-RESUME! User must click Resume!
+    if (offlineStatusBadgeText) offlineStatusBadgeText.textContent = 'Connection Restored';
+    if (offlineTitle) offlineTitle.textContent = 'Internet Reconnected';
+    if (offlineDesc) {
+      offlineDesc.textContent = 'Your internet connection is back! Translation is currently paused safely. Click Resume when you are ready to continue.';
+    }
+    if (offlineResumeBtn) offlineResumeBtn.classList.remove('hidden');
+    if (offlineKeepPausedBtn) offlineKeepPausedBtn.classList.remove('hidden');
+    if (offlineContinueBtn) offlineContinueBtn.classList.add('hidden');
+    showToast('Internet connected. Click Resume to continue translation.', 'info');
+  } else {
+    // Was idle when offline occurred
+    if (offlineStatusBadgeText) offlineStatusBadgeText.textContent = 'Connected';
+    if (offlineTitle) offlineTitle.textContent = 'Internet Restored';
+    if (offlineDesc) {
+      offlineDesc.textContent = 'Your internet connection is back! You can now continue using SubMorph.';
+    }
+    if (offlineContinueBtn) offlineContinueBtn.classList.remove('hidden');
+    if (offlineResumeBtn) offlineResumeBtn.classList.add('hidden');
+    if (offlineKeepPausedBtn) offlineKeepPausedBtn.classList.add('hidden');
+
+    // Auto-dismiss after 1.2s or allow instant click on continue
+    setTimeout(() => {
+      if (!state.isOffline && !state.pausedDueToOffline) {
+        dismissOfflineLockout();
+      }
+    }, 1200);
+    showToast('Connected to internet.', 'info');
+  }
+}
+
+function initOfflineLockoutSystem() {
+  if (offlineResumeBtn) {
+    offlineResumeBtn.addEventListener('click', () => {
+      dismissOfflineLockout();
+      state.pausedDueToOffline = false;
+      if (state.isPaused) {
+        togglePauseTranslation();
+      }
+      showToast('Translation resumed.');
+    });
+  }
+
+  if (offlineKeepPausedBtn) {
+    offlineKeepPausedBtn.addEventListener('click', () => {
+      dismissOfflineLockout();
+      state.pausedDueToOffline = false;
+      showToast('Translation kept paused. Click Resume in the main view when ready.');
+    });
+  }
+
+  if (offlineContinueBtn) {
+    offlineContinueBtn.addEventListener('click', () => {
+      dismissOfflineLockout();
+    });
+  }
+
+  window.addEventListener('offline', handleNetworkOffline);
+  window.addEventListener('online', handleNetworkOnline);
+
+  if (typeof navigator !== 'undefined' && !navigator.onLine) {
+    setTimeout(handleNetworkOffline, 600);
+  }
+}
+
 // ── Pause / Resume & Cancel Handlers ──
 async function togglePauseTranslation() {
   if (!state.isTranslating && !state.isCondensing) return;
@@ -3325,6 +3506,7 @@ async function togglePauseTranslation() {
     if (ctaHint) ctaHint.textContent = isCondense ? 'Condensation paused. Click Resume to continue.' : 'Translation paused. Click Resume to continue.';
   } else {
     state.isPaused = false;
+    state.pausedDueToOffline = false;
     const isCondense = !!state.isCondensing;
     if (ctrlIconPause) ctrlIconPause.classList.remove('hidden');
     if (ctrlIconResume) ctrlIconResume.classList.add('hidden');
@@ -3375,6 +3557,8 @@ async function cancelTranslationProcess() {
   state.isTranslating = false;
   state.isCondensing = false;
   state.isCloudJob = false;
+  state.pausedDueToOffline = false;
+  dismissOfflineLockout();
 
   if (activeCloudJobListenerUnsub) {
     try { activeCloudJobListenerUnsub(); } catch (e) {}
@@ -3823,6 +4007,7 @@ function setupEventListeners() {
   if (translateBtn) translateBtn.addEventListener('click', runTranslationPipeline);
   if (pauseResumeBtn) pauseResumeBtn.addEventListener('click', togglePauseTranslation);
   if (cancelTranslateBtn) cancelTranslateBtn.addEventListener('click', cancelTranslationProcess);
+  initOfflineLockoutSystem();
 
   // Retranslate / Change Settings Button Click Handler
   if (retranslateBtn) {
@@ -4745,6 +4930,11 @@ async function runTranslationPipeline() {
 
   try {
     for (let bi = 0; bi < batches.length; bi++) {
+      // Check for offline
+      if (typeof navigator !== 'undefined' && !navigator.onLine) {
+        handleNetworkOffline();
+      }
+
       // Check for pause
       while (state.isPaused && !state.isCancelled) {
         await sleep(300);
@@ -4770,6 +4960,11 @@ async function runTranslationPipeline() {
         batchResult = await translateBatchWithAdaptiveSplitting(currentBatch, batchKey, currentModel);
       } catch (err) {
         if (state.isCancelled) break;
+        if ((typeof navigator !== 'undefined' && !navigator.onLine) || (err && (err.message?.includes('Failed to fetch') || err.message?.includes('NetworkError') || err.message?.includes('network')))) {
+          handleNetworkOffline();
+          bi--; // Retry this batch once user clicks Resume!
+          continue;
+        }
         addTerminalLog('err', `Batch ${bi + 1} could not be fully completed: ${err.message}. Original lines safely preserved.`);
         batchResult = currentBatch.map(b => ({
           ...b,
@@ -5552,6 +5747,10 @@ async function retryIncompleteBatchesPipeline() {
 
   try {
     for (let bi = 0; bi < batches.length; bi++) {
+      if (typeof navigator !== 'undefined' && !navigator.onLine) {
+        handleNetworkOffline();
+      }
+
       while (state.isPaused && !state.isCancelled) {
         await sleep(300);
       }
@@ -5581,6 +5780,11 @@ async function retryIncompleteBatchesPipeline() {
         addTerminalLog('ok', `Retry batch ${bi + 1} completed.`);
       } catch (err) {
         if (state.isCancelled) break;
+        if ((typeof navigator !== 'undefined' && !navigator.onLine) || (err && (err.message?.includes('Failed to fetch') || err.message?.includes('NetworkError') || err.message?.includes('network')))) {
+          handleNetworkOffline();
+          bi--;
+          continue;
+        }
         addTerminalLog('err', `Retry batch ${bi + 1} failed: ${err.message}`);
       }
 
@@ -5911,6 +6115,10 @@ async function runAiCondensePipeline() {
 
   try {
     for (let bi = 0; bi < batches.length; bi++) {
+      if (typeof navigator !== 'undefined' && !navigator.onLine) {
+        handleNetworkOffline();
+      }
+
       while (state.isPaused && !state.isCancelled) {
         await sleep(300);
       }
@@ -5934,6 +6142,11 @@ async function runAiCondensePipeline() {
         batchResult = await condenseBatchWithAdaptiveSplitting(currentBatch, batchKey, currentModel);
       } catch (err) {
         if (state.isCancelled) break;
+        if ((typeof navigator !== 'undefined' && !navigator.onLine) || (err && (err.message?.includes('Failed to fetch') || err.message?.includes('NetworkError') || err.message?.includes('network')))) {
+          handleNetworkOffline();
+          bi--;
+          continue;
+        }
         addTerminalLog('warn', `Batch ${bi + 1} could not be condensed: ${err.message}. Keeping 1st-pass translation.`);
         batchResult = currentBatch;
       }
