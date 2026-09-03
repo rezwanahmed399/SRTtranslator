@@ -5533,7 +5533,7 @@ body.is-native-platform .bottom-auto-status {
 @keyframes modalPopIn {
   from {
     opacity: 0;
-    transform: scale(0.93) translateY(16px);
+    transform: scale(0.92) translateY(20px);
   }
   to {
     opacity: 1;
@@ -5557,7 +5557,7 @@ body.is-native-platform .bottom-auto-status {
   }
   to {
     opacity: 0;
-    transform: scale(0.94) translateY(10px);
+    transform: scale(0.94) translateY(12px);
   }
 }
 
@@ -5570,6 +5570,8 @@ body.is-native-platform .bottom-auto-status {
   inset: 0;
   z-index: 1000000 !important;
   background: rgba(3, 7, 18, 0.82);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -5578,8 +5580,8 @@ body.is-native-platform .bottom-auto-status {
   visibility: visible;
   transform: translateZ(0);
   will-change: opacity;
-  animation: modalFadeIn 0.18s ease-out;
-  transition: opacity 0.18s ease;
+  animation: modalFadeIn 0.36s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 0.3s ease;
 }
 
 [data-theme="light"] .custom-modal-backdrop {
@@ -5600,12 +5602,12 @@ body.is-native-platform .bottom-auto-status {
   border: 1px solid var(--border-medium, rgba(255, 255, 255, 0.14));
   border-radius: var(--radius-md, 20px);
   box-shadow: 0 24px 60px -10px rgba(0, 0, 0, 0.75), 0 0 25px rgba(0, 0, 0, 0.3);
-  padding: 22px 20px 18px;
+  padding: 24px 20px 20px;
   text-align: center;
   overflow: hidden;
   transform: translateZ(0);
   will-change: transform, opacity;
-  animation: modalPopIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: modalPopIn 0.42s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .custom-modal-backdrop.hidden .custom-modal-box {
@@ -8344,12 +8346,15 @@ input[type="text"].history-search-input:focus,
 }
 
 /* ── Offline Faded Lockout System ── */
+body > *:not(#offlineLockoutModal) {
+  transition: filter 0.55s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
 body.is-offline-lockout > *:not(#offlineLockoutModal) {
-  filter: blur(5px) grayscale(35%) !important;
-  opacity: 0.35 !important;
+  filter: blur(6px) grayscale(30%) !important;
+  opacity: 0.34 !important;
   pointer-events: none !important;
   user-select: none !important;
-  transition: filter 0.35s ease, opacity 0.35s ease !important;
 }
 
 .offline-lockout-backdrop {
@@ -8361,21 +8366,30 @@ body.is-offline-lockout > *:not(#offlineLockoutModal) {
   justify-content: center;
   padding: 16px;
   background: rgba(5, 9, 20, 0.82);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  opacity: 1;
-  visibility: visible;
-  transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.3s ease;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+              visibility 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+              backdrop-filter 0.45s ease,
+              -webkit-backdrop-filter 0.45s ease;
+  will-change: opacity, backdrop-filter;
 }
 
 [data-theme="light"] .offline-lockout-backdrop {
   background: rgba(15, 23, 42, 0.58);
 }
 
+.offline-lockout-backdrop.is-visible {
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+
 .offline-lockout-backdrop.hidden {
-  opacity: 0 !important;
-  visibility: hidden !important;
-  pointer-events: none !important;
+  display: none !important;
 }
 
 .offline-lockout-card {
@@ -8384,16 +8398,27 @@ body.is-offline-lockout > *:not(#offlineLockoutModal) {
   max-width: 420px;
   background: #0b1120;
   border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 20px;
-  padding: 26px 22px 22px 22px;
+  border-radius: 24px;
+  padding: 28px 22px 22px 22px;
   box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.75), 0 0 40px rgba(239, 68, 68, 0.18);
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
   overflow: hidden;
-  animation: offlineCardPop 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-  transition: all 0.3s ease;
+  transform: scale(0.92) translateY(24px);
+  opacity: 0;
+  transition: transform 0.48s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.42s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.4s ease,
+              border-color 0.4s ease,
+              background 0.4s ease;
+  will-change: transform, opacity;
+}
+
+.offline-lockout-backdrop.is-visible .offline-lockout-card {
+  transform: scale(1) translateY(0);
+  opacity: 1;
 }
 
 [data-theme="light"] .offline-lockout-card {
@@ -8408,11 +8433,6 @@ body.is-offline-lockout > *:not(#offlineLockoutModal) {
 
 [data-theme="light"] .offline-lockout-card.is-online {
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 30px rgba(16, 185, 129, 0.15);
-}
-
-@keyframes offlineCardPop {
-  0% { transform: scale(0.92) translateY(12px); opacity: 0; }
-  100% { transform: scale(1) translateY(0); opacity: 1; }
 }
 
 .offline-top-accent {
@@ -8436,25 +8456,30 @@ body.is-offline-lockout > *:not(#offlineLockoutModal) {
 
 .offline-icon-halo {
   position: absolute;
-  inset: -10px;
+  inset: -12px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(239, 68, 68, 0.28) 0%, transparent 70%);
-  animation: offlineHaloPulse 2s infinite ease-in-out;
+  background: radial-gradient(circle, rgba(239, 68, 68, 0.25) 0%, transparent 70%);
+  animation: offlineHaloPulse 2.6s infinite ease-in-out;
+  transition: background 0.4s ease;
 }
 
 .offline-lockout-card.is-online .offline-icon-halo {
-  background: radial-gradient(circle, rgba(16, 185, 129, 0.3) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.28) 0%, transparent 70%);
+}
+
+.offline-lockout-card.is-reconnecting .offline-icon-halo {
+  background: radial-gradient(circle, rgba(14, 165, 233, 0.28) 0%, transparent 70%);
 }
 
 @keyframes offlineHaloPulse {
-  0%, 100% { transform: scale(0.92); opacity: 0.5; }
-  50% { transform: scale(1.18); opacity: 1; }
+  0%, 100% { transform: scale(0.94); opacity: 0.45; }
+  50% { transform: scale(1.15); opacity: 0.95; }
 }
 
 .offline-icon-bubble {
   position: relative;
-  width: 54px;
-  height: 54px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
   background: rgba(239, 68, 68, 0.12);
   border: 1px solid rgba(239, 68, 68, 0.3);
@@ -8462,7 +8487,7 @@ body.is-offline-lockout > *:not(#offlineLockoutModal) {
   align-items: center;
   justify-content: center;
   color: #ef4444;
-  transition: all 0.3s ease;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .offline-lockout-card.is-online .offline-icon-bubble {
@@ -8472,8 +8497,9 @@ body.is-offline-lockout > *:not(#offlineLockoutModal) {
 }
 
 .offline-status-svg {
-  width: 25px;
-  height: 25px;
+  width: 26px;
+  height: 26px;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
 }
 
 .offline-badge-wrap {
@@ -8484,7 +8510,7 @@ body.is-offline-lockout > *:not(#offlineLockoutModal) {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 3px 10px;
+  padding: 4px 12px;
   border-radius: 20px;
   font-size: 0.70rem;
   font-weight: 700;
@@ -8493,6 +8519,7 @@ body.is-offline-lockout > *:not(#offlineLockoutModal) {
   background: rgba(239, 68, 68, 0.15);
   border: 1px solid rgba(239, 68, 68, 0.3);
   color: #f87171;
+  transition: background 0.4s ease, border-color 0.4s ease, color 0.4s ease;
 }
 
 .offline-status-badge.badge-online {
@@ -8633,6 +8660,7 @@ body.is-offline-lockout > *:not(#offlineLockoutModal) {
   font-weight: 600;
   color: #94a3b8;
   padding: 6px 12px;
+  animation: offlineFadeSlideUp 0.38s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .offline-spinner {
@@ -8648,6 +8676,11 @@ body.is-offline-lockout > *:not(#offlineLockoutModal) {
   to { transform: rotate(360deg); }
 }
 
+@keyframes offlineFadeSlideUp {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
 .btn-offline-resume {
   display: inline-flex;
   align-items: center;
@@ -8657,13 +8690,14 @@ body.is-offline-lockout > *:not(#offlineLockoutModal) {
   height: 42px;
   background: linear-gradient(135deg, #10b981 0%, #059669 100%);
   border: none;
-  border-radius: 10px;
+  border-radius: 12px;
   color: #ffffff;
   font-size: 0.88rem;
   font-weight: 700;
   cursor: pointer;
   box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: offlineFadeSlideUp 0.42s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .btn-offline-resume:hover {
@@ -8685,13 +8719,14 @@ body.is-offline-lockout > *:not(#offlineLockoutModal) {
   height: 40px;
   background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
   border: none;
-  border-radius: 10px;
+  border-radius: 12px;
   color: #ffffff;
   font-size: 0.84rem;
   font-weight: 700;
   cursor: pointer;
   box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
-  transition: all 0.2s ease;
+  transition: all 0.25s ease;
+  animation: offlineFadeSlideUp 0.42s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .btn-offline-continue:hover {
@@ -8702,13 +8737,14 @@ body.is-offline-lockout > *:not(#offlineLockoutModal) {
 .btn-offline-keep-paused {
   background: transparent;
   border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 8px;
+  border-radius: 10px;
   color: #94a3b8;
   font-size: 0.74rem;
   font-weight: 600;
-  height: 32px;
+  height: 34px;
   cursor: pointer;
   transition: all 0.2s ease;
+  animation: offlineFadeSlideUp 0.42s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .btn-offline-keep-paused:hover {
@@ -8761,14 +8797,10 @@ body.is-offline-lockout > *:not(#offlineLockoutModal) {
   background: rgba(14, 165, 233, 0.08);
   border: 1px solid rgba(14, 165, 233, 0.25);
   padding: 10px 14px;
-  border-radius: 12px;
+  border-radius: 14px;
   width: 100%;
-  animation: offlineFadeIn 0.3s ease;
-}
-
-@keyframes offlineFadeIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
+  animation: offlineFadeSlideUp 0.42s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.3s ease;
 }
 
 [data-theme="light"] .offline-sync-indicator {
@@ -10427,20 +10459,20 @@ button:active:not(:disabled),
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 14px 6px 9px;
+  padding: 8px 16px 8px 10px;
   background: rgba(11, 17, 32, 0.94);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: var(--radius-pill, 9999px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
   color: #f8fafc;
   font-size: 0.78rem;
   font-weight: 550;
   line-height: 1.35;
   opacity: 0;
-  transform: translateY(-8px) scale(0.96);
-  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translateY(-14px) scale(0.94);
+  transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   pointer-events: auto;
   max-width: 100%;
   box-sizing: border-box;

@@ -391,7 +391,13 @@ function showCustomConfirm({
       isClosed = true;
       window.removeEventListener('keydown', onKeyDown);
       backdrop.style.opacity = '0';
-      setTimeout(() => backdrop.remove(), 150);
+      const box = backdrop.querySelector('.custom-modal-box');
+      if (box) {
+        box.style.transform = 'scale(0.92) translateY(16px)';
+        box.style.opacity = '0';
+        box.style.transition = 'transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.28s ease';
+      }
+      setTimeout(() => backdrop.remove(), 280);
       resolve(result);
     };
 
@@ -3313,17 +3319,22 @@ function toggleTheme() {
 }
 
 // ── Offline Faded Lockout & Network Resilience System ──
-// ── Offline Faded Lockout & Network Resilience System ──
 function dismissOfflineLockout() {
   document.body.classList.remove('is-offline-lockout');
   if (offlineLockoutModal) {
-    offlineLockoutModal.classList.add('hidden');
+    offlineLockoutModal.classList.remove('is-visible');
     offlineLockoutModal.setAttribute('aria-hidden', 'true');
-  }
-  if (offlineSyncIndicator) offlineSyncIndicator.classList.add('hidden');
-  if (offlineLockoutCard) {
-    offlineLockoutCard.classList.remove('is-reconnecting');
-    offlineLockoutCard.classList.remove('is-online');
+    // Allow 450ms for smooth exit transition before setting display: none
+    setTimeout(() => {
+      if (!state.isOffline && !document.body.classList.contains('is-offline-lockout')) {
+        offlineLockoutModal.classList.add('hidden');
+        if (offlineSyncIndicator) offlineSyncIndicator.classList.add('hidden');
+        if (offlineLockoutCard) {
+          offlineLockoutCard.classList.remove('is-reconnecting');
+          offlineLockoutCard.classList.remove('is-online');
+        }
+      }
+    }, 450);
   }
 }
 
@@ -3339,7 +3350,7 @@ function handleNetworkOffline() {
     }
   }
 
-  // Apply faded lockout to the whole app
+  // Apply smooth faded lockout to the background
   document.body.classList.add('is-offline-lockout');
 
   // Configure Lockout Card for OFFLINE state
@@ -3390,10 +3401,16 @@ function handleNetworkOffline() {
   if (offlineLockoutModal) {
     offlineLockoutModal.classList.remove('hidden');
     offlineLockoutModal.setAttribute('aria-hidden', 'false');
+    // Double RAF ensures browser establishes layout before transitioning is-visible
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        offlineLockoutModal.classList.add('is-visible');
+      });
+    });
   }
 
   addTerminalLog('warn', isTranslating ? 'Internet disconnected. Translation auto-paused.' : 'Internet connection lost.');
-  showToast(isTranslating ? 'Internet lost. Translation auto-paused.' : 'No internet connection.', 'error');
+  // Note: Avoid duplicate toast on top of full-screen lockout modal to keep UX clean & calm
 }
 
 async function handleNetworkOnline() {
