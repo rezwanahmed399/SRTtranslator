@@ -1060,7 +1060,7 @@ body {
   z-index: 1;
   max-width: 1020px;
   margin: 0 auto;
-  padding: 0 24px 80px;
+  padding: 0 24px 100px;
 }
 
 /* Top Navigation (Permanently Sticky & Glitch-Proof) */
@@ -1150,16 +1150,10 @@ body {
   margin-top: 2px;
 }
 
-/* 2-Tab Main Navigation Switcher */
-.app-main-tabs {
-  display: inline-flex;
-  align-items: center;
-  background: var(--surface-inner);
-  border: 1px solid var(--border-medium);
-  padding: 4px;
-  border-radius: var(--radius-pill);
-  gap: 4px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+/* 2-Tab Main Navigation Switcher (Hidden: Translator and Settings belong exclusively to the Floating Bottom Nav) */
+.app-main-tabs,
+.desktop-tabs {
+  display: none !important;
 }
 
 .app-tab-btn {
@@ -8891,29 +8885,38 @@ button:active:not(:disabled),
   transform: scale(0.965) !important;
 }
 
-/* ── 2. Native Mobile Floating Bottom Navigation Bar ── */
+/* ── 2. Native App Floating Bottom Navigation Bar (All Devices & Screens) ── */
 .native-bottom-nav {
-  display: none; /* Hidden on desktop */
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 100000;
-  background: rgba(7, 11, 22, 0.88);
-  backdrop-filter: blur(28px);
-  -webkit-backdrop-filter: blur(28px);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  padding: 6px 16px max(8px, env(safe-area-inset-bottom));
-  transition: none;
+  display: block !important;
+  position: fixed !important;
+  bottom: 20px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  z-index: 100000 !important;
+  width: auto !important;
+  min-width: 320px !important;
+  max-width: 440px !important;
+  background: rgba(7, 11, 22, 0.90) !important;
+  backdrop-filter: blur(28px) !important;
+  -webkit-backdrop-filter: blur(28px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 28px !important;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+  padding: 6px 14px !important;
+  transition: transform 0.25s ease, opacity 0.25s ease !important;
+}
+
+[data-theme="light"] .native-bottom-nav {
+  background: rgba(255, 255, 255, 0.94) !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
 }
 
 .bottom-nav-container {
   display: flex;
   align-items: center;
   justify-content: space-around;
-  max-width: 480px;
-  margin: 0 auto;
+  width: 100%;
   gap: 12px;
 }
 
@@ -9004,9 +9007,20 @@ button:active:not(:disabled),
 
 /* ── 3. Responsive App Layout Adjustments (Mobile Breakpoint <= 768px) ── */
 @media (max-width: 768px) {
-  /* Show Native Bottom Bar & hide Desktop Header Tabs */
+  /* Mobile docks to the very bottom */
   .native-bottom-nav {
-    display: block;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    transform: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 100% !important;
+    border-radius: 20px 20px 0 0 !important;
+    border-left: none !important;
+    border-right: none !important;
+    border-bottom: none !important;
+    padding: 6px 16px max(8px, env(safe-area-inset-bottom)) !important;
   }
 
   body.keyboard-open .native-bottom-nav,
@@ -9018,7 +9032,8 @@ button:active:not(:disabled),
     transform: translateY(150%) !important;
   }
 
-  .desktop-tabs {
+  .desktop-tabs,
+  .app-main-tabs {
     display: none !important;
   }
 
