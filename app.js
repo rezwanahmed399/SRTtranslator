@@ -269,8 +269,8 @@ const incompleteWarningDesc   = $('incompleteWarningDesc');
 let activeCloudJobListenerUnsub = null;
 
 function escapeHtml(str) {
-  if (typeof str !== 'string') return '';
-  return str
+  if (str === null || str === undefined) return '';
+  return String(str)
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
@@ -595,20 +595,35 @@ window.addEventListener('beforeunload', e => {
   }
 });
 
-// ── Android Native App Integration (Capacitor) ──
+// ── Android Native App Integration (Capacitor & Browser Routing) ──
 function initNativeAppIntegrations() {
-  if (typeof window !== 'undefined' && window.Capacitor && window.Capacitor.isNativePlatform()) {
+  const isNative = !!(
+    (typeof window !== 'undefined' && window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform()) ||
+    (typeof window !== 'undefined' && window.location && window.location.protocol === 'capacitor:') ||
+    (typeof window !== 'undefined' && window.location && window.location.hostname === 'localhost' && /Android/i.test(navigator.userAgent))
+  );
+
+  const isAndroidBrowser = /Android/i.test(navigator.userAgent) && !isNative;
+  const headerApkBtn = document.getElementById('headerApkBtn') || document.querySelector('.header-apk-btn');
+  const headerDownloadsBtn = $('headerDownloadsBtn');
+  const bottomAutoStatus = document.querySelector('.bottom-auto-status');
+
+  if (isNative) {
     console.log('[Native App] Running inside Android via Capacitor.');
     document.body.classList.add('is-native-app');
+    document.body.classList.add('is-native-platform');
+    if (headerApkBtn) headerApkBtn.style.display = 'none';
+    if (headerDownloadsBtn) headerDownloadsBtn.style.display = 'inline-flex';
+    if (bottomAutoStatus) bottomAutoStatus.style.display = 'inline-flex';
 
     // 1. Android Status Bar Styling
-    if (window.Capacitor.Plugins && window.Capacitor.Plugins.StatusBar) {
+    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.StatusBar) {
       window.Capacitor.Plugins.StatusBar.setBackgroundColor({ color: '#070a13' }).catch(() => {});
       window.Capacitor.Plugins.StatusBar.setStyle({ style: 'DARK' }).catch(() => {});
     }
 
     // 2. Hardware Back Button Handling
-    if (window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
+    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
       window.Capacitor.Plugins.App.addListener('backButton', async () => {
         // If a prompt or confirm dialog is open on top, close it first
         const openPrompt = document.querySelector('.custom-modal-backdrop:not(.history-modal-backdrop)');
@@ -661,7 +676,28 @@ function initNativeAppIntegrations() {
         window.Capacitor.Plugins.App.exitApp();
       });
     }
+  } else {
+    document.body.classList.remove('is-native-app');
+    document.body.classList.remove('is-native-platform');
+    if (headerDownloadsBtn) headerDownloadsBtn.style.display = 'none';
+    if (bottomAutoStatus) bottomAutoStatus.style.display = 'none';
+    if (isAndroidBrowser) {
+      // Show Get APK button ONLY on Android mobile browsers
+      if (headerApkBtn) {
+        headerApkBtn.style.display = 'inline-flex';
+        fetch('/version.json?t=' + Date.now()).then(r => r.json()).then(v => {
+          if (v && v.apkFileName) {
+            headerApkBtn.href = `${v.apkFileName}?t=${Date.now()}`;
+            headerApkBtn.setAttribute('download', v.apkFileName);
+          }
+        }).catch(() => {});
+      }
+    } else {
+      // Desktop & iOS: Hide Get APK button completely
+      if (headerApkBtn) headerApkBtn.style.display = 'none';
+    }
   }
+}
 
   // Clear Saved Subtitle Session Data Button
   const resetBtn = $('resetSessionDataBtn');
@@ -685,7 +721,6 @@ function initNativeAppIntegrations() {
       }
     });
   }
-}
 
 // ── Screen WakeLock & Full-Power Background Execution Engine ──
 let wakeLock = null;
@@ -875,165 +910,7 @@ window.addEventListener('DOMContentLoaded', () => {
 // Single global failsafe safety net (in case of total offline freeze or aborted scripts)
 setTimeout(dismissInitialLoader, 5500);
 
-// ── Native App Platform & Android Browser Detection ──
-function initNativeAppIntegrations() {
-  const isNative = !!(
-    (window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform()) ||
-    window.location.protocol === 'capacitor:' ||
-    (window.location.hostname === 'localhost' && /Android/i.test(navigator.userAgent))
-  );
-
-  const isAndroidBrowser = /Android/i.test(navigator.userAgent) && !isNative;
-  const headerApkBtn = document.getElementById('headerApkBtn') || document.querySelector('.header-apk-btn');
-  const headerDownloadsBtn = $('headerDownloadsBtn');
-  const bottomAutoStatus = document.querySelector('.bottom-auto-status');
-
-  if (isNative) {
-    document.body.classList.add('is-native-platform');
-    if (headerApkBtn) headerApkBtn.style.display = 'none';
-    if (headerDownloadsBtn) headerDownloadsBtn.style.display = 'inline-flex';
-    if (bottomAutoStatus) bottomAutoStatus.style.display = 'inline-flex';
-  } else {
-    document.body.classList.remove('is-native-platform');
-    if (headerDownloadsBtn) headerDownloadsBtn.style.display = 'none';
-    if (bottomAutoStatus) bottomAutoStatus.style.display = 'none';
-    if (isAndroidBrowser) {
-      // Show Get APK button ONLY on Android mobile browsers
-      if (headerApkBtn) {
-        headerApkBtn.style.display = 'inline-flex';
-        fetch('/version.json?t=' + Date.now()).then(r => r.json()).then(v => {
-          if (v && v.apkFileName) {
-            headerApkBtn.href = `${v.apkFileName}?t=${Date.now()}`;
-            headerApkBtn.setAttribute('download', v.apkFileName);
-          }
-        }).catch(() => {});
-      }
-    } else {
-      // Desktop (Windows, Mac, Linux) & iOS (iPhone, iPad): Hide Get APK button completely
-      if (headerApkBtn) headerApkBtn.style.display = 'none';
-    }
-  }
-}
-
-// ── 2-Tab Navigation Engine (Translator vs Settings) ──
-function switchAppTab(tabId) {
-  const tabBtnTranslator = $('tabBtnTranslator');
-  const tabBtnSettings = $('tabBtnSettings');
-  const bottomTabBtnTranslator = $('bottomTabBtnTranslator');
-  const bottomTabBtnSettings = $('bottomTabBtnSettings');
-  const viewTranslator = $('viewTranslator');
-  const viewSettings = $('viewSettings');
-
-  if (tabId === 'translator') {
-    if (tabBtnTranslator) {
-      tabBtnTranslator.classList.add('active');
-      tabBtnTranslator.setAttribute('aria-selected', 'true');
-    }
-    if (tabBtnSettings) {
-      tabBtnSettings.classList.remove('active');
-      tabBtnSettings.setAttribute('aria-selected', 'false');
-    }
-    if (bottomTabBtnTranslator) {
-      bottomTabBtnTranslator.classList.add('active');
-    }
-    if (bottomTabBtnSettings) {
-      bottomTabBtnSettings.classList.remove('active');
-    }
-    if (viewTranslator) viewTranslator.classList.add('active');
-    if (viewSettings) viewSettings.classList.remove('active');
-  } else {
-    if (tabBtnTranslator) {
-      tabBtnTranslator.classList.remove('active');
-      tabBtnTranslator.setAttribute('aria-selected', 'false');
-    }
-    if (tabBtnSettings) {
-      tabBtnSettings.classList.add('active');
-      tabBtnSettings.setAttribute('aria-selected', 'true');
-    }
-    if (bottomTabBtnTranslator) {
-      bottomTabBtnTranslator.classList.remove('active');
-    }
-    if (bottomTabBtnSettings) {
-      bottomTabBtnSettings.classList.add('active');
-    }
-    if (viewTranslator) viewTranslator.classList.remove('active');
-    if (viewSettings) viewSettings.classList.add('active');
-
-    // Default to API Keys sub-tab when entering Settings
-    switchSettingsSubTab('apikeys');
-  }
-
-  window.scrollTo({ top: 0, behavior: 'instant' });
-}
-
-// ── Sub-Tabs Navigation Controllers ──
-function switchTranslatorSubTab(subTabId) {
-  const btnSettings = $('subTabBtnEngineSettings');
-  const btnWorkspace = $('subTabBtnWorkspace');
-  const panelSettings = $('subViewEngineSettings');
-  const panelWorkspace = $('subViewWorkspace');
-
-  if (subTabId === 'settings' || subTabId === 'engine') {
-    if (btnSettings) {
-      btnSettings.classList.add('active');
-      btnSettings.setAttribute('aria-selected', 'true');
-    }
-    if (btnWorkspace) {
-      btnWorkspace.classList.remove('active');
-      btnWorkspace.setAttribute('aria-selected', 'false');
-    }
-    if (panelSettings) panelSettings.classList.add('active');
-    if (panelWorkspace) panelWorkspace.classList.remove('active');
-  } else {
-    if (btnSettings) {
-      btnSettings.classList.remove('active');
-      btnSettings.setAttribute('aria-selected', 'false');
-    }
-    if (btnWorkspace) {
-      btnWorkspace.classList.add('active');
-      btnWorkspace.setAttribute('aria-selected', 'true');
-    }
-    if (panelSettings) panelSettings.classList.remove('active');
-    if (panelWorkspace) panelWorkspace.classList.add('active');
-  }
-}
-
-function switchSettingsSubTab(subTabId) {
-  const btnApiKeys = $('subTabBtnApiKeys');
-  const btnHistory = $('subTabBtnHistory');
-  const panelApiKeys = $('subViewApiKeys');
-  const panelHistory = $('subViewHistory');
-
-  if (subTabId === 'history') {
-    if (btnApiKeys) {
-      btnApiKeys.classList.remove('active');
-      btnApiKeys.setAttribute('aria-selected', 'false');
-    }
-    if (btnHistory) {
-      btnHistory.classList.add('active');
-      btnHistory.setAttribute('aria-selected', 'true');
-    }
-    if (panelApiKeys) panelApiKeys.classList.remove('active');
-    if (panelHistory) panelHistory.classList.add('active');
-
-    // Auto-refresh history when switching to history sub-tab
-    if (typeof loadCloudHistory === 'function') {
-      loadCloudHistory();
-    }
-  } else {
-    // Default to API Keys
-    if (btnApiKeys) {
-      btnApiKeys.classList.add('active');
-      btnApiKeys.setAttribute('aria-selected', 'true');
-    }
-    if (btnHistory) {
-      btnHistory.classList.remove('active');
-      btnHistory.setAttribute('aria-selected', 'false');
-    }
-    if (panelApiKeys) panelApiKeys.classList.add('active');
-    if (panelHistory) panelHistory.classList.remove('active');
-  }
-}
+// Note: Navigation controllers switchAppTab/switchTranslatorSubTab/switchSettingsSubTab are defined authoritatively below
 
 function hasGeminiApiKey() {
   const memKey = state.apiKeys.gemini ? state.apiKeys.gemini.trim() : '';
@@ -4628,20 +4505,26 @@ function parseAndRepairJson(rawText) {
     // Continue to heuristic regex extractor
   }
 
-  // 5. Heuristic Regex Item Extractor (Extracts individual complete objects)
+  // 5. Heuristic Regex Item Extractor (Extracts individual complete objects regardless of key order)
   const items = [];
-  const itemRegex = /\{[^{}]*?"id"\s*:\s*"?(\d+)"?[^{}]*?"(?:text|translation|bengali|content|translated_text)"\s*:\s*"((?:[^"\\]|\\.)*)"[^{}]*?\}/g;
+  const textKeys = '(?:text|translation|bengali|content|translated_text|translatedText|translated|dialogue)';
+  const itemRegexIdFirst = new RegExp(`\\{[^{}]*?"id"\\s*:\\s*"?(\\d+)"?[^{}]*?"${textKeys}"\\s*:\\s*"((?:[^"\\\\]|\\\\.)*)"[^{}]*?\\}`, 'g');
+  const itemRegexTextFirst = new RegExp(`\\{[^{}]*?"${textKeys}"\\s*:\\s*"((?:[^"\\\\]|\\\\.)*)"[^{}]*?"id"\\s*:\\s*"?(\\d+)"?[^{}]*?\\}`, 'g');
+
   let match;
-  while ((match = itemRegex.exec(rawText)) !== null) {
-    try {
-      const id = parseInt(match[1], 10);
-      const text = JSON.parse(`"${match[2]}"`);
+  while ((match = itemRegexIdFirst.exec(rawText)) !== null) {
+    const id = parseInt(match[1], 10);
+    let text = match[2];
+    try { text = JSON.parse(`"${text}"`); } catch { text = text.replace(/\\n/g, '\n').replace(/\\"/g, '"'); }
+    items.push({ id, text });
+  }
+
+  if (items.length === 0) {
+    while ((match = itemRegexTextFirst.exec(rawText)) !== null) {
+      const id = parseInt(match[2], 10);
+      let text = match[1];
+      try { text = JSON.parse(`"${text}"`); } catch { text = text.replace(/\\n/g, '\n').replace(/\\"/g, '"'); }
       items.push({ id, text });
-    } catch {
-      items.push({
-        id: parseInt(match[1], 10),
-        text: match[2].replace(/\\n/g, '\n').replace(/\\"/g, '"')
-      });
     }
   }
 
@@ -5542,17 +5425,30 @@ OUTPUT (JSON Array):`;
   const reqStart = Date.now();
   updateApiHealthUI('active', `[${pConf.name}] Translating Batch #${batch[0]?.num || 1}...`);
 
+  const timeoutMs = 60000;
+  const abortController = new AbortController();
+  const timeoutId = setTimeout(() => {
+    abortController.abort(new Error(`${pConf.name} API request timed out (${timeoutMs / 1000}s network timeout)`));
+  }, timeoutMs);
+
   let response;
   try {
     response = await fetch(endpoint, {
       method: 'POST',
       headers,
-      body: JSON.stringify(requestBody)
+      body: JSON.stringify(requestBody),
+      signal: abortController.signal
     });
   } catch (netErr) {
     const lat = Date.now() - reqStart;
+    if (netErr.name === 'AbortError' || abortController.signal.aborted) {
+      updateApiHealthUI('warning', `[${pConf.name}] Network timeout...`, lat);
+      throw new Error(`${pConf.name} API timeout (${timeoutMs / 1000}s network timeout). Switching to backup model.`);
+    }
     updateApiHealthUI('warning', `[${pConf.name}] Network Retry...`, lat);
     throw netErr;
+  } finally {
+    clearTimeout(timeoutId);
   }
 
   const duration = Date.now() - reqStart;
@@ -6311,17 +6207,30 @@ OUTPUT (JSON Array):`;
   const reqStart = Date.now();
   updateApiHealthUI('active', `[Gemini] Condensing Subtitles...`);
 
+  const timeoutMs = 60000;
+  const abortController = new AbortController();
+  const timeoutId = setTimeout(() => {
+    abortController.abort(new Error(`Gemini Condenser timed out (${timeoutMs / 1000}s network timeout)`));
+  }, timeoutMs);
+
   let response;
   try {
     response = await fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(requestBody)
+      body: JSON.stringify(requestBody),
+      signal: abortController.signal
     });
   } catch (netErr) {
     const lat = Date.now() - reqStart;
+    if (netErr.name === 'AbortError' || abortController.signal.aborted) {
+      updateApiHealthUI('warning', '[Gemini] Network timeout...', lat);
+      throw new Error(`Gemini Condenser timeout (${timeoutMs / 1000}s network timeout).`);
+    }
     updateApiHealthUI('warning', '[Gemini] Network Retry...', lat);
     throw netErr;
+  } finally {
+    clearTimeout(timeoutId);
   }
 
   const duration = Date.now() - reqStart;
@@ -6430,17 +6339,30 @@ OUTPUT (JSON Array):`;
   const reqStart = Date.now();
   updateApiHealthUI('active', `[${pConf.name}] Condensing Subtitles...`);
 
+  const timeoutMs = 60000;
+  const abortController = new AbortController();
+  const timeoutId = setTimeout(() => {
+    abortController.abort(new Error(`${pConf.name} Condenser timed out (${timeoutMs / 1000}s network timeout)`));
+  }, timeoutMs);
+
   let response;
   try {
     response = await fetch(endpoint, {
       method: 'POST',
       headers,
-      body: JSON.stringify(requestBody)
+      body: JSON.stringify(requestBody),
+      signal: abortController.signal
     });
   } catch (netErr) {
     const lat = Date.now() - reqStart;
+    if (netErr.name === 'AbortError' || abortController.signal.aborted) {
+      updateApiHealthUI('warning', `[${pConf.name}] Network timeout...`, lat);
+      throw new Error(`${pConf.name} Condenser timeout (${timeoutMs / 1000}s network timeout).`);
+    }
     updateApiHealthUI('warning', `[${pConf.name}] Network Retry...`, lat);
     throw netErr;
+  } finally {
+    clearTimeout(timeoutId);
   }
 
   const duration = Date.now() - reqStart;
@@ -6944,13 +6866,7 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function escapeHtml(str) {
-  return String(str || '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
+// Note: escapeHtml is defined authoritatively at line 271
 
 function resetTranslateButton() {
   if (!translateBtn) return;
