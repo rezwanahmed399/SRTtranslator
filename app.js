@@ -1325,9 +1325,12 @@ const GEO_COUNTRY_TO_LANG = {
   'KM': 'Arabic', // Comoros
   'TD': 'Arabic', // Chad
   'SS': 'Arabic', // South Sudan
+  'EH': 'Arabic', // Western Sahara
+  'ER': 'Arabic', // Eritrea
 
   // ── South Asia ──
   'BD': 'Bengali', // Bangladesh
+  'IN': 'Hindi',   // India (national fallback)
   'PK': 'Urdu',    // Pakistan
   'NP': 'Nepali',  // Nepal
   'BT': 'Nepali',  // Bhutan
@@ -1365,6 +1368,8 @@ const GEO_COUNTRY_TO_LANG = {
   'UZ': 'Uzbek',       // Uzbekistan
   'TM': 'Turkish',     // Turkmenistan
   'KG': 'Russian',     // Kyrgyzstan
+  'AM': 'Russian',     // Armenia
+  'GE': 'Russian',     // Georgia
   'IL': 'Hebrew',      // Israel
 
   // ── Europe ──
@@ -1390,6 +1395,7 @@ const GEO_COUNTRY_TO_LANG = {
   'SE': 'Swedish',    // Sweden
   'NO': 'Norwegian',  // Norway
   'SJ': 'Norwegian',  // Svalbard & Jan Mayen
+  'BV': 'Norwegian',  // Bouvet Island
   'DK': 'Danish',     // Denmark
   'GL': 'Danish',     // Greenland
   'FO': 'Danish',     // Faroe Islands
@@ -1404,12 +1410,16 @@ const GEO_COUNTRY_TO_LANG = {
   'HU': 'Hungarian',  // Hungary
   'HR': 'Croatian',   // Croatia
   'BA': 'Croatian',   // Bosnia and Herzegovina
+  'SI': 'Croatian',   // Slovenia
   'RS': 'Serbian',    // Serbia
   'ME': 'Serbian',    // Montenegro
   'MK': 'Serbian',    // North Macedonia
   'BG': 'Bulgarian',  // Bulgaria
   'AL': 'Turkish',    // Albania
   'XK': 'Turkish',    // Kosovo
+  'EE': 'Russian',    // Estonia
+  'LV': 'Russian',    // Latvia
+  'LT': 'Polish',     // Lithuania
   'GB': 'English',    // United Kingdom
   'UK': 'English',    // United Kingdom (alt)
   'IE': 'English',    // Ireland
@@ -1418,6 +1428,7 @@ const GEO_COUNTRY_TO_LANG = {
   'IM': 'English',    // Isle of Man
   'JE': 'English',    // Jersey
   'GG': 'English',    // Guernsey
+  'IS': 'English',    // Iceland
 
   // ── Latin America & The Caribbean ──
   'BR': 'Portuguese', // Brazil
@@ -1444,6 +1455,33 @@ const GEO_COUNTRY_TO_LANG = {
   'GP': 'French',     // Guadeloupe
   'MQ': 'French',     // Martinique
   'GF': 'French',     // French Guiana
+  'BL': 'French',     // Saint Barthélemy
+  'MF': 'French',     // Saint Martin
+  'PM': 'French',     // Saint Pierre and Miquelon
+  'AW': 'Dutch',      // Aruba
+  'CW': 'Dutch',      // Curaçao
+  'SX': 'Dutch',      // Sint Maarten
+  'BQ': 'Dutch',      // Bonaire, Sint Eustatius and Saba
+  'SR': 'Dutch',      // Suriname
+  'BZ': 'English',    // Belize
+  'GY': 'English',    // Guyana
+  'JM': 'English',    // Jamaica
+  'TT': 'English',    // Trinidad and Tobago
+  'BS': 'English',    // Bahamas
+  'BB': 'English',    // Barbados
+  'LC': 'English',    // Saint Lucia
+  'VC': 'English',    // Saint Vincent and the Grenadines
+  'GD': 'English',    // Grenada
+  'AG': 'English',    // Antigua and Barbuda
+  'DM': 'English',    // Dominica
+  'KN': 'English',    // Saint Kitts and Nevis
+  'KY': 'English',    // Cayman Islands
+  'BM': 'English',    // Bermuda
+  'TC': 'English',    // Turks and Caicos Islands
+  'VG': 'English',    // British Virgin Islands
+  'AI': 'English',    // Anguilla
+  'MS': 'English',    // Montserrat
+  'FK': 'English',    // Falkland Islands
 
   // ── Sub-Saharan Africa ──
   'ET': 'Amharic',    // Ethiopia
@@ -1473,6 +1511,11 @@ const GEO_COUNTRY_TO_LANG = {
   'MG': 'French',     // Madagascar
   'CF': 'French',     // Central African Republic
   'GQ': 'Spanish',    // Equatorial Guinea
+  'MU': 'French',     // Mauritius
+  'RE': 'French',     // Réunion
+  'YT': 'French',     // Mayotte
+  'SC': 'French',     // Seychelles
+  'TF': 'French',     // French Southern Territories
   'ZA': 'English',    // South Africa
   'GH': 'English',    // Ghana
   'NA': 'English',    // Namibia
@@ -1483,8 +1526,11 @@ const GEO_COUNTRY_TO_LANG = {
   'LR': 'English',    // Liberia
   'MW': 'English',    // Malawi
   'GM': 'English',    // Gambia
+  'SZ': 'English',    // Eswatini
+  'LS': 'English',    // Lesotho
+  'SH': 'English',    // Saint Helena
 
-  // ── North America & Oceania ──
+  // ── North America, Oceania & Territories ──
   'US': 'English',    // United States
   'CA': 'English',    // Canada
   'AU': 'English',    // Australia
@@ -1493,8 +1539,33 @@ const GEO_COUNTRY_TO_LANG = {
   'FJ': 'English',    // Fiji
   'SB': 'English',    // Solomon Islands
   'VU': 'French',     // Vanuatu
+  'NC': 'French',     // New Caledonia
+  'PF': 'French',     // French Polynesia
+  'WF': 'French',     // Wallis and Futuna
   'WS': 'English',    // Samoa
-  'TO': 'English'     // Tonga
+  'AS': 'English',    // American Samoa
+  'TO': 'English',    // Tonga
+  'TV': 'English',    // Tuvalu
+  'KI': 'English',    // Kiribati
+  'NR': 'English',    // Nauru
+  'PW': 'English',    // Palau
+  'FM': 'English',    // Micronesia
+  'MH': 'English',    // Marshall Islands
+  'CK': 'English',    // Cook Islands
+  'NU': 'English',    // Niue
+  'TK': 'English',    // Tokelau
+  'GU': 'English',    // Guam
+  'MP': 'English',    // Northern Mariana Islands
+  'VI': 'English',    // U.S. Virgin Islands
+  'NF': 'English',    // Norfolk Island
+  'CX': 'English',    // Christmas Island
+  'CC': 'English',    // Cocos (Keeling) Islands
+  'PN': 'English',    // Pitcairn Islands
+  'IO': 'English',    // British Indian Ocean Territory
+  'AQ': 'English',    // Antarctica
+  'GS': 'English',    // South Georgia & South Sandwich
+  'HM': 'English',    // Heard & McDonald Islands
+  'UM': 'English'     // U.S. Outlying Islands
 };
 
 // India Region / State Sub-Mapping
